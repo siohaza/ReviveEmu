@@ -133,7 +133,7 @@ STEAM_API SteamCallHandle_t		STEAM_CALL	SteamGetAppCacheSize(unsigned int uAppId
 STEAM_API int					STEAM_CALL	SteamGetAppDependencies(unsigned int uAppId, unsigned int* puDependecies, unsigned int uBufferLength, TSteamError *pError);
 STEAM_API int					STEAM_CALL	SteamGetAppDir(unsigned int uAppId, char* szAppDir, TSteamError *pError);
 STEAM_API int					STEAM_CALL	SteamGetAppIds(unsigned int *puAppIds, unsigned int uMaxIds, TSteamError *pError);
-STEAM_API int					STEAM_CALL	SteamGetAppPurchaseCountry(int appID, char* szCountryCode, unsigned int a3, unsigned int* pPurchaseTime, TSteamError* pError);
+STEAM_API int					STEAM_CALL	SteamGetAppPurchaseCountry(unsigned int uAppId, char* szCountryBuf, unsigned int uBufSize, unsigned int* pPurchaseTime, TSteamError* pError);
 STEAM_API int					STEAM_CALL	SteamGetAppStats(TSteamAppStats *pAppStats, TSteamError *pError);
 STEAM_API int					STEAM_CALL	SteamGetAppUpdateStats(unsigned int uAppId, ESteamAppUpdateStatsQueryType uStatType, TSteamUpdateStats *pUpdateStats, TSteamError *pError);
 STEAM_API int					STEAM_CALL	SteamGetAppUserDefinedInfo(unsigned int uAppId, const char *cszPropertyName, char *szPropertyValue, unsigned int uBufSize, unsigned int *puPropertyValueLength, TSteamError *pError);

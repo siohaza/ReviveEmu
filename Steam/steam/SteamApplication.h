@@ -487,10 +487,11 @@ STEAM_API int STEAM_CALL SteamIsAppSubscribed(unsigned int uAppId, int *pbIsAppS
 	return TRUE;
 }
 
-STEAM_API int SteamGetAppPurchaseCountry(int appID, char* szCountryCode, unsigned int  a3, unsigned int* purchaseTime, TSteamError* pError) {
+STEAM_API int SteamGetAppPurchaseCountry(unsigned int uAppId, char* szCountryBuf, unsigned int uBufSize, unsigned int* pPurchaseTime, TSteamError* pError) {
 	if (bLogging) Logger->Write("SteamGetAppPurchaseCountry\n");
-	strcpy(szCountryCode, "EN");
-	*purchaseTime = 0x44444444;
+	strcpy(szCountryBuf, "EN");
+	if (pPurchaseTime)
+		*pPurchaseTime = 0x44444444;
 	
 	SteamClearError(pError);
 	return 1;
