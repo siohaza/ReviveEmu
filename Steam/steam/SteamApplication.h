@@ -421,7 +421,7 @@ STEAM_API int SteamCheckAppOwnership() {
 	return 1;
 }
 
-STEAM_API int SteamIsSubscribed(unsigned int uSubscriptionId, int *pbIsSubscribed, int *pReserved, TSteamError *pError) {
+STEAM_API int SteamIsSubscribed(unsigned int uSubscriptionId, int *pbIsSubscribed, int *pbIsSubscriptionPending, TSteamError *pError) {
 	if (bLogging) Logger->Write("SteamIsSubscribed (%u)\n",uSubscriptionId);
 	switch (uSubscriptionId)
 	{
@@ -440,15 +440,15 @@ STEAM_API int SteamIsSubscribed(unsigned int uSubscriptionId, int *pbIsSubscribe
 	default:
 	      *pbIsSubscribed = 1;
 	}
-	*pReserved = 1;
+	*pbIsSubscriptionPending = 0;
 
 	SteamClearError(pError);
 	return 1;
 }
 
-STEAM_API int STEAM_CALL SteamIsAppSubscribed(unsigned int uAppId, int *pbIsAppSubscribed, int *pbUnknown, TSteamError *pError)
+STEAM_API int STEAM_CALL SteamIsAppSubscribed(unsigned int uAppId, int *pbIsAppSubscribed, int *pbIsSubscriptionPending, TSteamError *pError)
 {
-	if (bLogging && bLogAcc)  Logger->Write("SteamIsAppSubscribed: %u %u %u\n", uAppId, *pbIsAppSubscribed, *pbUnknown);
+	if (bLogging && bLogAcc)  Logger->Write("SteamIsAppSubscribed: %u %u %u\n", uAppId, *pbIsAppSubscribed, *pbIsSubscriptionPending);
 
 	SteamClearError(pError);
 
@@ -460,7 +460,7 @@ STEAM_API int STEAM_CALL SteamIsAppSubscribed(unsigned int uAppId, int *pbIsAppS
 	if (!bSteamFileSystem || (bSteamFileSystem && bSteamBlobSystem && !CDR))
 	{
 		if (!bIsEnginePatched && !bSteamClient) PatchEngine();
-		pbUnknown[1] = 0;
+		*pbIsSubscriptionPending = 0;
 		*pbIsAppSubscribed = 1;
 		return TRUE;
 	}
@@ -474,7 +474,7 @@ STEAM_API int STEAM_CALL SteamIsAppSubscribed(unsigned int uAppId, int *pbIsAppS
 			if (CDR->ApplicationRecords[x]->AppId == uAppId)
 			{
 				if (!bIsEnginePatched && !bSteamClient) PatchEngine();
-				pbUnknown[1] = 0;
+				*pbIsSubscriptionPending = 0;
 				*pbIsAppSubscribed = 1;
 				if (bLogging && bLogAcc)  Logger->Write("\tSubscribed!\n");
 				return TRUE;

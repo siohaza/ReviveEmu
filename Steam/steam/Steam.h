@@ -150,10 +150,10 @@ STEAM_API int					STEAM_CALL	SteamGetTotalUpdateStats(TSteamUpdateStats *pUpdate
 STEAM_API int					STEAM_CALL	SteamGetUser(char *szUser, unsigned int uBufSize, unsigned int *puUserChars, TSteamGlobalUserID* pSteamGlobalUserID, TSteamError *pError);
 STEAM_API int					STEAM_CALL	SteamGetUserType(unsigned int* puArg1, TSteamError* pError);
 STEAM_API int					STEAM_CALL	SteamIsAccountNameInUse();
-STEAM_API int					STEAM_CALL	SteamIsAppSubscribed(unsigned int uAppId, int *pbIsAppSubscribed, int *pbUnknown, TSteamError *pError);
+STEAM_API int					STEAM_CALL	SteamIsAppSubscribed(unsigned int uAppId, int *pbIsAppSubscribed, int *pbIsSubscriptionPending, TSteamError *pError);
 STEAM_API int					STEAM_CALL	SteamIsLoggedIn(int *pbIsLoggedIn, TSteamError *pError);
 STEAM_API int					STEAM_CALL	SteamIsSecureComputer(int *pbIsSecure, TSteamError *pError);
-STEAM_API int					STEAM_CALL	SteamIsSubscribed(unsigned int uSubscriptionId, int *pbIsSubscribed, int *pReserved, TSteamError *pError);
+STEAM_API int					STEAM_CALL	SteamIsSubscribed(unsigned int uSubscriptionId, int *pbIsSubscribed, int *pbIsSubscriptionPending, TSteamError *pError);
 STEAM_API SteamCallHandle_t		STEAM_CALL	SteamLaunchApp(unsigned int uAppId, unsigned int uLaunchOption, const char *cszArgs, TSteamError *pError);
 STEAM_API SteamCallHandle_t		STEAM_CALL	SteamLogin(const char *cszUser, const char *cszPassphrase, int bIsSecureComputer, TSteamError *pError);
 STEAM_API SteamCallHandle_t		STEAM_CALL	SteamLogout(TSteamError *pError);
