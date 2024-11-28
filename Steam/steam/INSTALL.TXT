@@ -1,0 +1,17 @@
+******* IMPORTANT *************************************
+
+* If using with Half-Life engine (hl.exe or hlds.exe),
+  just extract all 3 files to where hl.exe/hlds.exe is
+
+* If using with Source engine (hl2.exe or srcds.exe);
+  extract steamclient.dll to BIN folder, and 
+  rev.ini and steam.dll to where hl2.exe/srcds.exe is
+
+* If you are hosting a server, please DON'T extract
+  steamclient.dll and make sure you configure rev.ini
+  so that SteamClient value is False !!!
+
+*******************************************************
+
+Visit REVOLUTiON
+www.rev-crew.info

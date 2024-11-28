@@ -1,0 +1,86 @@
+Version:
+===========================================================================================
+
+Current Features:
+
+- Play all Valve games and mods extracted
+- Play all Valve games and mods from GCFs
+- Your server will accept all players (except for VAC banned STEAM users)
+- All players will be validated and assigned theirs Steam ID
+- Legit STEAM users will have their own original Steam ID
+- No-Steam users with REVOLUTiON Emulator will have their unique Steam ID
+- Other No-Steam users will have their Steam ID based on IP addresses
+- No other server patch is required (like VUP or REV_PATCH)
+- Half-Life LISTEN SERVER is also fully supported! 
+- Automated mounting of language and optional (e.g. Half-Life High Definition) GCFs
+- Support for multiple Cache Paths (your GCFS do not have to be located in a single folder)
+- Support for source engine 64-bit content (HL2/Lostcoast)
+
+
+History:
+===========================================================================================
+
+Changelog (steam) [XX.XX]
+[*] Fixed SteamLaunchApp to return the correct handle!
+[*] Fixed problems related to launching an application without a defined path on the command line
+[*] Enhanced support for Language settins for better compatibility with 3rd party tools.
+	revEmu will now try to set the Language key in the following order:
+		Use the Language key in the rev.ini if it is present
+		Use the Steam Language key in the registry if it is present
+		Default the Language to English 
+
+Changelog (steam) [15.06]
+[*] Fixed Condition Zero not working correctly
+[*] Added SteamUser to rev.ini to allow customisation of the Steam User Account
+[*] Corrected incorrect parameters with SteamRefreshMinimumFootprintFiles
+[*] Corrected return for dummied SteamProcessCall
+[*] Implimented SteamGetAppStats
+[*] Implimented SteamGetAppIDs
+[*] Implimented SteamSetUser
+[*] Implimented SteamGetUser
+[*] Implimented SteamEnumerateAppLaunchOption
+[*] Implimented SteamLaunchApp
+
+Changelog (steam) [25.05]
+[*] Fixed some model error issues in various games
+[*] Fixed numerous problems with multi-language support
+[*] Added support for multiple Cache Paths. Your GCFS do not have to be located in a single folder - split cache paths by the ; delimiter e.g. c:\gcf;c:\gcf2
+
+Changelog (steamclient) [12.05]
+[*] Fixed crash when creating servers with source engine 2007
+[*] Fixed problems with source engine 2007 content crashing after the latest engine update
+
+Changelog (steam) [12.05]
+[*] Added 64bit emulator for source engine 64-bit games (HL2/Lostcoast)
+[*] Fixed Dark Messiah running in censored mode
+[*] Improved Cache file memory management
+
+Changelog (steamclient) [20.04]
+[*] Fixed few bugs with Favorite and History servers
+
+Changelog (steam) [20.04]
+[*] You can now change case of executable files, emu will detect them correctly (reported by Vit_amiN)
+[*] Added cache support, you can now play all steam games from GCFs (see rev.ini)
+[*] Fixed few minor bugs in Misc code which caused some games (Darwinia for example) to display weird errors upon exiting.
+
+Changelog (steamclient) [30.03]
+[*] Fixed crash on loading a map in HL2 (possibly other non-src2007 singleplayer games)
+[*] Fixed favorites feature for older valve engines (for real). However, there are some limitations:
+- Changes to favorites servers list apply only after restarting the game.
+- You can't remove a server from favorites unless you do it manually by deleting it from serverbrowser.vdf
+
+Changelog (steamclient) [28.03]
+[*] Fixed possible crash on exit
+[*] Added full serverbrowser support
+[*] Restored favorite servers functionality in older games (NOT TESTED)
+
+Changelog (steamclient) [04.03.]
+[*] Fixed a crash which would happen after the user would quit the game, after the recent source engine 2007 update.
+
+Changelog [23.02.]
+[*] Included steamclient emulator
+[*] Your source dedicated server will now appear in master server even if original steam.dll is not set
+
+Changelog [11.02.]
+[*] Fixed srcds.exe \ hlds.exe crashing when started with -console parameter while Logging was enabled.
+[*] Fixed source dedicated server not appearing in master server list 
