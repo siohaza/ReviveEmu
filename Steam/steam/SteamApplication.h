@@ -459,7 +459,7 @@ STEAM_API int STEAM_CALL SteamIsAppSubscribed(unsigned int uAppId, int *pbIsAppS
 
 	if (!bSteamFileSystem || (bSteamFileSystem && bSteamBlobSystem && !CDR))
 	{
-		if (!bIsEnginePatched && !bSteamClient) PatchEngine();
+		//if (!bIsEnginePatched && !bSteamClient) PatchEngine();
 		*pbIsSubscriptionPending = 0;
 		*pbIsAppSubscribed = 1;
 		return TRUE;
@@ -473,7 +473,7 @@ STEAM_API int STEAM_CALL SteamIsAppSubscribed(unsigned int uAppId, int *pbIsAppS
 
 			if (CDR->ApplicationRecords[x]->AppId == uAppId)
 			{
-				if (!bIsEnginePatched && !bSteamClient) PatchEngine();
+				//if (!bIsEnginePatched && !bSteamClient) PatchEngine();
 				*pbIsSubscriptionPending = 0;
 				*pbIsAppSubscribed = 1;
 				if (bLogging && bLogAcc)  Logger->Write("\tSubscribed!\n");

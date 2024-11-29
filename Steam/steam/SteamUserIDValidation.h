@@ -56,7 +56,7 @@ STEAM_API ESteamError STEAM_CALL SteamInitializeUserIDTicketValidator(const char
 // #ifdef DEBUG
 	if (bLogging && bLogUserId) Logger->Write("SteamInitializeUserIDTicketValidator\n");
 // #endif
-	if (!bIsEnginePatched && !bSteamClient) PatchEngine();
+	//if (!bIsEnginePatched && !bSteamClient) PatchEngine();
 	if (bSteamDll)
 	{
 		ESteamError retval = eSteamErrorNone;
