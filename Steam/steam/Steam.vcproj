@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="Steam"
 	ProjectGUID="{FD08F481-8B7E-4BCE-AD41-32A251B18667}"
 	RootNamespace="Steam"
@@ -453,6 +453,10 @@
 				Name="SteamInterface"
 				>
 				<File
+					RelativePath=".\SteamInterface001.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\SteamInterface003.cpp"
 					>
 				</File>
@@ -855,6 +859,10 @@
 				Name="SteamInterface"
 				>
 				<File
+					RelativePath=".\ISteamInterface001.h"
+					>
+				</File>
+				<File
 					RelativePath=".\ISteamInterface003.h"
 					>
 				</File>
@@ -868,6 +876,10 @@
 				</File>
 				<File
 					RelativePath=".\ISteamInterface006.h"
+					>
+				</File>
+				<File
+					RelativePath=".\SteamInterface001.h"
 					>
 				</File>
 				<File

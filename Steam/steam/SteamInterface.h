@@ -1,5 +1,6 @@
 #pragma once
 
+#include "SteamInterface001.h"
 #include "SteamInterface003.h"
 #include "SteamInterface004.h"
 #include "SteamInterface005.h"
@@ -31,7 +32,12 @@ STEAM_API unsigned int STEAM_CALL _f(const char* cszSteamInterfaceVersion)
 	if(cszSteamInterfaceVersion != NULL)
 	{
 		if(bLogging) Logger->Write("Using Interface %s\n", cszSteamInterfaceVersion);
-		if(strcmp(cszSteamInterfaceVersion,"Steam003") == 0)
+		if(strcmp(cszSteamInterfaceVersion,"Steam001") == 0)
+		{
+			static CSteamInterface001 SteamInterface001;
+			return (unsigned int)&SteamInterface001;
+		}
+		else if(strcmp(cszSteamInterfaceVersion,"Steam003") == 0)
 		{
 			static CSteamInterface003 SteamInterface003;
 			return (unsigned int)&SteamInterface003;
