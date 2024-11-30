@@ -129,30 +129,22 @@ STEAM_API int STEAM_CALL SteamFindServersIterateServer(int arg1, int arg2, char 
 	}
 	if (arg1 == 3) // CSER Server
 	{
-		strcpy(szServerAddress, "207.173.177.12:27013");
+		// cser.steampowered.com
+		strcpy(szServerAddress, "208.64.203.186:27013");
 	}
 	else if (arg1 == 4) // Source Servers
 	{
-		if (arg2 == 0) strcpy(szServerAddress, "72.165.61.189:27011");
-		if (arg2 == 1) strcpy(szServerAddress, "69.28.151.162:27011");
-		if (arg2 == 2) strcpy(szServerAddress, "68.142.72.250:27011");
-		if (arg2 == 3) strcpy(szServerAddress, "72.165.61.190:27011");
+		// hl2master.steampowered.com
+		if (arg2 == 0) strcpy(szServerAddress, "208.64.200.65:27011");
+		if (arg2 == 1) strcpy(szServerAddress, "192.69.99.29:27011");
+		if (arg2 == 2) strcpy(szServerAddress, "208.78.164.210:27011");
 	}
 	else if (arg1 == 1) // Half-Life Servers
 	{
-		if (arg2 == 0) strcpy(szServerAddress, "72.165.61.189:27010");
-		if (arg2 == 1) strcpy(szServerAddress, "69.28.151.162:27010");
-		if (arg2 == 2) strcpy(szServerAddress, "68.142.72.250:27010");
-		if (arg2 == 3) strcpy(szServerAddress, "72.165.61.190:27010");
+		// hl1master.steampowered.com
+		if (arg2 == 0) strcpy(szServerAddress, "208.78.164.208:27010");
+		if (arg2 == 1) strcpy(szServerAddress, "208.78.164.209:27010");
 	}
-
-	/*
-	MasterServers
-	68.142.72.250
-	69.28.151.162
-	72.165.61.189
-	72.165.61.190
-	*/
 
 	return 0;
 }
@@ -176,9 +168,9 @@ STEAM_API int STEAM_CALL SteamFindServersNumServers(unsigned int arg1)
 	case 3: // CSER
 		return 1;
 	case 4: // HL2
-		return 4;
+		return 3;
 	case 1: // HL1
-		return 4;
+		return 2;
 	default:
 		return 0;
 	}
