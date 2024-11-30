@@ -183,7 +183,7 @@ void MountExtraLanguageCaches(const char * szName, const char * szLanguage, bool
 					if (uAppRecordDependant)
 					{
 
-						MountExtraLanguageCaches(CDR->ApplicationRecords[uAppRecordDependant]->Name, szthisLanguage, true);
+						MountExtraLanguageCaches(CDR->ApplicationRecords[uAppRecordDependant]->Name, szthisLanguage, false);
 
 					}
 				}
@@ -218,7 +218,7 @@ void MountExtraLanguageCaches(const char * szName, const char * szLanguage, bool
 					if (uAppRecordDependant)
 					{
 
-						MountExtraLanguageCaches(CDR->ApplicationRecords[uAppRecordDependant]->Name, szLanguage, true);
+						MountExtraLanguageCaches(CDR->ApplicationRecords[uAppRecordDependant]->Name, szLanguage, false);
 
 					}
 				}
@@ -373,7 +373,7 @@ STEAM_API int SteamMountFilesystem(unsigned int uAppId, const char *szMountPath,
 		if (uAppRecord)
 		{
 
-			MountExtraLanguageCaches(CDR->ApplicationRecords[uAppRecord]->Name, szLanguage, false);
+			MountExtraLanguageCaches(CDR->ApplicationRecords[uAppRecord]->Name, szLanguage, true);
 
 			MountExtraCaches(uAppId);
 
@@ -403,7 +403,7 @@ STEAM_API int SteamMountFilesystem(unsigned int uAppId, const char *szMountPath,
 
 				if (urootAppRecord)
 				{
-					MountExtraLanguageCaches(CDR->ApplicationRecords[urootAppRecord]->Name, szLanguage, false);
+					MountExtraLanguageCaches(CDR->ApplicationRecords[urootAppRecord]->Name, szLanguage, true);
 					MountExtraCaches(rootAppID);
 				}
 			
