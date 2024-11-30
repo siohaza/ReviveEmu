@@ -413,12 +413,6 @@ STEAM_API int SteamMountFilesystem(unsigned int uAppId, const char *szMountPath,
 				MountFileSystemByID(uAppRecord, "");
 
 			}
-
-			if (uAppId == 215 || uAppId == 220)
-			{
-				SetEnvironmentVariableA("SteamAppId", "220");
-			}
-
 		}
 
 		SteamClearError(pError);
