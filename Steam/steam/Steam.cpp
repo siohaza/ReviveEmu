@@ -232,9 +232,13 @@ void InitGlobalVaribles()
 	_strlwr(szRunFromPath);
 	V_FixSlashes(szRunFromPath);
 
-
-
-	if(inArgs(L"-appid") == true) 
+	char envBuffer[128];
+	int envBufferLen = GetEnvironmentVariableA("SteamAppId", envBuffer, sizeof(envBuffer));
+	if (envBufferLen && envBufferLen < sizeof(envBuffer))
+	{
+		strcpy(appid, envBuffer);
+	}
+	else if (inArgs(L"-appid") == true) 
 	{
 		for(int i=0; i<nArgs; i++)
 		{
