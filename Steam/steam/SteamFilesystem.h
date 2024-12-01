@@ -144,26 +144,6 @@ void MountExtraLanguageCaches(const char * szName, const char * szLanguage, bool
 			strcat(szPath, ".gcf");
 
 			MountFileSystemByName(szPath);
-
-			//check app dependancy and load as appropriate
-			if (CheckingDependancy)
-			{
-				TSteamError steamError;
-				unsigned int uPropertyValueLength;
-				char szPropertyValue[MAX_PATH];
-
-				SteamGetAppUserDefinedInfo(uAppRecord , "dependantOnApp", szPropertyValue, MAX_PATH, &uPropertyValueLength, &steamError);
-
-				if (uPropertyValueLength > 0)
-				{
-					int uAppRecordDependant = GetAppRecordID(atoi(szPropertyValue));
-
-					if (uAppRecordDependant)
-					{
-						MountExtraLanguageCaches(CDR->ApplicationRecords[uAppRecordDependant]->Name, szLanguage, false);
-					}
-				}
-			}
 		}
 	}
 
@@ -173,7 +153,7 @@ void MountExtraLanguageCaches(const char * szName, const char * szLanguage, bool
 
 	if (uAppRecord)
 	{
-		//check app dependancy and load as appropriate
+		// Check app dependancy and load as appropriate
 		if (CheckingDependancy)
 		{
 			TSteamError steamError;
@@ -188,7 +168,7 @@ void MountExtraLanguageCaches(const char * szName, const char * szLanguage, bool
 
 				if (uAppRecordDependant)
 				{
-					MountExtraLanguageCaches(CDR->ApplicationRecords[uAppRecordDependant]->Name, szLanguage, false);
+					MountExtraLanguageCaches(CDR->ApplicationRecords[uAppRecordDependant]->Name, szLanguage, true);
 				}
 			}
 		}
