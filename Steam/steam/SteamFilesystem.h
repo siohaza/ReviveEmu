@@ -377,21 +377,9 @@ STEAM_API int SteamMountAppFilesystem(TSteamError *pError) {
 			ExitProcess(0xffffffff);
 		}
 
-		if (bSteamBlobSystem == true)
+		if (bSteamBlobSystem == true && ClientRegistryBlob && CDR)
 		{
-			ClientRegistryBlob = new CBlobFileSystem();
-
-			ClientRegistryBlob->Open(szBlobFile);
-
-			if(CBlobNode *CDRNode = ClientRegistryBlob->GetNodeByPath("ContentDescriptionRecord"))
-			{
-				CDR = new CContentDescriptionRecord(CDRNode->KeyValue->Value);
-
-				if (CDR)
-				{
-					int result = SteamMountFilesystem(atoi(appid), "", pError);
-				}
-			}
+			return SteamMountFilesystem(atoi(appid), "", pError);
 		}
 		else
 		{
