@@ -383,6 +383,7 @@ STEAM_API int SteamMountAppFilesystem(TSteamError *pError) {
 		}
 		else
 		{
+			CIniFile AppIni(szAppIni);
 			char szKey[MAX_PATH];
 			char buffer[MAX_PATH];
 			char szPath[MAX_PATH];
@@ -399,7 +400,7 @@ STEAM_API int SteamMountAppFilesystem(TSteamError *pError) {
 					_itoa(i, buffer, 10);
 					strcat(szKey, buffer);
 
-					szGCF = AppIni->IniReadValue(appid, szKey);
+					szGCF = AppIni.IniReadValue(appid, szKey);
 
 					if(szGCF != NULL)
 					{

@@ -36,7 +36,6 @@ BOOL bLogAcc = false;
 BOOL bLogFS = false;
 BOOL bLogUserId = false;
 BOOL bSteamClient = false;
-static CIniFile* Ini;
 DWORD g_dwClientId;
 bool bAllowNonRev = true;
 
@@ -44,21 +43,18 @@ int nArgs;
 bool bSteamFileSystem = false;
 bool bSteamBlobSystem = false;
 std::vector<int> vecGCF;
-char* appid = new char[10];
-char* LogEnable = new char[MAX_PATH];
-char* szGCFPath= new char[MAX_PATH * 5];
-char* szRunFromPath = new char[MAX_PATH];
+char appid[10];
+char szGCFPath[MAX_PATH * 5];
+char szRunFromPath[MAX_PATH];
 static std::vector<char*> CacheLocations;
 
-char* szLanguage= new char[MAX_PATH];
-char* szSteamUser= new char[MAX_PATH];
-char* szOLDLanguage= new char[MAX_PATH];
-char* szBlobFile = new char[MAX_PATH];
+char szLanguage[MAX_PATH];
+char szSteamUser[MAX_PATH];
+char szOLDLanguage[MAX_PATH];
+char szBlobFile[MAX_PATH];
 char szAppIni[MAX_PATH];
 char chProcName[MAX_PATH];
 LPWSTR *szArglist;
-
-CIniFile* AppIni;
 
 char szCurrentDir[MAX_PATH];
 
@@ -319,15 +315,13 @@ void InitGlobalVaribles()
 			char chLogFile[MAX_PATH];
 			char chIniFile[MAX_PATH];
 			char chClientPath[MAX_PATH];
-			char *tmpFile;
 
 			if(GetModuleFileNameA(g_hModule, szSteamDLLPath, MAX_PATH))
 			{
-				_strlwr(szSteamDLLPath);
 				char* pchLastSlash = strrstr(szSteamDLLPath, "bin\\");
 				if (pchLastSlash)
 				{
-					if (strcmp(pchLastSlash,"bin\\steam.dll")==0)
+					if (_stricmp(pchLastSlash,"bin\\steam.dll")==0)
 					{
 						*pchLastSlash = 0;
 					}
@@ -345,8 +339,8 @@ void InitGlobalVaribles()
 					*pchLastSlash = 0;
 				}
 				strcpy(chIniFile, szSteamDLLPath);
-				strcpy(szAppIni, chIniFile);
 				strcat(chIniFile, "rev.ini");
+				strcpy(szAppIni, szSteamDLLPath);
 				strcat(szAppIni, "revApps.ini");
 
 						char chCmdLine[MAX_PATH];
@@ -363,7 +357,7 @@ void InitGlobalVaribles()
 				//
 				// Initialize and parse the INI file
 				//
-				Ini = new CIniFile(chIniFile);
+				CIniFile* Ini = new CIniFile(chIniFile);
 
 				if(char* Logging = Ini->IniReadValue("Emulator", "Logging")) // Is logging enabled ?
 				{
@@ -382,11 +376,10 @@ void InitGlobalVaribles()
 						Logger->Write("Command line: %s\n", chCmdLine);
 
 					} 
-					delete Logging;
+					delete[] Logging;
 				}
 				if (bLogging)
 				{
-
 					if(char* Logging = Ini->IniReadValue("Log", "FileSystem")) // Is FS logging enabled ?
 					{
 						if (_stricmp(Logging, "True") == 0) 
@@ -394,7 +387,7 @@ void InitGlobalVaribles()
 							bLogFS = true;
 							if (bLogging) Logger->Write("FileSystem logging initialized.\n");
 						} 
-						delete Logging;
+						delete[] Logging;
 					}
 					if(char* Logging = Ini->IniReadValue("Log", "Account")) // Is Acc logging enabled ?
 					{
@@ -403,7 +396,7 @@ void InitGlobalVaribles()
 							bLogAcc = true;
 							if (bLogging) Logger->Write("Account logging initialized.\n");
 						} 
-						delete Logging;
+						delete[] Logging;
 					}
 					if(char* Logging = Ini->IniReadValue("Log", "UserID")) // Is UserID logging enabled ?
 					{
@@ -412,20 +405,18 @@ void InitGlobalVaribles()
 							bLogUserId = true;
 							if (bLogging) Logger->Write("UserID logging initialized.\n");
 						} 
-						delete Logging;
+						delete[] Logging;
 					}
 
 
 					if (bLogFileFailure)
 					{
-						tmpFile = new char[MAX_PATH];
+						char tmpFile[MAX_PATH];
 
 						strcpy(tmpFile, szSteamDLLPath);
 						strcat(tmpFile,"\\REVOLUTiON_File_Failure.Log");
 						LoggerFileFailure = new CLogFile(tmpFile);
 						LoggerFileFailure->Clear();
-
-						delete [] tmpFile;
 
 						if (bLogging) Logger->Write("Cache File Load Failure logging initialized.\n");
 
@@ -458,7 +449,7 @@ void InitGlobalVaribles()
 					{
 						strcpy(szSteamUser,"revCrew");
 					}
-					delete SteamUSR;
+					delete[] SteamUSR;
 				}
 				else
 				{
@@ -475,13 +466,18 @@ void InitGlobalVaribles()
 					{
 						strcpy(szOLDLanguage,"English");
 					}
-				}else{
 
+					delete[] CheckLang;
+				}
+				else
+				{
 					if (strcmp(szOLDLanguage,"unset") == 0)
 					{
 						strcpy(szOLDLanguage,"English");
 						strcpy(szLanguage,szOLDLanguage);
-					}else{
+					}
+					else
+					{
 						strcpy(szLanguage,szOLDLanguage);
 					}
 				}
@@ -496,8 +492,15 @@ void InitGlobalVaribles()
 				{
 					if (_stricmp(GCFEnable, "True") == 0) 
 					{
-						szGCFPath = Ini->IniReadValue("Emulator", "CachePath");
-	 					_strlwr(szGCFPath);
+						if (char* Path = Ini->IniReadValue("Emulator", "CachePath"))
+						{
+							strcpy(szGCFPath, Path);
+							delete[] Path;
+						}
+						else
+						{
+							szGCFPath[0] = '\0';
+						}
 
 						// Alternate path to avoid HL2 anti-piracy.
 						strcpy(szBlobFile, "platform\\ClientRegistry.blob");
@@ -508,11 +511,9 @@ void InitGlobalVaribles()
 							strcat(szBlobFile, "ClientRegistry.Blob");
 						}
 
-						FILE* pBlobFile = fopen(szBlobFile, "rb");
-						if (pBlobFile)
+						if (_stat(szBlobFile, &filestat) == 0)
 						{		
 							if (bLogging) Logger->Write("Cache support initialized via %s\n",szBlobFile);
-							fclose(pBlobFile);
 							bSteamFileSystem = true;
 							bSteamBlobSystem = true;
 						}
@@ -520,9 +521,7 @@ void InitGlobalVaribles()
 						{
 							bSteamBlobSystem = false;
 
-							AppIni = new CIniFile(szAppIni);
-
-							if (AppIni)
+							if (_stat(szAppIni, &filestat) == 0)
 							{
 								if (bLogging) Logger->Write("Cache support initialized via revApps.Ini\n");
 								bSteamFileSystem = true;
@@ -561,7 +560,7 @@ void InitGlobalVaribles()
 						bSteamFileSystem = false;
 						if (bLogging) Logger->Write("Cache support was not enabled. Using extracted content only!\n");
 					}
-					delete [] GCFEnable;
+					delete[] GCFEnable;
 				}
 
 
@@ -569,7 +568,7 @@ void InitGlobalVaribles()
 				{
 					strcpy(szOrigSteamDll, SteamDll);
 					bSteamDll = TRUE;
-					delete SteamDll;
+					delete[] SteamDll;
 				}
 				if(char* Misc = Ini->IniReadValue("Emulator", "ForceRevClient")) // Is other client emu allowed ?
 				{
@@ -578,7 +577,7 @@ void InitGlobalVaribles()
 						bAllowNonRev = false;
 						if (bLogging) Logger->Write("Non-REVOLUTiON clients will not be allowed to join the server.\n");
 					} 
-					delete Misc;
+					delete[] Misc;
 				}
 				if(bSteamDll == TRUE) // is Original Steam DLL set ?
 				{
@@ -622,11 +621,14 @@ void InitGlobalVaribles()
 							if (bLogging) Logger->Write("-- Using Steam Client: %s\n", chClientPath);
 						}*/
 					} 
-					delete SteamClient;
+					delete[] SteamClient;
 				}
-		//
-		// Initialize the unique User ID used to authenticate with game server
-		//
+
+				delete Ini;
+
+				//
+				// Initialize the unique User ID used to authenticate with game server
+				//
 				GetVolumeInformationA(NULL, NULL, NULL, &g_dwClientId, NULL, NULL, NULL, NULL);
 				return;
 

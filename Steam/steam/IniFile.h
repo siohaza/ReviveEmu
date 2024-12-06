@@ -5,7 +5,7 @@
 class CIniFile
 {
 private:
-	char szIniFilePath[255];
+	char szIniFilePath[MAX_PATH];
 public:
 	CIniFile(char* szIniFilePath);
 	~CIniFile();
