@@ -16,25 +16,25 @@ const char * GetCacheNameFromAppID(unsigned int uAppID)
 	return NULL;
 }
 
-unsigned int GetAppRecordIDFromCacheName(const char * szGCF)
+unsigned int GetAppIDFromCacheName(const char * szGCF)
 {
 	for(unsigned int i = 0; i < CDR->ApplicationRecords.size(); i++)
 	{
-		if(strcmp(szGCF,CDR->ApplicationRecords[i]->InstallDirName) == 0)
+		if(_stricmp(szGCF,CDR->ApplicationRecords[i]->InstallDirName) == 0)
 		{
-			return CDR->ApplicationRecords[i]->AppId ;
+			return CDR->ApplicationRecords[i]->AppId;
 		}
 	}
 	return NULL;
 }
 
-unsigned int GetAppRecordIDFromName(char * szName)
+unsigned int GetAppIDFromName(char * szName)
 {
 	for(unsigned int i = 0; i < CDR->ApplicationRecords.size(); i++)
 	{
-		if(strcmp(_strlwr(szName),_strlwr(CDR->ApplicationRecords[i]->Name)) == 0)
+		if(_stricmp(szName,CDR->ApplicationRecords[i]->Name) == 0)
 		{
-			return CDR->ApplicationRecords[i]->AppId ;
+			return CDR->ApplicationRecords[i]->AppId;
 		}
 	}
 	return NULL;
@@ -50,6 +50,31 @@ unsigned int GetAppRecordID(unsigned int uAppID)
 		}
 	}
 	return NULL;
+}
+
+void MountFileSystemByID(unsigned int uId, const char* szExtraMount)
+{
+	char szPath[MAX_PATH];
+	char szGCF[MAX_PATH];
+	unsigned int cHandle;
+
+	strcpy(szGCF, CDR->ApplicationRecords[uId]->InstallDirName);
+	_strlwr(szGCF);
+
+	for (unsigned int uIndex = 0; uIndex < CacheLocations.size(); uIndex++)
+	{
+		strcpy(szPath, CacheLocations[uIndex]);
+		strcat(szPath, "\\");
+		strcat(szPath, szGCF);
+		strcat(szPath, ".gcf" );
+
+		cHandle = CacheManager->MountCache(szPath, CacheManager->NumCaches(), szExtraMount);
+
+		if(cHandle != NULL)
+		{
+			vecGCF.push_back(cHandle);
+		}
+	}
 }
 
 void MountFileSystemByName(const char * szPath )
@@ -120,15 +145,15 @@ void MountExtraLanguageCaches(const char * szName, const char * szLanguage, bool
 	strcat(szPath," ");
 	strcat(szPath,szthisLanguage);
 
-	int uAppRecord = GetAppRecordIDFromName(szPath);
+	unsigned int uAppId = GetAppIDFromName(szPath);
 
-	if (uAppRecord)
+	if (uAppId)
 	{
 		for (unsigned int uIndex = 0; uIndex < CacheLocations.size(); uIndex++)
 		{
 			if (strcmp(szthisLanguage,"russian") == 0 && strcmp(szName,"half-life 2") == 0)
 			{
-				if (bLogging && bLogFS)	Logger->Write("Loading Localized Cache Requirements for AppID(%u) Language(%s)\n", uAppRecord, "buka russian");
+				if (bLogging && bLogFS)	Logger->Write("Loading Localized Cache Requirements for AppID(%u) Language(%s)\n", uAppId, "buka russian");
 
 				strcpy(szPath, CacheLocations[uIndex]);
 				strcat(szPath, "\\");
@@ -136,22 +161,17 @@ void MountExtraLanguageCaches(const char * szName, const char * szLanguage, bool
 				MountFileSystemByName(szPath);
 			}
 
-			if (bLogging && bLogFS)	Logger->Write("Loading Localized Cache Requirements for AppID(%u) Language(%s)\n", uAppRecord, szthisLanguage);
+			if (bLogging && bLogFS)	Logger->Write("Loading Localized Cache Requirements for AppID(%u) Language(%s)\n", uAppId, szthisLanguage);
 
-			strcpy(szPath, CacheLocations[uIndex]);
-			strcat(szPath, "\\");
-			strcat(szPath, CDR->ApplicationRecords[GetAppRecordID(uAppRecord)]->InstallDirName);
-			strcat(szPath, ".gcf");
-
-			MountFileSystemByName(szPath);
+			MountFileSystemByID(GetAppRecordID(uAppId), "");
 		}
 	}
 
 	strcpy(szPath, szName);
 
-	uAppRecord = GetAppRecordIDFromName(szPath);
+	uAppId = GetAppIDFromName(szPath);
 
-	if (uAppRecord)
+	if (uAppId)
 	{
 		// Check app dependancy and load as appropriate
 		if (CheckingDependancy)
@@ -160,40 +180,17 @@ void MountExtraLanguageCaches(const char * szName, const char * szLanguage, bool
 			unsigned int uPropertyValueLength;
 			char szPropertyValue[MAX_PATH];
 
-			SteamGetAppUserDefinedInfo(uAppRecord , "dependantOnApp", szPropertyValue, MAX_PATH, &uPropertyValueLength, &steamError);
+			SteamGetAppUserDefinedInfo(uAppId , "dependantOnApp", szPropertyValue, MAX_PATH, &uPropertyValueLength, &steamError);
 
 			if (uPropertyValueLength > 0)
 			{
-				int uAppRecordDependant = GetAppRecordID(atoi(szPropertyValue));
+				unsigned int uAppRecordDependant = GetAppRecordID(atoi(szPropertyValue));
 
 				if (uAppRecordDependant)
 				{
 					MountExtraLanguageCaches(CDR->ApplicationRecords[uAppRecordDependant]->Name, szLanguage, true);
 				}
 			}
-		}
-	}
-}
-void MountFileSystemByID(unsigned int uId, const char* szExtraMount)
-{
-	char szPath[MAX_PATH];
-	char szGCF[MAX_PATH];
-	unsigned int cHandle;
-
-	strcpy(szGCF, CDR->ApplicationRecords[uId]->InstallDirName);
-
-	for (unsigned int uIndex = 0; uIndex < CacheLocations.size(); uIndex++)
-	{
-		strcpy(szPath, CacheLocations[uIndex]);
-		strcat(szPath, "\\");
-		strcat(szPath, szGCF);
-		strcat(szPath, ".gcf" );
-
-		cHandle = CacheManager->MountCache(szPath, CacheManager->NumCaches(), szExtraMount);
-
-		if(cHandle != NULL)
-		{
-			vecGCF.push_back(cHandle);
 		}
 	}
 }
@@ -305,7 +302,7 @@ STEAM_API int SteamMountFilesystem(unsigned int uAppId, const char *szMountPath,
 
 	if(CDR)
 	{
-		int uAppRecord = GetAppRecordID(uAppId);
+		unsigned int uAppRecord = GetAppRecordID(uAppId);
 
 		if (uAppRecord)
 		{
