@@ -36,33 +36,27 @@ STEAM_API int STEAM_CALL SteamStartup(unsigned int uUsingMask, TSteamError *pErr
 
 			if (bSteamFileSystem == true)
 			{
-
 				CacheManager = new CCacheFileSystem();
 
 				if(!CacheManager)
 				{
-
 					if (bLogging) Logger->Write("Error Initializing Cache Manager ... Support for Extracted Content only!\n");
 					bSteamFileSystem = false;
 					bSteamBlobSystem = false;
-
 				}
 				else
 				{
-
 					ClientRegistryBlob = new CBlobFileSystem();
 
 					if(!ClientRegistryBlob)
 					{
-
 						if (bLogging) Logger->Write("	Error Initializing Blob Manager ... Advanced Steam Functions Disabled!\n");
 						if (bLogging) Logger->Write("	GCF Support from Ini file only!\n");
 						bSteamBlobSystem = false;
-
 					}
 					else
 					{
-						if(!ClientRegistryBlob->Open("ClientRegistry.blob"))
+						if(!ClientRegistryBlob->Open(szBlobFile))
 						{
 							// Try downloading the CDR using CookieAPI.lib / thanks to steamCooker
 							/*initCookieApi();
@@ -85,33 +79,26 @@ STEAM_API int STEAM_CALL SteamStartup(unsigned int uUsingMask, TSteamError *pErr
 
 						if(CBlobNode *CDRNode = ClientRegistryBlob->GetNodeByPath("ContentDescriptionRecord")) 
 						{
-
 							CDR = new CContentDescriptionRecord(CDRNode->KeyValue->Value);
 
 							if(!CDR)
 							{
-
 								if (bLogging) Logger->Write("	Error Initializing CDR ... Advanced Steam Functions Disabled!\n");
 								if (bLogging) Logger->Write("	GCF Support from Ini file only!\n");
 								bSteamBlobSystem = false;
-
 							}
-
 						}
 						else
 						{
-
 							if (bLogging) Logger->Write("	Error Locating CDR ... Advanced Steam Functions Disabled!\n");
 							if (bLogging) Logger->Write("	GCF Support from Ini file only!\n");
 							bSteamBlobSystem = false;
-
 						}
 					}
 				}
 			}
 		}
 	}
-
 	return TRUE;
 }
 

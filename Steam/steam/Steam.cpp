@@ -496,12 +496,17 @@ void InitGlobalVaribles()
 				{
 					if (_stricmp(GCFEnable, "True") == 0) 
 					{
-			
 						szGCFPath = Ini->IniReadValue("Emulator", "CachePath");
 	 					_strlwr(szGCFPath);
 
-						strcpy(szBlobFile, szSteamDLLPath);
-						strcat(szBlobFile,"ClientRegistry.Blob");
+						// Alternate path to avoid HL2 anti-piracy.
+						strcpy(szBlobFile, "platform\\ClientRegistry.blob");
+						struct _stat filestat;
+						if (_stat(szBlobFile, &filestat) == -1)
+						{
+							strcpy(szBlobFile, szSteamDLLPath);
+							strcat(szBlobFile, "ClientRegistry.Blob");
+						}
 
 						FILE* pBlobFile = fopen(szBlobFile, "rb");
 						if (pBlobFile)
@@ -550,7 +555,6 @@ void InitGlobalVaribles()
 								if (bLogging) Logger->Write("Cache support was not enabled as no valid GCF path was specified! Using extracted content only!\n");
 							}
 						}
-
 					}
 					else
 					{
