@@ -119,20 +119,20 @@ typedef unsigned __int64	SteamUnsigned64_t;
 typedef unsigned long long	SteamUnsigned64_t;
 #endif
 
-typedef enum ESteamSeekMethod
+enum ESteamSeekMethod
 {
 	eSteamSeekMethodSet = 0,
 	eSteamSeekMethodCur = 1,
 	eSteamSeekMethodEnd = 2
 };
 
-typedef enum ESteamBufferMethod
+enum ESteamBufferMethod
 {
 	eSteamBufferMethodFBF = 0,
 	eSteamBufferMethodNBF = 1
 };
 
-typedef enum ESteamError
+enum ESteamError
 {
 	eSteamErrorNone													= 0,
 	eSteamErrorUnknown												= 1,
@@ -202,7 +202,7 @@ typedef enum ESteamError
 
 };
 
-typedef enum ESteamAppUpdateStatsQueryType
+enum ESteamAppUpdateStatsQueryType
 {
 	ePhysicalBytesReceivedThisSession	= 1,
 	eAppReadyToLaunchStatus				= 2,
@@ -211,7 +211,7 @@ typedef enum ESteamAppUpdateStatsQueryType
 	eCacheBytesPresent					= 5,
 };
 
-typedef enum ESteamServerType
+enum ESteamServerType
 {
 	eSteamValveCDKeyValidationServer,
 	eSteamHalfLifeMasterServer,
@@ -222,7 +222,7 @@ typedef enum ESteamServerType
 	eMaxServerTypes
 };
 
-typedef enum EDetailedPlatformErrorType
+enum EDetailedPlatformErrorType
 {
 	eNoDetailedErrorAvailable,
 	eStandardCerrno,
@@ -231,14 +231,14 @@ typedef enum EDetailedPlatformErrorType
 	eDetailedPlatformErrorCount
 };
 
-typedef enum ESteamFindFilter		/* Filter elements returned by SteamFind{First,Next} */
+enum ESteamFindFilter		/* Filter elements returned by SteamFind{First,Next} */
 {
 	eSteamFindLocalOnly,			/* limit search to local filesystem */
 	eSteamFindRemoteOnly,			/* limit search to remote repository */
 	eSteamFindAll					/* do not limit search (duplicates allowed) */
 };
 
-typedef enum EBillingType
+enum EBillingType
 {
 	eNoCost,
 	eBillOnceOnly,

@@ -498,12 +498,7 @@ STEAM_API int SteamCloseFile(SteamHandle_t hFile, TSteamError *pError) {
 	if(((TFileInCacheHandle*)hFile)->IsFileLocal)
 	{
 		FILE *pFile = ((TFileInCacheHandle*)hFile)->LocalFile;
-		if(!(pFile->_flag & 0x400)) {
-			dwRet = fclose(pFile);
-		}
-		else {
-			dwRet = 0;
-		}
+		dwRet = fclose(pFile);
 	}
 	else
 	{

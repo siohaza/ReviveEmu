@@ -90,7 +90,7 @@ template< typename T, size_t GROW_SIZE >
 inline const T& CDynArray<T, GROW_SIZE>::operator[]( int uIndex ) const
 {
 	// Only way to prevent the warning.
-	const T & tRet = (T)m_aPtr[uIndex];
+	const T& tRet = (T&)m_aPtr[uIndex];
 	// Return element.
 	return tRet;
 }
@@ -99,27 +99,27 @@ template< typename T, size_t GROW_SIZE >
 inline T& CDynArray<T, GROW_SIZE>::operator[]( int uIndex )
 {
 	// Only way to prevent the warning.
-	const T& tRet = (T)m_aPtr[uIndex];
+	T& tRet = (T&)m_aPtr[uIndex];
 	// Return element.
-	return (T)tRet;
+	return tRet;
 }
 
 template< typename T, size_t GROW_SIZE >
 inline T& CDynArray<T, GROW_SIZE>::LastElement()
 {
 	// Only way to prevent the warning.
-	const T& tRet = (T)m_aPtr[m_uCount];
+	T& tRet = (T&)m_aPtr[m_uCount];
 	// Return last element.
-	return (T)tRet;
+	return tRet;
 }
 
 template< typename T, size_t GROW_SIZE >
 inline T& CDynArray<T, GROW_SIZE>::FirstElement()
 {
 	// Only way to prevent the warning.
-	const T& tRet = (T)m_aPtr[0];
+	T& tRet = (T&)m_aPtr[0];
 	// Return first element.
-	return (T)tRet;
+	return tRet;
 }
 
 template< typename T, size_t GROW_SIZE >

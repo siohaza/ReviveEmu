@@ -1516,7 +1516,7 @@ SymGetHomeDirectoryW(
     __in size_t size
     );
 
-typedef enum {
+enum {
     hdBase = 0, // root directory for dbghelp
     hdSym,      // where symbols are stored
     hdSrc,      // where source is stored
@@ -3031,7 +3031,7 @@ SymSrvStoreFileW(
 
 // used by SymGetSymbolFile's "Type" parameter
 
-typedef enum {
+enum {
     sfImage = 0,
     sfDbg,
     sfPdb,
