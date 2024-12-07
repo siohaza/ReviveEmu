@@ -437,11 +437,6 @@ STEAM_API int SteamUnmountAppFilesystem(TSteamError* pError) {
 			}
 		}
 
-		for (unsigned int idx = 0; GlobalDirectoryTable.IsValidIndex(idx); idx++)
-		{
-			delete GlobalDirectoryTable[idx];
-		}
-
 		if (bLogging && bLogFS) Logger->Write("Cache Unmounted for AppID %s\n", appid);
 	}
 

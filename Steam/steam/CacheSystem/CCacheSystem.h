@@ -582,36 +582,27 @@ public:
 	}
 
 private:
-
 	TManifestEntriesInCache* FindItem(unsigned int LastIndex, char* cszPattern)
 	{
-
-		TGlobalDirectory* FindItem = NULL;
-		
-
 		if(strpbrk(cszPattern, "?*"))
 		{
-
 			GlobalIndexCounter = LastIndex;
-			while(GlobalIndexCounter < GlobalDirectoryTableSize )
-			{
-						
-				FindItem = GlobalDirectoryTable[GlobalIndexCounter];
+			while(GlobalIndexCounter < GlobalDirectoryTableSize)
+			{		
+				TGlobalDirectory &FindItem = GlobalDirectoryTable[GlobalIndexCounter];
 
-				if(IsMatchingWithMask(FindItem->FullName, cszPattern))
+				if(IsMatchingWithMask(FindItem.FullName, cszPattern))
 				{
-					CCache* CacheFile = (CCache*)FindItem->pCache;
-					TManifestEntriesInCache* ItemFound = &CacheFile->DirectoryTable[FindItem->Index];
+					CCache* CacheFile = (CCache*)FindItem.pCache;
+					TManifestEntriesInCache* ItemFound = &CacheFile->DirectoryTable[FindItem.Index];
 					return ItemFound;
 				}
 
 				GlobalIndexCounter++;
-
 			}
 		}
 		else
 		{
-
 			//unsigned int EntryHash = JenkinsHash((unsigned char*)cszPattern, strlen(cszPattern), 0);
 			unsigned int EntryHash = JSHash(cszPattern);
 			
@@ -619,8 +610,7 @@ private:
 
 			if(HashIterator != HashTable.end())
 			{
-
-				TGlobalDirectory FindItem = HashIterator->second;
+				TGlobalDirectory &FindItem = HashIterator->second;
 
 				CCache* CacheFile = (CCache*)FindItem.pCache;
 				TManifestEntriesInCache* ItemFound = &CacheFile->DirectoryTable[FindItem.Index];
@@ -632,7 +622,6 @@ private:
 		}
 
 		return NULL;
-
 	}
 
 	bool IsMatchingWithMask(char* szString, char* szMask)
@@ -803,56 +792,44 @@ private:
 
 
 private:
-
 	void BuildGlobalDirectoryTable(CCache* CacheFile)
 	{
 		if (!CacheFile->bIsMounted)
 		{
-
 			TManifestEntriesInCache* DirectoryTable = CacheFile->DirectoryTable;
 			TManifestEntriesInCache* ActualDirEntry;
 
 			for(unsigned int CacheIndex = 1; CacheIndex < CacheFile->Manifest->Header->ItemCount ; CacheIndex++)
 			{
-				TGlobalDirectory *FindThisItem = new TGlobalDirectory;
+				TGlobalDirectory FindThisItem;
 				ActualDirEntry = &DirectoryTable[CacheIndex];
 
 				//unsigned int EntryHash = JenkinsHash((unsigned char*)ActualDirEntry->FullName, strlen(ActualDirEntry->FullName), 0);
 				unsigned int EntryHash = JSHash(ActualDirEntry->FullName);
 
-				FindThisItem->pCache = ActualDirEntry->pCache;
-				FindThisItem->FullName = ActualDirEntry->FullName;
-				FindThisItem->Index = CacheIndex;
+				FindThisItem.pCache = ActualDirEntry->pCache;
+				FindThisItem.FullName = ActualDirEntry->FullName;
+				FindThisItem.Index = CacheIndex;
 
 				if (!HashTable.count(EntryHash))
 				{
-					//HashTable[EntryHash].pCache  = FindThisItem->pCache;
-					//HashTable[EntryHash].FullName = FindThisItem->FullName;
-					//HashTable[EntryHash].Index = FindThisItem->Index;
+					HashTable[EntryHash] = FindThisItem;
 
-					HashTable[EntryHash] = *FindThisItem;
-
-
-					GlobalDirectoryTable.Add(FindThisItem);
+					GlobalDirectoryTable.push_back(FindThisItem);
 					GlobalIndexCounter++;
 
 					//if (bLogging && bLogFS) Logger->Write("\tAdd to Global Directory: %s\n", ActualDirEntry->FullName);
-
 				}
 				else
 				{
 					//if (bLogging && bLogFS) Logger->Write("\tExcluded from Global Directory: %s\n", ActualDirEntry->FullName);
 				}
-
 			}
 
 			CacheFile->bIsMounted = true;
 
-			GlobalDirectoryTableSize = HashTable.size() - 1;
-
+			GlobalDirectoryTableSize = HashTable.size();
 		}
-
 	}
-
 };
 

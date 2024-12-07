@@ -19,7 +19,6 @@
 #include <shellapi.h>
 #include <stdio.h>
 #include <string.h>
-#include "DynArray.h"
 #include <vector>
 #include "registry.h"
 
@@ -87,7 +86,7 @@ unsigned int GlobalIndexCounter = 0;
 
 static CContentDescriptionRecord* CDR;
 static CBlobFileSystem* ClientRegistryBlob;
-CDynArray<TGlobalDirectory*> GlobalDirectoryTable;
+std::vector<TGlobalDirectory> GlobalDirectoryTable;
 static std::map<unsigned int, TGlobalDirectory> HashTable;
 
 #include "CacheSystem\CCacheSystem.h"	//Cache
