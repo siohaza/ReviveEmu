@@ -422,27 +422,62 @@ STEAM_API int SteamCheckAppOwnership() {
 }
 
 STEAM_API int SteamIsSubscribed(unsigned int uSubscriptionId, int *pbIsSubscribed, int *pbIsSubscriptionPending, TSteamError *pError) {
-	if (bLogging) Logger->Write("SteamIsSubscribed (%u)\n",uSubscriptionId);
+	if (bLogging && bLogAcc) Logger->Write("SteamIsSubscribed (%u)\n",uSubscriptionId);
+
+	// IMPORTANT: Some builds of Garry's Mod have anti-piracy check that sees if SteamIsSubscribed starts with
+	// "push ebp" instruction which depends on if and how local vars are used. Be careful when changing this function.
+	SteamClearError(pError);
+
+	if (!bSteamStartup)
+	{
+		SteamStartup(STEAM_USING_ALL, pError);
+	}
+
+	*pbIsSubscriptionPending = 0;
+
 	switch (uSubscriptionId)
 	{
 	case 4: //Cyber Cafe Subscription
 	      *pbIsSubscribed = 0;
-		  break;	
+		  return 1;
 	case 67: //VTT Subscription
 	      *pbIsSubscribed = 0;
-		  break;	
+		  return 1;	
 	case 183: // Dark Messiah Might and Magic DE
 	      *pbIsSubscribed = 0;
-		  break;	
+		  return 1;	
 	case 198: // Dark Messiah Might and Magic Limited Retail DE
 	      *pbIsSubscribed = 0;
-		  break;	
+		  return 1;	
 	default:
-	      *pbIsSubscribed = 1;
+		  break;
 	}
+
+	if (!bSteamFileSystem || (bSteamFileSystem && bSteamBlobSystem && !CDR))
+	{
+		*pbIsSubscribed = 1;
+		*pbIsSubscriptionPending = 0;
+		return 1;
+	}
+
+	if (bSteamBlobSystem)
+	{
+		for (unsigned int x = 0; x < CDR->SubscriptionsRecord.size(); x++)
+		{
+			if (CDR->SubscriptionsRecord[x]->SubscriptionId = uSubscriptionId)
+			{
+				*pbIsSubscriptionPending = 0;
+				*pbIsSubscribed = 1;
+				if (bLogging && bLogAcc)  Logger->Write("\tSubscribed!\n");
+				return 1;
+			}
+		}
+	}
+
+	if (bLogging && bLogAcc)  Logger->Write("\tNot Subscribed!\n");
+	*pbIsSubscribed = 0;
 	*pbIsSubscriptionPending = 0;
 
-	SteamClearError(pError);
 	return 1;
 }
 
@@ -462,29 +497,29 @@ STEAM_API int STEAM_CALL SteamIsAppSubscribed(unsigned int uAppId, int *pbIsAppS
 		//if (!bIsEnginePatched && !bSteamClient) PatchEngine();
 		*pbIsSubscriptionPending = 0;
 		*pbIsAppSubscribed = 1;
-		return TRUE;
+		return 1;
 	}
 
 	if (bSteamBlobSystem)
 	{
-
 		for (unsigned int x = 0; x < CDR->ApplicationRecords.size(); x++)
 		{
-
 			if (CDR->ApplicationRecords[x]->AppId == uAppId)
 			{
 				//if (!bIsEnginePatched && !bSteamClient) PatchEngine();
 				*pbIsSubscriptionPending = 0;
 				*pbIsAppSubscribed = 1;
 				if (bLogging && bLogAcc)  Logger->Write("\tSubscribed!\n");
-				return TRUE;
+				return 1;
 			}
 		}
 	}
 
 	if (bLogging && bLogAcc)  Logger->Write("\tNot Subscribed!\n");
 	*pbIsAppSubscribed = 0;
-	return TRUE;
+	*pbIsSubscriptionPending = 0;
+
+	return 1;
 }
 
 STEAM_API int SteamGetAppPurchaseCountry(unsigned int uAppId, char* szCountryBuf, unsigned int uBufSize, unsigned int* pPurchaseTime, TSteamError* pError) {
