@@ -3,8 +3,9 @@
 #include <direct.h>
 
 #include "strtools.h"
-//#include "Jenkins.h" // This doesn't produce unique ints for some reason - HL2DM - dm_resistance - pipecluster003a_small.mdl is wrongly identified as another files id
-#include "GeneralHashFunctions.h"
+#include "MurmurHash.h"
+
+#define MURMUR_SEED 0x44444444
 
 	#if defined( _WIN32 ) || defined( WIN32 )
 	#define PATHSEPARATOR(c) ((c) == '\\' || (c) == '/')
@@ -603,8 +604,7 @@ private:
 		}
 		else
 		{
-			//unsigned int EntryHash = JenkinsHash((unsigned char*)cszPattern, strlen(cszPattern), 0);
-			unsigned int EntryHash = JSHash(cszPattern);
+			unsigned int EntryHash = murmur3_32((unsigned char*)cszPattern, strlen(cszPattern), MURMUR_SEED);
 			
 			std::map<unsigned int, TGlobalDirectory>::iterator HashIterator = HashTable.find(EntryHash);
 
@@ -804,8 +804,7 @@ private:
 				TGlobalDirectory FindThisItem;
 				ActualDirEntry = &DirectoryTable[CacheIndex];
 
-				//unsigned int EntryHash = JenkinsHash((unsigned char*)ActualDirEntry->FullName, strlen(ActualDirEntry->FullName), 0);
-				unsigned int EntryHash = JSHash(ActualDirEntry->FullName);
+				unsigned int EntryHash = murmur3_32((unsigned char*)ActualDirEntry->FullName, strlen(ActualDirEntry->FullName), MURMUR_SEED);
 
 				FindThisItem.pCache = ActualDirEntry->pCache;
 				FindThisItem.FullName = ActualDirEntry->FullName;

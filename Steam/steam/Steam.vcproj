@@ -185,19 +185,15 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\GeneralHashFunctions.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\IniFile.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Jenkins.cpp"
+				RelativePath=".\logFile.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\logFile.cpp"
+				RelativePath=".\MurmurHash.cpp"
 				>
 			</File>
 			<File
@@ -447,19 +443,15 @@
 				>
 			</File>
 			<File
-				RelativePath=".\GeneralHashFunctions.h"
-				>
-			</File>
-			<File
 				RelativePath=".\IniFile.h"
 				>
 			</File>
 			<File
-				RelativePath=".\Jenkins.h"
+				RelativePath=".\logFile.h"
 				>
 			</File>
 			<File
-				RelativePath=".\logFile.h"
+				RelativePath=".\MurmurHash.h"
 				>
 			</File>
 			<File
