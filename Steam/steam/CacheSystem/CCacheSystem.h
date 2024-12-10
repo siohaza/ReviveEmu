@@ -14,9 +14,6 @@
 	#endif	//_WIN32
 
 
-using namespace Common;
-
-
 typedef struct
 {
 	FILE* fCacheFile;

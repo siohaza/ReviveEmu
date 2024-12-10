@@ -232,6 +232,10 @@
 				RelativePath=".\strtools.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\strtools_unicode.cpp"
+				>
+			</File>
 			<Filter
 				Name="SteamInterface"
 				>
