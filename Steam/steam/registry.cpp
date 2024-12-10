@@ -3,11 +3,9 @@
 #include <winreg.h>
 #include <string.h>
 
-int ind = 0;
-
 void clearStringArray(char ** array, int size)
 {
-	for (ind=0;ind<size;ind++)
+	for (int ind=0;ind<size;ind++)
 	{
 		if (array[ind])
 		{
@@ -166,7 +164,7 @@ void setRegistry(char * key, char * name, char ** values,int nbValues)
 	}
 	
 	DWORD dwLength=1;
-	for (ind=0;ind<nbValues;ind++)
+	for (int ind = 0; ind < nbValues; ind++)
 	{
 		dwLength+=strlen(values[ind])+1;
 	}
@@ -174,7 +172,7 @@ void setRegistry(char * key, char * name, char ** values,int nbValues)
 	char * vals=(char *)malloc(dwLength);
 	
 	char * temp=vals;
-	for (ind=0;ind<nbValues;ind++)
+	for (int ind = 0; ind < nbValues; ind++)
 	{
 		strcpy(temp,values[ind]);
 		temp+=strlen(temp)+1;

@@ -55,8 +55,6 @@ char szAppIni[MAX_PATH];
 char chProcName[MAX_PATH];
 LPWSTR *szArglist;
 
-char szCurrentDir[MAX_PATH];
-
 CLogFile* LoggerFileFailure;
 std::string szLoggerFile;
 std::string szLoggerFilePath;
