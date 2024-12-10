@@ -55,7 +55,7 @@ STEAM_API int					STEAM_CALL	SteamSetMaxStallCount( unsigned int uNumStalls, TSt
 ** Filesystem
 */
 
-int SteamOpenFile2(const char* cszFileName, const char* cszMode, int iArg3, unsigned int* puSize, int* piArg5, TSteamError *pError);
+SteamHandle_t SteamOpenFile2(const char* cszFileName, const char* cszMode, int iArg3, unsigned int* puSize, int* piArg5, TSteamError *pError);
 STEAM_API int					STEAM_CALL	SteamMountAppFilesystem(TSteamError *pError);
 STEAM_API int					STEAM_CALL	SteamUnmountAppFilesystem(TSteamError* pError);
 STEAM_API int					STEAM_CALL	SteamMountFilesystem(unsigned int uAppId, const char *szMountPath, TSteamError *pError);

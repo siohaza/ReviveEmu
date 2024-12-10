@@ -7,12 +7,6 @@
 
 #define MURMUR_SEED 0x44444444
 
-	#if defined( _WIN32 ) || defined( WIN32 )
-	#define PATHSEPARATOR(c) ((c) == '\\' || (c) == '/')
-	#else	//_WIN32
-	#define PATHSEPARATOR(c) ((c) == '/')
-	#endif	//_WIN32
-
 
 typedef struct
 {
@@ -28,27 +22,24 @@ typedef struct
 		TManifestEntriesInCache* FileInCache;
 	};
 	unsigned int Position;
-	char mode[1];
+	char mode[8];
 }TFileInCacheHandle;
 
 typedef struct
 {
 	bool IsFindLocal;
 	union {
-		unsigned int LocalFind;
+		intptr_t LocalFind;
 		TManifestEntriesInCache* hFind;
 	};
 	ESteamFindFilter eFilter;
-	char* szSearchString;
+	char szCachePattern[MAX_PATH];
 	int CurrentIndex;
-	const char* cszPattern;
+	char szPattern[MAX_PATH];
 }TFindHandle;
 
 class CCacheFileSystem
 {
-private:
-	std::vector<const char*> Searches;
-
 public:
 	std::vector<TCacheHandle*> Caches;
 
@@ -67,7 +58,6 @@ public:
 
 	CacheHandle MountCache(const char* cszFileName, unsigned int index, const char* ExtraMountPath)
 	{
-
 		std::string FullPath(cszFileName);
 		int dot = FullPath.find_last_of('\\');
 		std::string szTemp = FullPath.substr(dot + 1);
@@ -102,19 +92,16 @@ public:
 		
 			if (bLogging && bLogFS)	Logger->Write("	Mounted %s\n", cszFileName);
 
-			return (unsigned int)hCache;
-
+			return (CacheHandle)hCache;
 		}
 
 		if (bLogging && bLogFS)	Logger->Write("	Failed to Mount %s\n", cszFileName);
 
 		return false;
-
 	}
 
 	bool UnmountCache(CacheHandle hCache)
 	{
-
 		std::vector<TCacheHandle*>::iterator CachesIterator;
 
 		for( CachesIterator = Caches.begin(); CachesIterator != Caches.end(); CachesIterator++ ) {
@@ -134,61 +121,47 @@ public:
 
 	TFileInCacheHandle* CacheOpenFileEx(const char *cszFileName, const char *cszMode, unsigned int *puSize)
 	{
-
-
-		TFileInCacheHandle* retval = NULL;
-
-		if(TManifestEntriesInCache* FileToOpen = CacheFindFile(cszFileName, NULL))
+		if (TManifestEntriesInCache* FileToOpen = CacheFindFile(cszFileName))
 		{
-			retval = new TFileInCacheHandle();
-			memset(retval, 0, sizeof(TFileInCacheHandle));
-			retval->FileInCache = FileToOpen;
+			TFileInCacheHandle* hFile = new TFileInCacheHandle();
+			memset(hFile, 0, sizeof(TFileInCacheHandle));
+			hFile->FileInCache = FileToOpen;
 
-			if(puSize)
+			if (puSize)
 			{
 				*puSize = FileToOpen->Size;
 			}
-			
-			strcpy(retval->mode, cszMode);
+
+			strcpy(hFile->mode, cszMode);
 
 			//LoggerFileOpened = true;
 
 			//CCache* CacheFile = (CCache*)FileToOpen->pCache;
-			//if (bLogging && bLogFS) Logger->Write("\tOpened 0x%08X from cache(%s) {%s} %s\n", (long)retval, cszMode, CacheFile->Name, cszFileName );
-			//if (bLogging && bLogFS) Logger->Write("\tOpened 0x%08X from cache(%s) %s\n", (long)retval, cszMode, cszFileName );
-			
-			
+			//if (bLogging && bLogFS) Logger->Write("\tOpened 0x%08X from cache(%s) {%s} %s\n", (long)hFile, cszMode, CacheFile->Name, cszFileName );
+			//if (bLogging && bLogFS) Logger->Write("\tOpened 0x%08X from cache(%s) %s\n", (long)hFile, cszMode, cszFileName );
+
+			return hFile;
 		}
-		return retval;
+
+		return NULL;
 	}
 
-	int CacheStat(const char *cszFileName, TSteamElemInfo *pInfo)
+	int CacheStat(const char* cszFileName, TSteamElemInfo* pInfo)
 	{
-	
-		char szFileNamebuffer[MAX_PATH];
-		strcpy(szFileNamebuffer,cszFileName);
-
-		GetFilenameInCache(szFileNamebuffer);
-
-		if(strlen(szFileNamebuffer) > 0)
+		if (TManifestEntriesInCache* ItemFound = CacheFindFile(cszFileName))
 		{
+			pInfo->bIsDir = (ItemFound->Type == 0 ? 1 : 0);
+			pInfo->uSizeOrCount = ItemFound->Size;
+			pInfo->bIsLocal = 0;
+			strcpy(pInfo->cszName, ItemFound->Name);
+			pInfo->lCreationTime = 0x44444444;
+			pInfo->lLastAccessTime = 0x44444444;
+			pInfo->lLastModificationTime = 0x44444444;
+			//if (bLogging && bLogFS) Logger->Write("\tStat succesfull from cache > %s\n", cszFileName);
 
-			if(TManifestEntriesInCache* ItemFound = FindItem(0,szFileNamebuffer))
-			{
-
-				pInfo->bIsDir = (ItemFound->Type == 0 ? 1 : 0);
-				pInfo->uSizeOrCount = ItemFound->Size;
-				pInfo->bIsLocal = 0;
-				strcpy(pInfo->cszName, ItemFound->Name);
-				pInfo->lCreationTime = 0x44444444;
-				pInfo->lLastAccessTime = 0x44444444;
-				pInfo->lLastModificationTime = 0x44444444;
-				//if (bLogging && bLogFS) Logger->Write("\tStat succesfull from cache > %s\n", cszFileName);
-	
-				return 0;
-			}
-
+			return 0;
 		}
+
 		return -1;
 	}
 
@@ -213,8 +186,7 @@ public:
 		}
 		else
 		{
-			//GetCurrentDirectoryA(MAX_PATH, szFullPath);
-			strcpy(szFullPath, szRunFromPath);
+			_getcwd(szFullPath, MAX_PATH);
 		}
 
 		V_ComposeFileName( szFullPath, FileToExtract->FullName, szFullPath, MAX_PATH );
@@ -260,7 +232,6 @@ public:
 
 	unsigned int CacheReadFile(void *pBuf, unsigned int uSize, unsigned int uCount, TFileInCacheHandle* hFile)
 	{
-
 		unsigned int readedlength = 0;
 
 		if (hFile)
@@ -277,13 +248,11 @@ public:
 		}
 
 		return readedlength; // needs to return count
-
 	}
 
 	 
     unsigned int ReadBinary(void *pBuf, unsigned int uSize, unsigned int uCount, TFileInCacheHandle* hFile)
     {
- 
         CCache* hCacheFile = (CCache*)hFile->FileInCache->pCache;
         TManifestEntriesInCache* hFileInCache =  hFile->FileInCache;
  
@@ -321,7 +290,6 @@ public:
     int BinaryReadSector(__int64 iSectorIndex, void* pvBuff, unsigned int uOffset, unsigned int uSize, TFileInCacheHandle* hFile)
     //int BinaryReadSector(int iSectorIndex, void* pvBuff, unsigned int uOffset, unsigned int uSize, TFileInCacheHandle* hFile)
     {
- 
         CCache* hCacheFile = (CCache*)hFile->FileInCache->pCache;
         FILE* fCacheFile = hCacheFile->fCacheFile;
         TManifestEntriesInCache* hFileInCache =  hFile->FileInCache;
@@ -347,7 +315,6 @@ public:
  
     unsigned int ReadText(void *pBuf, unsigned int uSize, unsigned int uCount, TFileInCacheHandle* hFile)
     {
- 
         CCache* hCacheFile = (CCache*)hFile->FileInCache->pCache;
         TManifestEntriesInCache* hFileInCache =  hFile->FileInCache;
  
@@ -417,7 +384,7 @@ public:
     //int TextReadSector(int iSectorIndex, void* pvBuff, unsigned int uSize, TFileInCacheHandle* hFile)
     int TextReadSector(__int64 iSectorIndex, void* pvBuff, unsigned int uSize, TFileInCacheHandle* hFile)
     {
- 
+
         CCache* hCacheFile = (CCache*)hFile->FileInCache->pCache;
         FILE* fCacheFile = hCacheFile->fCacheFile;
         TManifestEntriesInCache* hFileInCache =  hFile->FileInCache;
@@ -490,7 +457,6 @@ public:
 	}
 
 	void CreateDir(char* Path) { 
-
 		char DirName[256];
 		char* p = const_cast<char*>(Path);
 		char* q = DirName; 
@@ -511,14 +477,14 @@ public:
 
 	TFindHandle* CacheFindFirst(const char *cszPattern, ESteamFindFilter eFilter, TSteamElemInfo *pFindInfo)
 	{		
-		char szFileNamebuffer[MAX_PATH];
-		strcpy(szFileNamebuffer,cszPattern);
+		char szCachePattern[MAX_PATH];
+		strcpy(szCachePattern, cszPattern);
 		
-		GetFilenameInCache(szFileNamebuffer);
+		GetFilenameInCache(szCachePattern);
 
-		if(strlen(szFileNamebuffer) > 0)
+		if (szCachePattern[0])
 		{
-			if(TManifestEntriesInCache* ItemFound = FindItem(0,szFileNamebuffer))
+			if(TManifestEntriesInCache* ItemFound = FindItem(0, szCachePattern))
 			{
 				pFindInfo->bIsDir = (ItemFound->Type == 0 ? 1 : 0);
 				pFindInfo->bIsLocal = 0;
@@ -529,28 +495,26 @@ public:
 				pFindInfo->lLastModificationTime = 0x44444444;
 
 				TFindHandle* hFind = new TFindHandle();
-				hFind->IsFindLocal = 0;
+				hFind->IsFindLocal = false;
 				hFind->hFind = ItemFound;
 				hFind->eFilter = eFilter;
-				hFind->szSearchString = new char[strlen(szFileNamebuffer)+1];
-				strcpy(hFind->szSearchString,szFileNamebuffer);
-				hFind->cszPattern = new char[strlen(cszPattern)+1];
-				strcpy((char*)hFind->cszPattern, cszPattern);
+				strcpy(hFind->szCachePattern, szCachePattern);
+				strcpy(hFind->szPattern, cszPattern);
 
 				hFind->CurrentIndex = GlobalIndexCounter;
 
-				//if (bLogging && bLogFS) Logger->Write("\tFound first file {%s} (%s) using pattern (%s)\n", ((CCache*)hFind->hFind->pCache)->Name, ItemFound->Name, szFileNamebuffer);
+				//if (bLogging && bLogFS) Logger->Write("\tFound first file {%s} (%s) using pattern (%s)\n", ((CCache*)hFind->hFind->pCache)->Name, ItemFound->Name, szCachePattern);
 
 				return hFind;
 			}
-
 		}
-		return (TFindHandle*)0;
+
+		return NULL;
 	}
 
 	int CacheFindNext(TFindHandle* hFind, TSteamElemInfo *pFindInfo)
 	{
-		if(TManifestEntriesInCache* ItemFound = FindItem(hFind->CurrentIndex + 1, hFind->szSearchString))
+		if(TManifestEntriesInCache* ItemFound = FindItem(hFind->CurrentIndex + 1, hFind->szCachePattern))
 		{
 			pFindInfo->bIsDir = (ItemFound->Type == 0 ? 1 : 0);
 			pFindInfo->bIsLocal = 0;
@@ -562,7 +526,7 @@ public:
 			hFind->hFind = ItemFound;
 			hFind->CurrentIndex = GlobalIndexCounter;
 
-			//if (bLogging && bLogFS) Logger->Write("\tFound next file {%s} (%s) using pattern (%s)\n", ((CCache*)hFind->hFind->pCache)->Name, ItemFound->Name, hFind->szSearchString);
+			//if (bLogging && bLogFS) Logger->Write("\tFound next file {%s} (%s) using pattern (%s)\n", ((CCache*)hFind->hFind->pCache)->Name, ItemFound->Name, hFind->szCachePattern);
 			
 			return 0;
 		}
@@ -623,7 +587,6 @@ private:
 
 	bool IsMatchingWithMask(char* szString, char* szMask)
 	{
-
 		while(*szString != 0 || *szMask != 0)
 		{
 
@@ -692,101 +655,61 @@ private:
 		return true;
 	}
 
-
-	void R_FullPathToRelativePath(const char* cszFullPath, char* szRelativePath, const char* cszBaseDirectory)
-	{
-		char szTempBaseDir[MAX_PATH];
-		const char* cszBaseDir = cszBaseDirectory;
-
-		if(!cszBaseDir)
-		{
-			strcpy(szTempBaseDir, szRunFromPath);
-			//_getcwd(szTempBaseDir, MAX_PATH);
-			cszBaseDir = szTempBaseDir;
-		}
-
-		if(strstr(cszFullPath, cszBaseDir) == cszFullPath)
-		{
-			const char* szStartRelativeFilePath = cszFullPath + strlen(cszBaseDir);
-			while(PATHSEPARATOR(*szStartRelativeFilePath) || *szStartRelativeFilePath == 0)
-			{
-				szStartRelativeFilePath++;
-			}
-
-			strcpy(szRelativePath, szStartRelativeFilePath);
-		}
-	}
-
-
 	void GetFilenameInCache(char * cszFileName)
 	{
-
-		_strlwr(cszFileName);
-
+		char buf[MAX_PATH];
 		char szCWD[MAX_PATH];
-		strcpy(szCWD, szRunFromPath);
 
-		/*
-		if(_getcwd(szCWD, sizeof(szCWD)))
+		_getcwd(szCWD, MAX_PATH);
+
+		// Covert to lowercase for lookup.
+		V_strlower(cszFileName);
+
+		if (V_IsAbsolutePath(cszFileName))
 		{
-			_strlwr(szCWD);
-			V_FixSlashes(szCWD);
-		}
-		*/
+			V_RemoveDotSlashes(cszFileName);
+			V_MakeRelativePath(cszFileName, szCWD, buf, MAX_PATH);
 
-		V_RemoveDotSlashes(cszFileName);
+			// Normalize slashes.
+			V_FixSlashes(buf, '\\');
 
-		if(V_IsAbsolutePath(cszFileName))
-			R_FullPathToRelativePath(cszFileName, cszFileName, szCWD);
-
-		if(cszFileName[1] == ':') {
-
-			if(strstr(cszFileName, szCWD) == cszFileName)
-			{
-				cszFileName = cszFileName + strlen(szCWD);
-			}
+			// Parsed cache paths start with a slash.
+			cszFileName[0] = '\\';
+			strcpy(cszFileName + 1, buf);
 		}
 		else
 		{
-			if(cszFileName[0] != '\\')
+			V_FixDoubleSlashes(cszFileName);
+			V_FixSlashes(cszFileName, '\\');
+
+			if (cszFileName[0] != '\\')
 			{
-				char fName[MAX_PATH];
-				strcpy(fName,cszFileName);
-				strcpy(cszFileName,"\\");
-				strcat(cszFileName,fName);
+				size_t len = strlen(cszFileName) + 1;
+				memmove(cszFileName + 1, cszFileName, len);
+				cszFileName[0] = '\\';
 			}
 		}
 
-		while(char* doubleslash = strstr(cszFileName, "\\\\"))
-		{
-			strcpy(doubleslash + 1, doubleslash + 2);
-		}
-
 		//if (bLogging && bLogFS)Logger->Write("\tSearching cache with (%s - %s)\n", cszFileName, szCWD);
-
 	}
 
-
-	TManifestEntriesInCache* CacheFindFile(const char *cszFileName, CCache* pCache)
+	TManifestEntriesInCache* CacheFindFile(const char* cszFileName)
 	{
-
 		char szFileNamebuffer[MAX_PATH];
-		strcpy(szFileNamebuffer,cszFileName);
+		strcpy(szFileNamebuffer, cszFileName);
 
 		GetFilenameInCache(szFileNamebuffer);
 
-		if(strlen(szFileNamebuffer) > 0)
+		if (szFileNamebuffer[0])
 		{
-
-			if(TManifestEntriesInCache* ItemFound = FindItem(0,szFileNamebuffer))
-			{	
+			if (TManifestEntriesInCache* ItemFound = FindItem(0, szFileNamebuffer))
+			{
 				return ItemFound;
 			}
 		}
 
 		return NULL;
 	}
-
 
 private:
 	void BuildGlobalDirectoryTable(CCache* CacheFile)

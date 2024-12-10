@@ -195,7 +195,7 @@ void MountExtraLanguageCaches(const char * szName, const char * szLanguage, bool
 	}
 }
 
-int SteamOpenFile2(const char* cszFileName, const char* cszMode, int iArg3, unsigned int* puSize, int* piArg5, TSteamError *pError)
+SteamHandle_t SteamOpenFile2(const char* cszFileName, const char* cszMode, int iArg3, unsigned int* puSize, int* piArg5, TSteamError *pError)
 {
 	ENTER_CRITICAL_SECTION;
 
@@ -224,35 +224,20 @@ int SteamOpenFile2(const char* cszFileName, const char* cszMode, int iArg3, unsi
 	char filename[MAX_PATH];
 	strcpy(filename, cszFileName);
 
-
-	FILE* pFile = NULL;
 	SteamClearError(pError);
 
 	if(strpbrk(filename, "?*"))
 	{
 		pError->eSteamError = eSteamErrorNotFound;
 		if (bLogging && bLogFS) Logger->Write("\tFile not found (%s)\n", cszFileName);
-		return (SteamHandle_t)pFile;
+		return STEAM_INVALID_HANDLE;
 	}
 
+	// FIXME: Is this necessary?
 	char szFullPath[MAX_PATH];
-	strcpy(szFullPath, "");
-	std::string tmp = filename;
-	strcpy(filename, tmp.c_str());
+	V_MakeAbsolutePath(szFullPath, MAX_PATH, cszFileName);
 
-	if(filename[0] == '.' && filename[1] == '\\')
-	{
-		strcpy(filename, &filename[2]);
-	}
-
-	if(filename[1] != ':' && filename[2] != '\\')
-	{
-		GetCurrentDirectoryA(MAX_PATH, szFullPath);
-		strcat(szFullPath, "\\");
-	}
-
-	strcat(szFullPath, filename);
-	pFile = fopen(szFullPath, cszMode);
+	FILE* pFile = fopen(szFullPath, cszMode);
 
 	if(pFile && puSize != NULL)
 	{
@@ -437,6 +422,12 @@ STEAM_API int SteamUnmountAppFilesystem(TSteamError* pError) {
 			}
 		}
 
+		vecGCF.clear();
+		HashTable.clear();
+		GlobalDirectoryTable.clear();
+		GlobalDirectoryTableSize = 0;
+		GlobalIndexCounter = 0;
+
 		if (bLogging && bLogFS) Logger->Write("Cache Unmounted for AppID %s\n", appid);
 	}
 
@@ -445,13 +436,13 @@ STEAM_API int SteamUnmountAppFilesystem(TSteamError* pError) {
 }
 
 
-STEAM_API SteamCallHandle_t SteamOpenFileEx(const char *cszFileName, const char *cszMode, unsigned int *puSize, TSteamError *pError) {
+STEAM_API SteamHandle_t SteamOpenFileEx(const char *cszFileName, const char *cszMode, unsigned int *puSize, TSteamError *pError) {
 
 	return SteamOpenFile2(cszFileName, cszMode, NULL, puSize, NULL, pError);
 
 }
 
-STEAM_API SteamCallHandle_t SteamOpenFile(const char *cszFileName, const char *cszMode, TSteamError *pError) {
+STEAM_API SteamHandle_t SteamOpenFile(const char *cszFileName, const char *cszMode, TSteamError *pError) {
 
 	return SteamOpenFile2(cszFileName, cszMode, NULL, NULL, NULL, pError);
 
@@ -489,21 +480,24 @@ STEAM_API int SteamCloseFile(SteamHandle_t hFile, TSteamError *pError) {
 
 	SteamClearError(pError);
 
-	DWORD dwRet = 0;
-	if(((TFileInCacheHandle*)hFile)->IsFileLocal)
+	int retval = 0;
+	TFileInCacheHandle* pCacheFile = (TFileInCacheHandle*)hFile;
+
+	if (pCacheFile->IsFileLocal)
 	{
-		FILE *pFile = ((TFileInCacheHandle*)hFile)->LocalFile;
-		dwRet = fclose(pFile);
+		FILE* pFile = pCacheFile->LocalFile;
+		retval = fclose(pFile);
+		delete pCacheFile;
 	}
 	else
 	{
-		dwRet = CacheManager->CacheCloseFile((TFileInCacheHandle*)hFile);
+		retval = CacheManager->CacheCloseFile(pCacheFile);
 	}
 
-	return dwRet;
+	return retval;
 }
 
-STEAM_API SteamCallHandle_t SteamFindFirst(const char *cszPattern, ESteamFindFilter eFilter, TSteamElemInfo *pFindInfo, TSteamError *pError ) {
+STEAM_API SteamHandle_t SteamFindFirst(const char *cszPattern, ESteamFindFilter eFilter, TSteamElemInfo *pFindInfo, TSteamError *pError ) {
 
 	ENTER_CRITICAL_SECTION;
 
@@ -513,38 +507,44 @@ STEAM_API SteamCallHandle_t SteamFindFirst(const char *cszPattern, ESteamFindFil
 	strcpy(filename, cszPattern);
 
 	SteamClearError(pError);
-	int hRetVal = 0;
 
-	switch(eFilter)
+	switch (eFilter)
 	{
 	case eSteamFindRemoteOnly:
 	case eSteamFindAll:
 		{
 			if (bSteamFileSystem)
-				hRetVal = (SteamHandle_t)CacheManager->CacheFindFirst((char*)filename, eFilter, pFindInfo);
-
-			if (hRetVal)
-				return hRetVal;
-
-			if (eFilter == eSteamFindRemoteOnly)
 			{
-				pError->eSteamError = eSteamErrorNotFound;
+				TFindHandle* hFind = CacheManager->CacheFindFirst(filename, eFilter, pFindInfo);
+				if (hFind)
+				{
+					return (SteamHandle_t)hFind;
+				}
+
+				if (eFilter == eSteamFindRemoteOnly)
+				{
+					pError->eSteamError = eSteamErrorNotFound;
+					if (bLogging && bLogFS) Logger->Write("\tFile pattern not found in cache (%s)\n", filename);
+					return STEAM_INVALID_HANDLE;
+				}
 			}
+
+			// Fall through to local search if we find nothing in GCF or GCF support is disabled.
 		}
 
 	case eSteamFindLocalOnly:
 		{
 			_finddata_t finddata;
-			hRetVal = _findfirst(filename, &finddata);
-			if (hRetVal < 0)
+			intptr_t hLocalFind = _findfirst(filename, &finddata);
+			if (hLocalFind == -1)
 			{
 				pError->eSteamError = eSteamErrorNotFound;
-				if (bLogging && bLogFS) Logger->Write("\tFile not found (%s)\n", filename);
-				return 0;
+				if (bLogging && bLogFS) Logger->Write("\tFile pattern not found (%s)\n", filename);
+				return STEAM_INVALID_HANDLE;
 			}
 			pFindInfo->bIsDir = ((finddata.attrib & _A_SUBDIR) != 0);
 			pFindInfo->uSizeOrCount = finddata.size;
-			pFindInfo->bIsLocal = TRUE;
+			pFindInfo->bIsLocal = 1;
 			pFindInfo->lCreationTime = (long)finddata.time_create;
 			pFindInfo->lLastAccessTime = (long)finddata.time_access;
 			pFindInfo->lLastModificationTime = (long)finddata.time_write;
@@ -554,13 +554,10 @@ STEAM_API SteamCallHandle_t SteamFindFirst(const char *cszPattern, ESteamFindFil
 			TFindHandle* hFind = new TFindHandle();
 			memset(hFind, 0, sizeof(TFindHandle));
 
-			hFind->IsFindLocal = 1;
-			hFind->LocalFind = hRetVal;
+			hFind->IsFindLocal = true;
+			hFind->LocalFind = hLocalFind;
 			hFind->eFilter = eFilter;
-			hFind->szSearchString = new char[strlen(filename)+1];
-			strcpy(hFind->szSearchString,filename);
-			hFind->cszPattern = new char[strlen(cszPattern)+1];
-			strcpy((char*)hFind->cszPattern, cszPattern);
+			strcpy(hFind->szPattern, cszPattern);
 			if (bLogging && bLogFS) Logger->Write("\tFound Local file (%s) using pattern (%s)\n", finddata.name, filename);
 
 			return (SteamHandle_t)hFind;
@@ -569,7 +566,7 @@ STEAM_API SteamCallHandle_t SteamFindFirst(const char *cszPattern, ESteamFindFil
 		{
 			pError->eSteamError = eSteamErrorBadArg;
 			if (bLogging && bLogFS) Logger->Write("\tFile not found (%s) <BAD ARGUMENT>\n", filename);
-			return hRetVal;
+			return STEAM_INVALID_HANDLE;
 		}
 	}
 }
@@ -582,58 +579,58 @@ STEAM_API int SteamFindNext(SteamHandle_t hDirectory, TSteamElemInfo *pFindInfo,
 
 	SteamClearError(pError);
 
-	int hRetVal = -1;
-
-	//bItemFound = false;
-
 	TFindHandle* pFind = reinterpret_cast<TFindHandle*>(hDirectory);
 
-	if (!strpbrk(pFind->cszPattern, "?*"))
+	if (!strpbrk(pFind->szPattern, "?*"))
 	{
 		return -1;
 	}
 
 	if (!pFind->IsFindLocal && (pFind->eFilter == eSteamFindAll || pFind->eFilter == eSteamFindRemoteOnly))
 	{
-		hRetVal = CacheManager->CacheFindNext(((TFindHandle*)hDirectory), pFindInfo);
+		int retval = CacheManager->CacheFindNext(pFind, pFindInfo);
 
-		if(hRetVal == -1 && pFind->eFilter == eSteamFindAll)
+		if (retval == -1 && pFind->eFilter == eSteamFindAll)
 		{
-			//switch to local search
+			// switch to local search
 			_finddata_t finddata;
-			hRetVal = _findfirst(pFind->cszPattern, &finddata);
+			intptr_t hLocalFind = _findfirst(pFind->szPattern, &finddata);
 
-			if(hRetVal != (int)INVALID_HANDLE_VALUE)
+			if (hLocalFind != -1)
 			{
 				pFindInfo->bIsDir = ((finddata.attrib & _A_SUBDIR) != 0);
 				pFindInfo->uSizeOrCount = finddata.size;
-				pFindInfo->bIsLocal = TRUE;
+				pFindInfo->bIsLocal = 1;
 				pFindInfo->lCreationTime = (long)finddata.time_create;
 				pFindInfo->lLastAccessTime = (long)finddata.time_access;
 				pFindInfo->lLastModificationTime = (long)finddata.time_write;
 				strcpy(pFindInfo->cszName, finddata.name);
 
 				pFind->IsFindLocal = true;
-				pFind->LocalFind = hRetVal;
+				pFind->LocalFind = hLocalFind;
 
 				SteamClearError(pError);
 				if (bLogging && bLogFS) Logger->Write("\tFound Local file (%s)\n", finddata.name);
 
 				return 0;
 			}
+
+			return -1;
 		}
+
+		return retval;
 	}
 
 	if ((pFind->IsFindLocal && (pFind->eFilter == eSteamFindAll || pFind->eFilter == eSteamFindLocalOnly)) || !bSteamFileSystem)
 	{
 		_finddata_t finddata;
-		hRetVal = _findnext(pFind->LocalFind, &finddata);
+		int retval = _findnext(pFind->LocalFind, &finddata);
 
-		if (hRetVal != -1)
+		if (retval != -1)
 		{
 			pFindInfo->bIsDir = ((finddata.attrib & _A_SUBDIR) != 0);
 			pFindInfo->uSizeOrCount = finddata.size;
-			pFindInfo->bIsLocal = TRUE;
+			pFindInfo->bIsLocal = 1;
 			pFindInfo->lCreationTime = (long)finddata.time_create;
 			pFindInfo->lLastAccessTime = (long)finddata.time_access;
 			pFindInfo->lLastModificationTime = (long)finddata.time_write;
@@ -641,9 +638,11 @@ STEAM_API int SteamFindNext(SteamHandle_t hDirectory, TSteamElemInfo *pFindInfo,
 			SteamClearError(pError);
 			if (bLogging && bLogFS) Logger->Write("\tFound Local file (%s)\n", finddata.name);
 		}
+
+		return retval;
 	}
 
-	return hRetVal;
+	return -1;
 }
 
 STEAM_API int SteamFindClose(SteamHandle_t hDirectory, TSteamError *pError ) {
@@ -655,18 +654,22 @@ STEAM_API int SteamFindClose(SteamHandle_t hDirectory, TSteamError *pError ) {
 	SteamClearError(pError);
 
 	int retval = 0;
+	TFindHandle* pFind = (TFindHandle*)hDirectory;
 
-	if(((TFindHandle*)hDirectory)->IsFindLocal)
+	if (pFind->IsFindLocal)
 	{
-		retval = _findclose(((TFindHandle*)hDirectory)->LocalFind);
+		retval = _findclose(pFind->LocalFind);
+		delete pFind;
 	}
 	else
 	{
-		retval = CacheManager->CacheFindClose(((TFindHandle*)hDirectory));
+		retval = CacheManager->CacheFindClose(pFind);
 	}
 
 	if (retval == -1)
+	{
 		pError->eSteamError = eSteamErrorNotFound;
+	}
 
 	return retval;
 }
@@ -770,11 +773,11 @@ STEAM_API int SteamGetc(SteamHandle_t hFile, TSteamError *pError ) {
 	}
 }
 
-STEAM_API SteamCallHandle_t SteamOpenTmpFile(TSteamError *pError ) {
+STEAM_API SteamHandle_t SteamOpenTmpFile(TSteamError *pError ) {
 	if (bLogging && bLogFS) Logger->Write("SteamOpenTmpFile\n");
 	SteamClearError(pError);
 
-	return 0;
+	return STEAM_INVALID_HANDLE;
 }
 
 STEAM_API int SteamPutc(int cChar, SteamHandle_t hFile, TSteamError *pError ) {
@@ -1005,14 +1008,14 @@ STEAM_API int STEAM_CALL SteamHintResourceNeed(const char *cszHintList, int bFor
 {
 	if (bLogging && bLogFS) Logger->Write("SteamHintResourceNeed: %s, %d\n", cszHintList, bForgetEverything);
 	SteamClearError(pError);
-	return TRUE;
+	return 1;
 }
 
 STEAM_API int STEAM_CALL SteamForgetAllHints(TSteamError *pError)
 {
 	if (bLogging && bLogFS) Logger->Write("SteamForgetAllHints\n");
 	SteamClearError(pError);
-	return TRUE;
+	return 1;
 }
 
 STEAM_API int STEAM_CALL SteamPauseCachePreloading(TSteamError *pError)

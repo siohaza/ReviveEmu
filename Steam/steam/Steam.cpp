@@ -41,10 +41,9 @@ bool bAllowNonRev = true;
 int nArgs;
 bool bSteamFileSystem = false;
 bool bSteamBlobSystem = false;
-std::vector<int> vecGCF;
+std::vector<unsigned int> vecGCF;
 char appid[10];
 char szGCFPath[MAX_PATH * 5];
-char szRunFromPath[MAX_PATH];
 static std::vector<char*> CacheLocations;
 
 char szLanguage[MAX_PATH];
@@ -209,21 +208,10 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 
 void InitGlobalVaribles()
 {
-	char chWd[MAX_PATH];
-	_getcwd(chWd, MAX_PATH);
-
 	szArglist = CommandLineToArgvW(GetCommandLineW(), &nArgs);
 
-	wcstombs(szRunFromPath, szArglist[0], MAX_PATH);
-	V_StripFilename(szRunFromPath);
-
-	if (strlen(szRunFromPath) < 1 || szRunFromPath != chWd)
-	{
-		_getcwd(szRunFromPath, MAX_PATH);
-	}
-
-	_strlwr(szRunFromPath);
-	V_FixSlashes(szRunFromPath);
+	char szRunFromPath[MAX_PATH];
+	_getcwd(szRunFromPath, MAX_PATH);
 
 	char envBuffer[128];
 	int envBufferLen = GetEnvironmentVariableA("SteamAppId", envBuffer, sizeof(envBuffer));
