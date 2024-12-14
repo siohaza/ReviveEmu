@@ -123,45 +123,43 @@ STEAM_API int SteamEnumerateApp(unsigned int uAppID, TSteamApp *pApp, TSteamErro
 
 	if (bSteamBlobSystem)
 	{
-
 		int uAppRecord = GetAppRecordID(uAppID);
-		
+
 		if (uAppRecord)
 		{
-				strcpy(pApp->szName, CDR->ApplicationRecords[uAppRecord]->Name);
-				pApp->uMaxNameChars = 255;
+			strcpy(pApp->szName, CDR->ApplicationRecords[uAppRecord]->Name);
+			pApp->uMaxNameChars = 255;
 
-				//pApp->uLatestVersionId = CDR->ApplicationRecords[uAppRecord]->VersionsRecord[CDR->ApplicationRecords[uAppRecord]->VersionsRecord.size()-1]->VersionId;
-				pApp->uLatestVersionId = CDR->ApplicationRecords[uAppRecord]->TrickleVersionId;
-				pApp->uMaxLatestVersionLabelChars = 255;
+			//pApp->uLatestVersionId = CDR->ApplicationRecords[uAppRecord]->VersionsRecord[CDR->ApplicationRecords[uAppRecord]->VersionsRecord.size()-1]->VersionId;
+			pApp->uLatestVersionId = CDR->ApplicationRecords[uAppRecord]->TrickleVersionId;
+			pApp->uMaxLatestVersionLabelChars = 255;
 
-				pApp->uCurrentVersionId = CDR->ApplicationRecords[uAppRecord]->CurrentVersionId;
-				pApp->uMaxCurrentVersionLabelChars = 255;
+			pApp->uCurrentVersionId = CDR->ApplicationRecords[uAppRecord]->CurrentVersionId;
+			pApp->uMaxCurrentVersionLabelChars = 255;
 
-				strcpy(pApp->szCacheFile, CDR->ApplicationRecords[uAppRecord]->InstallDirName);
-				pApp->uMaxCacheFileChars = 255;
+			strcpy(pApp->szCacheFile, CDR->ApplicationRecords[uAppRecord]->InstallDirName);
+			pApp->uMaxCacheFileChars = 255;
 
-				pApp->uId = CDR->ApplicationRecords[uAppRecord]->AppId;
+			pApp->uId = CDR->ApplicationRecords[uAppRecord]->AppId;
 
-				_itoa(CDR->ApplicationRecords[uAppRecord]->CurrentVersionId,pApp->szLatestVersionLabel,10);
+			_itoa(CDR->ApplicationRecords[uAppRecord]->CurrentVersionId, pApp->szLatestVersionLabel, 10);
 
-				_itoa(CDR->ApplicationRecords[uAppRecord]->CurrentVersionId,pApp->szCurrentVersionLabel,10);
+			_itoa(CDR->ApplicationRecords[uAppRecord]->CurrentVersionId, pApp->szCurrentVersionLabel, 10);
 
-				pApp->uMinCacheFileSizeMB = CDR->ApplicationRecords[uAppRecord]->MinCacheFileSizeMB;
+			pApp->uMinCacheFileSizeMB = CDR->ApplicationRecords[uAppRecord]->MinCacheFileSizeMB;
 
-				pApp->uMaxCacheFileSizeMB = CDR->ApplicationRecords[uAppRecord]->MaxCacheFileSizeMB;
+			pApp->uMaxCacheFileSizeMB = CDR->ApplicationRecords[uAppRecord]->MaxCacheFileSizeMB;
 
-				pApp->uNumLaunchOptions = CDR->ApplicationRecords[uAppRecord]->LaunchOptionsRecord.size();
+			pApp->uNumLaunchOptions = CDR->ApplicationRecords[uAppRecord]->LaunchOptionsRecord.size();
 
-				pApp->uNumIcons = 0;
+			pApp->uNumIcons = 0;
 
-				pApp->uNumVersions = CDR->ApplicationRecords[uAppRecord]->VersionsRecord.size();
+			pApp->uNumVersions = CDR->ApplicationRecords[uAppRecord]->VersionsRecord.size();
 
-				pApp->uNumDependencies = CDR->ApplicationRecords[uAppRecord]->FilesystemsRecord.size();
+			pApp->uNumDependencies = CDR->ApplicationRecords[uAppRecord]->FilesystemsRecord.size();
 
-
-				SteamClearError(pError);
-				return 1;
+			SteamClearError(pError);
+			return 1;
 		}
 	}
 
@@ -169,39 +167,32 @@ STEAM_API int SteamEnumerateApp(unsigned int uAppID, TSteamApp *pApp, TSteamErro
 	pApp->uNumDependencies = 0;
 	SteamClearError(pError);
 	return 0;
-
 }
 
 STEAM_API int SteamEnumerateAppDependency(unsigned int uAppId, unsigned int uDependency, TSteamAppDependencyInfo *pDependencyInfo, TSteamError *pError) {
-	
 	if (bLogging) Logger->Write("SteamEnumerateAppDependency (%u, %u)\n", uAppId, uDependency);
 
-	rootAppID = uAppId;	
+	rootAppID = uAppId;
 
 	if (bSteamBlobSystem)
 	{
-
 		int uAppRecord = GetAppRecordID(uAppId);
-		
+
 		if (uAppRecord)
 		{
-
-				if(uDependency <= CDR->ApplicationRecords[uAppRecord]->FilesystemsRecord.size()) 
-				{
-					pDependencyInfo->AppId = CDR->ApplicationRecords[uAppRecord]->FilesystemsRecord[uDependency]->AppId;
-					pDependencyInfo->IsRequired = (CDR->ApplicationRecords[uAppRecord]->FilesystemsRecord[uDependency]->IsOptional ? 1 : 0);
-					strcpy(pDependencyInfo->szMountName, CDR->ApplicationRecords[uAppRecord]->FilesystemsRecord[uDependency]->MountName);
-					SteamClearError(pError);
-					return 1;
-				}
-
+			if (uDependency <= CDR->ApplicationRecords[uAppRecord]->FilesystemsRecord.size())
+			{
+				pDependencyInfo->AppId = CDR->ApplicationRecords[uAppRecord]->FilesystemsRecord[uDependency]->AppId;
+				pDependencyInfo->IsRequired = (CDR->ApplicationRecords[uAppRecord]->FilesystemsRecord[uDependency]->IsOptional ? 0 : 1);
+				strcpy(pDependencyInfo->szMountName, CDR->ApplicationRecords[uAppRecord]->FilesystemsRecord[uDependency]->MountName);
+				SteamClearError(pError);
+				return 1;
+			}
 		}
-	
 	}
 
 	pError->eSteamError = eSteamErrorUnknown;
 	return 0;
-
 }
 
 
