@@ -300,16 +300,27 @@ STEAM_API int SteamMountFilesystem(unsigned int uAppId, const char *szMountPath,
 
 				for(unsigned int x = 0; x < CDR->ApplicationRecords[uAppRecord]->FilesystemsRecord.size(); x++)
 				{
-					if (bLogging && bLogFS)
-						Logger->Write("Loading Default Cache Requirements for AppID(%u)\n", CDR->ApplicationRecords[uAppRecord]->FilesystemsRecord[x]->AppId);
+					CAppFilesystemRecord* pFSRecord = CDR->ApplicationRecords[uAppRecord]->FilesystemsRecord[x];
+					
+					// Don't mount depots from other operating systems.
+#if defined(_WIN32)
+					const char *cszHostOS = "windows";
+#elif defined(__APPLE__)
+					const char* cszHostOS = "macos";
+#elif defined(__linux__)
+					const char* cszHostOS = "linux";
+#endif
+					if (pFSRecord->OS && strcmp(pFSRecord->OS, cszHostOS) != 0)
+						continue;
 
-					MountFileSystemByID(GetAppRecordID(CDR->ApplicationRecords[uAppRecord]->FilesystemsRecord[x]->AppId),CDR->ApplicationRecords[uAppRecord]->FilesystemsRecord[x]->MountName);
+					if (bLogging && bLogFS) Logger->Write("Loading Default Cache Requirements for AppID(%u)\n", pFSRecord->AppId);
 
+					MountFileSystemByID(GetAppRecordID(pFSRecord->AppId), pFSRecord->MountName);
 				}
 			}
 			else
 			{
-				// Language Caches must be processed by calculating the rootAppID as some mods call this function directly
+				// Language Caches must be processed by calculating the rootAppID as some mods mount individual depots directly
 				// rootAppID was recorded on the last enumerate app call as this would populate the enumerations for the root app
 
 				int urootAppRecord = GetAppRecordID(rootAppID);
