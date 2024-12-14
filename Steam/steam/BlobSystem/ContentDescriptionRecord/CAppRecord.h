@@ -58,10 +58,48 @@ public:
 
 	CAppRecord()
 	{
+		AppId = 0;
+		Name = NULL;
+		InstallDirName = NULL;
+		MinCacheFileSizeMB = 0;
+		MaxCacheFileSizeMB = 0;
+		OnFirstLaunch = 0;
+		IsBandwidthGreedy = false;
+		CurrentVersionId = 0;
+		TrickleVersionId = 0;
+		BetaVersionPassword = NULL;
+		BetaVersionId = 0;
+		LegacyInstallDirName = NULL;
+		SkipMFPOverwrite = false;
+		UseFilesystemDvr = false;
+		ManifestOnlyApp = false;
+		AppOfManifestOnlyCache = 0;
 	}
 
 	~CAppRecord()
 	{
+		if (Name)
+			delete[] Name;
+		if (InstallDirName)
+			delete[] InstallDirName;
+		for (size_t i = 0; i < LaunchOptionsRecord.size(); i++)
+			delete LaunchOptionsRecord[i];
+		for (size_t i = 0; i < IconsRecord.size(); i++)
+			delete IconsRecord[i];
+		for (size_t i = 0; i < VersionsRecord.size(); i++)
+			delete VersionsRecord[i];
+		for (size_t i = 0; i < FilesystemsRecord.size(); i++)
+			delete FilesystemsRecord[i];
+		std::map<char*, char*>::iterator it;
+		for (it = UserDefinedRecords.begin(); it != UserDefinedRecords.end(); it++)
+		{
+			delete[] it->first;
+			delete[] it->second;
+		}
+		if (BetaVersionPassword)
+			delete[] BetaVersionPassword;
+		if (LegacyInstallDirName)
+			delete[] LegacyInstallDirName;
 	}
 
 	char* Enumerate(char* AppRBinary)

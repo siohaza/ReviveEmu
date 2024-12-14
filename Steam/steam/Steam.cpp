@@ -81,14 +81,13 @@ unsigned int GlobalIndexCounter = 0;
 
 #include "BlobSystem\CBlobSystem.h"		//Blob
 
-static CContentDescriptionRecord* CDR;
-static CBlobFileSystem* ClientRegistryBlob;
+static CContentDescriptionRecord* CDR = NULL;
 std::vector<TGlobalDirectory> GlobalDirectoryTable;
 static std::map<unsigned int, TGlobalDirectory> HashTable;
 
 #include "CacheSystem\CCacheSystem.h"	//Cache
 
-static CCacheFileSystem* CacheManager;
+static CCacheFileSystem* CacheManager = NULL;
 
 
 

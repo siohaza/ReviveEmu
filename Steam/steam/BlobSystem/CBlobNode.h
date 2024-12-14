@@ -10,10 +10,23 @@ public:
 
 	CBlobNode()
 	{
+		Name = NULL;
+		KeyValue = NULL;
 	}
 
 	~CBlobNode()
 	{
+		if (Name)
+			delete[] Name;
+
+		for (size_t i = 0; i < Nodes.size(); i++)
+			delete Nodes[i];
+
+		if (KeyValue)
+		{
+			delete[] KeyValue->Value;
+			delete KeyValue;
+		}
 	}
 
 	void Populate(char *NodeBinary)

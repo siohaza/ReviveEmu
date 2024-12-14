@@ -359,7 +359,7 @@ STEAM_API int SteamMountAppFilesystem(TSteamError *pError) {
 			ExitProcess(0xffffffff);
 		}
 
-		if (bSteamBlobSystem == true && ClientRegistryBlob && CDR)
+		if (bSteamBlobSystem == true && CDR)
 		{
 			return SteamMountFilesystem(atoi(appid), "", pError);
 		}
@@ -413,13 +413,11 @@ STEAM_API int SteamUnmountAppFilesystem(TSteamError* pError) {
 
 	if (bLogging) Logger->Write("SteamUnmountAppFilesystem\n");
 
-	if(bSteamFileSystem == true)
+	if (bSteamFileSystem == true)
 	{
-		for(unsigned int i = 0; i < vecGCF.size(); i++)
+		for (size_t i = 0; i < vecGCF.size(); i++)
 		{
-			if(CacheManager->UnmountCache(vecGCF[i]) == true)
-			{
-			}
+			CacheManager->UnmountCache(vecGCF[i]);
 		}
 
 		vecGCF.clear();

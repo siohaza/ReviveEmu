@@ -20,10 +20,18 @@ public:
 
 	CSubscriptionDiscountRecord()
 	{
+		DiscountId = 0;
+		Name = NULL;
+		DiscountInCents = 0;
 	}
 
 	~CSubscriptionDiscountRecord()
 	{
+		if (Name)
+			delete[] Name;
+
+		for (size_t i = 0; i < DiscountQualifiers.size(); i++)
+			delete DiscountQualifiers[i];
 	}
 
 	char* Enumerate(char* SDRBinary)

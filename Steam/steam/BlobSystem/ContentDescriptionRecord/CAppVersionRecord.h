@@ -19,7 +19,7 @@ public:
 	char* Description;
 	unsigned int VersionId;
 	bool IsNotAvailable;
-	std::vector<unsigned int*> LaunchOptionIdsRecord;
+	std::vector<unsigned int> LaunchOptionIdsRecord;
 	char* DepotEncryptionKey;
 	bool IsEncryptionKeyAvailable;
 	bool IsRebased;
@@ -27,10 +27,22 @@ public:
 
 	CAppVersionRecord()
 	{
+		Description = NULL;
+		VersionId = 0;
+		IsNotAvailable = false;
+		DepotEncryptionKey = NULL;
+		IsEncryptionKeyAvailable = false;
+		IsRebased = false;
+		IsLongVersionRoll = false;
 	}
 
 	~CAppVersionRecord()
 	{
+		if (Description)
+			delete[] Description;
+
+		if (DepotEncryptionKey)
+			delete[] DepotEncryptionKey;
 	}
 
 	char* Enumerate(char* VRBinary)
@@ -81,9 +93,7 @@ public:
 								while(LOIRBinary < LOIRNodeEnd)
 								{
 									LOIRBinary += sizeof(TDescriptorNode);
-									unsigned int* newLOIR = new unsigned int();
-									*newLOIR = *(unsigned int*)LOIRBinary;
-									LaunchOptionIdsRecord.push_back(newLOIR);
+								    LaunchOptionIdsRecord.push_back(*(unsigned int*)LOIRBinary);
 								}
 							}
 

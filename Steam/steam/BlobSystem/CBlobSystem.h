@@ -6,46 +6,35 @@
 
 class CBlobFileSystem
 {
-private:
-	char *BlobBinary;
-
 public:
-	FILE* BlobFile;
 	CBlobNode *TopKey;
 
 	CBlobFileSystem()
 	{
+		TopKey = NULL;
 	}
 
 	~CBlobFileSystem()
 	{
+		delete TopKey;
 	}
 
 	bool Open(const char* cszFileName)
 	{
-		if(BlobFile = fopen(cszFileName, "rb"))
+		if (FILE* BlobFile = fopen(cszFileName, "rb"))
 		{
-			fseek(BlobFile,0, SEEK_END);
+			fseek(BlobFile, 0, SEEK_END);
 			int BlobFileSize = ftell(BlobFile);
-			fseek(BlobFile,0, SEEK_SET);
-			BlobBinary = new char[BlobFileSize];
+			fseek(BlobFile, 0, SEEK_SET);
+			char* BlobBinary = new char[BlobFileSize];
 			unsigned int readedbytes = 0;
-			if(fread(BlobBinary, 1, BlobFileSize, BlobFile))
+			if (fread(BlobBinary, 1, BlobFileSize, BlobFile))
 			{
 				TopKey = new CBlobNode();
 				TopKey->Populate(BlobBinary);
 			}
-			Close();
-			return true;
-		}
-		return false;
-	}
-
-	bool Close()
-	{
-		if(fclose(BlobFile) == 0)
-		{
-			delete BlobBinary;
+			fclose(BlobFile);
+			delete[] BlobBinary;
 			return true;
 		}
 		return false;

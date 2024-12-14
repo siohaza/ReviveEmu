@@ -164,6 +164,14 @@ public:
 
 	~CContentDescriptionRecord()
 	{
+		for (size_t i = 0; i < ApplicationRecords.size(); i++)
+			delete ApplicationRecords[i];
+
+		for (size_t i = 0; i < SubscriptionsRecord.size(); i++)
+			delete SubscriptionsRecord[i];
+
+		for (size_t i = 0; i < AllAppsPublicKeysRecord.size(); i++)
+			delete[] AllAppsPublicKeysRecord[i];
 	}
 
 };

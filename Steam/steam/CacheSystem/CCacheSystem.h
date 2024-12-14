@@ -49,6 +49,12 @@ public:
 	
 	~CCacheFileSystem()
 	{
+		// Unmount everything.
+		std::vector<TCacheHandle*>::iterator it;
+		for (it = Caches.begin(); it != Caches.end(); it++) 
+		{
+			UnmountCache((CacheHandle)*it);
+		}
 	}
 
 	unsigned int NumCaches()
@@ -62,16 +68,13 @@ public:
 		int dot = FullPath.find_last_of('\\');
 		std::string szTemp = FullPath.substr(dot + 1);
 
-		std::vector<TCacheHandle*>::iterator CachesIterator;
-		for( CachesIterator = Caches.begin(); CachesIterator != Caches.end(); CachesIterator++ ) 
+		std::vector<TCacheHandle*>::iterator it;
+		for (it = Caches.begin(); it != Caches.end(); it++) 
 		{
-			CCache* CheckCacheFile = ((TCacheHandle*)*CachesIterator)->hCacheFile;
-
+			CCache* CheckCacheFile = (*it)->hCacheFile;
 			if (strcmp(CheckCacheFile->Name,szTemp.c_str()) == 0)
 			{
-
 				if (bLogging && bLogFS)	Logger->Write("	Cache is already mounted: %s\n", cszFileName);
-
 				return false;
 			}
 		}
@@ -100,18 +103,19 @@ public:
 		return false;
 	}
 
-	bool UnmountCache(CacheHandle hCache)
+	bool UnmountCache(CacheHandle hCacheToMount)
 	{
-		std::vector<TCacheHandle*>::iterator CachesIterator;
-
-		for( CachesIterator = Caches.begin(); CachesIterator != Caches.end(); CachesIterator++ ) {
-			if(((TCacheHandle*)*CachesIterator) == ((TCacheHandle*)hCache))
+		std::vector<TCacheHandle*>::iterator it;
+		for (it = Caches.begin(); it != Caches.end(); it++)
+		{
+			TCacheHandle *hCache = *it;
+			if (hCache == (TCacheHandle*)hCacheToMount)
 			{
-				//if (bLogging && bLogFS) Logger->Write("	Unmounted %s\n", ((TCacheHandle*)*CachesIterator)->hCacheFile->Name);
-				delete ((TCacheHandle*)*CachesIterator)->hCacheFile;
-				fclose(((TCacheHandle*)*CachesIterator)->fCacheFile);
-				delete ((TCacheHandle*)*CachesIterator);
-				Caches.erase(CachesIterator);
+				//if (bLogging && bLogFS) Logger->Write("	Unmounted %s\n", hCache->hCacheFile->Name);
+				delete hCache->hCacheFile;
+				fclose(hCache->fCacheFile);
+				delete hCache;
+				Caches.erase(it);
 				return true;
 			}
 		}
@@ -251,156 +255,155 @@ public:
 	}
 
 	 
-    unsigned int ReadBinary(void *pBuf, unsigned int uSize, unsigned int uCount, TFileInCacheHandle* hFile)
-    {
-        CCache* hCacheFile = (CCache*)hFile->FileInCache->pCache;
-        TManifestEntriesInCache* hFileInCache =  hFile->FileInCache;
+	unsigned int ReadBinary(void *pBuf, unsigned int uSize, unsigned int uCount, TFileInCacheHandle* hFile)
+	{
+		CCache* hCacheFile = (CCache*)hFile->FileInCache->pCache;
+		TManifestEntriesInCache* hFileInCache =  hFile->FileInCache;
  
-        unsigned char* szBuff = reinterpret_cast<unsigned char*>(pBuf);
-        unsigned int uReadedDataAmount = 0;
-        unsigned int uTotalDataToRead = uSize * uCount;
-       
-        //unsigned int uActualSectorIndex = hFile->Position / hCacheFile->Sectors->Header->PhysicalSectorSize;
-        __int64 uActualSectorIndex = hFile->Position / hCacheFile->Sectors->Header->PhysicalSectorSize;
+		unsigned char* szBuff = reinterpret_cast<unsigned char*>(pBuf);
+		unsigned int uReadedDataAmount = 0;
+		unsigned int uTotalDataToRead = uSize * uCount;
+	   
+		//unsigned int uActualSectorIndex = hFile->Position / hCacheFile->Sectors->Header->PhysicalSectorSize;
+		__int64 uActualSectorIndex = hFile->Position / hCacheFile->Sectors->Header->PhysicalSectorSize;
  
-        while(uReadedDataAmount < uTotalDataToRead)
-        {
-            unsigned int uOffset = hFile->Position % hCacheFile->Sectors->Header->PhysicalSectorSize;
-            unsigned int uActualDataToRead = ((hCacheFile->Sectors->Header->PhysicalSectorSize - uOffset) >= (uTotalDataToRead - uReadedDataAmount) ? (uTotalDataToRead - uReadedDataAmount) : (hCacheFile->Sectors->Header->PhysicalSectorSize - uOffset));
+		while(uReadedDataAmount < uTotalDataToRead)
+		{
+			unsigned int uOffset = hFile->Position % hCacheFile->Sectors->Header->PhysicalSectorSize;
+			unsigned int uActualDataToRead = ((hCacheFile->Sectors->Header->PhysicalSectorSize - uOffset) >= (uTotalDataToRead - uReadedDataAmount) ? (uTotalDataToRead - uReadedDataAmount) : (hCacheFile->Sectors->Header->PhysicalSectorSize - uOffset));
  
-            unsigned int uReadedData = BinaryReadSector(uActualSectorIndex, szBuff, uOffset, uActualDataToRead, hFile);
-           
-            hFile->Position += uReadedData;
-            uReadedDataAmount += uReadedData;
+			unsigned int uReadedData = BinaryReadSector(uActualSectorIndex, szBuff, uOffset, uActualDataToRead, hFile);
+		   
+			hFile->Position += uReadedData;
+			uReadedDataAmount += uReadedData;
  
-            if(uActualDataToRead != uReadedData)
-            {
-                //set errno
-                break;
-            }
+			if(uActualDataToRead != uReadedData)
+			{
+				//set errno
+				break;
+			}
  
-            szBuff += uReadedData;
+			szBuff += uReadedData;
  
-            uActualSectorIndex++;
-        }
+			uActualSectorIndex++;
+		}
  
-        return uReadedDataAmount;   
-    }
+		return uReadedDataAmount;   
+	}
  
-    int BinaryReadSector(__int64 iSectorIndex, void* pvBuff, unsigned int uOffset, unsigned int uSize, TFileInCacheHandle* hFile)
-    //int BinaryReadSector(int iSectorIndex, void* pvBuff, unsigned int uOffset, unsigned int uSize, TFileInCacheHandle* hFile)
-    {
-        CCache* hCacheFile = (CCache*)hFile->FileInCache->pCache;
-        FILE* fCacheFile = hCacheFile->fCacheFile;
-        TManifestEntriesInCache* hFileInCache =  hFile->FileInCache;
+	int BinaryReadSector(__int64 iSectorIndex, void* pvBuff, unsigned int uOffset, unsigned int uSize, TFileInCacheHandle* hFile)
+	//int BinaryReadSector(int iSectorIndex, void* pvBuff, unsigned int uOffset, unsigned int uSize, TFileInCacheHandle* hFile)
+	{
+		CCache* hCacheFile = (CCache*)hFile->FileInCache->pCache;
+		FILE* fCacheFile = hCacheFile->fCacheFile;
+		TManifestEntriesInCache* hFileInCache =  hFile->FileInCache;
  
-        int retval = 0;
-       
-        if(hFile->Position + uSize > hFileInCache->Size)
-            uSize = hFileInCache->Size - hFile->Position;
+		int retval = 0;
+	   
+		if(hFile->Position + uSize > hFileInCache->Size)
+			uSize = hFileInCache->Size - hFile->Position;
  
-        if(uSize > 0)
-        {
-            //long lReadPosition = hCacheFile->Sectors->Header->FirstSectorOffset + (hFileInCache->Sectors[iSectorIndex] * hCacheFile->Sectors->Header->PhysicalSectorSize) + uOffset;
-            __int64 lReadPosition = hCacheFile->Sectors->Header->FirstSectorOffset + (hFileInCache->Sectors[iSectorIndex] * hCacheFile->Sectors->Header->PhysicalSectorSize) + uOffset;
-            //if(fseek(fCacheFile, lReadPosition, SEEK_SET))
-            if(_fseeki64(fCacheFile, lReadPosition, SEEK_SET))
-                return retval;
+		if(uSize > 0)
+		{
+			//long lReadPosition = hCacheFile->Sectors->Header->FirstSectorOffset + (hFileInCache->Sectors[iSectorIndex] * hCacheFile->Sectors->Header->PhysicalSectorSize) + uOffset;
+			__int64 lReadPosition = hCacheFile->Sectors->Header->FirstSectorOffset + (hFileInCache->Sectors[iSectorIndex] * hCacheFile->Sectors->Header->PhysicalSectorSize) + uOffset;
+			//if(fseek(fCacheFile, lReadPosition, SEEK_SET))
+			if(_fseeki64(fCacheFile, lReadPosition, SEEK_SET))
+				return retval;
  
-            retval = fread(pvBuff, 1, uSize, fCacheFile);
-        }
+			retval = fread(pvBuff, 1, uSize, fCacheFile);
+		}
  
-        return retval;
-    }
+		return retval;
+	}
  
-    unsigned int ReadText(void *pBuf, unsigned int uSize, unsigned int uCount, TFileInCacheHandle* hFile)
-    {
-        CCache* hCacheFile = (CCache*)hFile->FileInCache->pCache;
-        TManifestEntriesInCache* hFileInCache =  hFile->FileInCache;
+	unsigned int ReadText(void *pBuf, unsigned int uSize, unsigned int uCount, TFileInCacheHandle* hFile)
+	{
+		CCache* hCacheFile = (CCache*)hFile->FileInCache->pCache;
+		TManifestEntriesInCache* hFileInCache =  hFile->FileInCache;
  
-        void* BufferedSector = new char[hCacheFile->Sectors->Header->PhysicalSectorSize];
-        __int64 BufferedSectorIndex = 0xFFFFFFFFFFFFFFFF;
+		void* BufferedSector = new char[hCacheFile->Sectors->Header->PhysicalSectorSize];
+		__int64 BufferedSectorIndex = 0xFFFFFFFFFFFFFFFF;
  
-        unsigned char* szBuff = reinterpret_cast<unsigned char*>(BufferedSector);
-        unsigned char* szBuffOut = reinterpret_cast<unsigned char*>(pBuf);
-        unsigned int uReadedDataAmount = 0;
-        unsigned int uReadedCharactersAmount = 0;
-        unsigned int uDataAvailableToRead = 0;
-        unsigned int uTotalDataToRead = uSize * uCount;
+		unsigned char* szBuff = reinterpret_cast<unsigned char*>(BufferedSector);
+		unsigned char* szBuffOut = reinterpret_cast<unsigned char*>(pBuf);
+		unsigned int uReadedDataAmount = 0;
+		unsigned int uReadedCharactersAmount = 0;
+		unsigned int uDataAvailableToRead = 0;
+		unsigned int uTotalDataToRead = uSize * uCount;
  
-        //unsigned int uActualSectorIndex = hFile->Position / hCacheFile->Sectors->Header->PhysicalSectorSize;
-        __int64 uActualSectorIndex = hFile->Position / hCacheFile->Sectors->Header->PhysicalSectorSize;
+		//unsigned int uActualSectorIndex = hFile->Position / hCacheFile->Sectors->Header->PhysicalSectorSize;
+		__int64 uActualSectorIndex = hFile->Position / hCacheFile->Sectors->Header->PhysicalSectorSize;
  
-        while(uReadedDataAmount < uTotalDataToRead)
-        {
-            if(hFile->Position == hFileInCache->Size)//EOF
-                break;
+		while(uReadedDataAmount < uTotalDataToRead)
+		{
+			if(hFile->Position == hFileInCache->Size)//EOF
+				break;
  
-            if(BufferedSectorIndex != uActualSectorIndex)
-            {
-                if(TextReadSector(uActualSectorIndex, BufferedSector, hCacheFile->Sectors->Header->PhysicalSectorSize, hFile) != hCacheFile->Sectors->Header->PhysicalSectorSize)
-                    break;
+			if(BufferedSectorIndex != uActualSectorIndex)
+			{
+				if(TextReadSector(uActualSectorIndex, BufferedSector, hCacheFile->Sectors->Header->PhysicalSectorSize, hFile) != hCacheFile->Sectors->Header->PhysicalSectorSize)
+					break;
  
-                BufferedSectorIndex = uActualSectorIndex;
-            }
+				BufferedSectorIndex = uActualSectorIndex;
+			}
  
-            unsigned int uOffset = hFile->Position % hCacheFile->Sectors->Header->PhysicalSectorSize;
-            unsigned int uActualDataToRead = ((hCacheFile->Sectors->Header->PhysicalSectorSize - uOffset) > (uTotalDataToRead - uReadedDataAmount) ? (uTotalDataToRead - uReadedDataAmount) : (hCacheFile->Sectors->Header->PhysicalSectorSize - uOffset));
+			unsigned int uOffset = hFile->Position % hCacheFile->Sectors->Header->PhysicalSectorSize;
+			unsigned int uActualDataToRead = ((hCacheFile->Sectors->Header->PhysicalSectorSize - uOffset) > (uTotalDataToRead - uReadedDataAmount) ? (uTotalDataToRead - uReadedDataAmount) : (hCacheFile->Sectors->Header->PhysicalSectorSize - uOffset));
  
-            uDataAvailableToRead = hCacheFile->Sectors->Header->PhysicalSectorSize - uOffset;
-            if(uDataAvailableToRead > hFileInCache->Size - hFile->Position)
-                uDataAvailableToRead = hFileInCache->Size - hFile->Position;
+			uDataAvailableToRead = hCacheFile->Sectors->Header->PhysicalSectorSize - uOffset;
+			if(uDataAvailableToRead > hFileInCache->Size - hFile->Position)
+				uDataAvailableToRead = hFileInCache->Size - hFile->Position;
  
-            unsigned int uReadedCharacters = 0;
+			unsigned int uReadedCharacters = 0;
  
-            if(uActualDataToRead > 0)
-            {
-                unsigned int uReadedData = 0;
+			if(uActualDataToRead > 0)
+			{
+				unsigned int uReadedData = 0;
  
-                do
-                {
-                    unsigned char ucChar = szBuff[uOffset + uReadedData];
-                    if(ucChar != 0xD)
-                    {
-                        szBuffOut[uReadedCharactersAmount + uReadedCharacters] = ucChar;
-                        uReadedCharacters++;
-                    }
-                    uReadedData++;
-                }
-                while(uReadedCharacters < uActualDataToRead && uReadedData < uDataAvailableToRead);
+				do
+				{
+					unsigned char ucChar = szBuff[uOffset + uReadedData];
+					if(ucChar != 0xD)
+					{
+						szBuffOut[uReadedCharactersAmount + uReadedCharacters] = ucChar;
+						uReadedCharacters++;
+					}
+					uReadedData++;
+				}
+				while(uReadedCharacters < uActualDataToRead && uReadedData < uDataAvailableToRead);
  
-                hFile->Position += uReadedData;
-                uReadedDataAmount += uReadedData;
-                uReadedCharactersAmount += uReadedCharacters;
-            }
+				hFile->Position += uReadedData;
+				uReadedDataAmount += uReadedData;
+				uReadedCharactersAmount += uReadedCharacters;
+			}
  
-            uActualSectorIndex++;
-        }
+			uActualSectorIndex++;
+		}
  
-        delete [] BufferedSector;
-        return uReadedCharactersAmount;
-    }
+		delete [] BufferedSector;
+		return uReadedCharactersAmount;
+	}
  
-    //int TextReadSector(int iSectorIndex, void* pvBuff, unsigned int uSize, TFileInCacheHandle* hFile)
-    int TextReadSector(__int64 iSectorIndex, void* pvBuff, unsigned int uSize, TFileInCacheHandle* hFile)
-    {
-
-        CCache* hCacheFile = (CCache*)hFile->FileInCache->pCache;
-        FILE* fCacheFile = hCacheFile->fCacheFile;
-        TManifestEntriesInCache* hFileInCache =  hFile->FileInCache;
+	//int TextReadSector(int iSectorIndex, void* pvBuff, unsigned int uSize, TFileInCacheHandle* hFile)
+	int TextReadSector(__int64 iSectorIndex, void* pvBuff, unsigned int uSize, TFileInCacheHandle* hFile)
+	{
+		CCache* hCacheFile = (CCache*)hFile->FileInCache->pCache;
+		FILE* fCacheFile = hCacheFile->fCacheFile;
+		TManifestEntriesInCache* hFileInCache =  hFile->FileInCache;
  
-        int retval = 0;
+		int retval = 0;
  
-        //long lReadPosition = hCacheFile->Sectors->Header->FirstSectorOffset + (hFileInCache->Sectors[iSectorIndex] * hCacheFile->Sectors->Header->PhysicalSectorSize);
-        __int64 lReadPosition = hCacheFile->Sectors->Header->FirstSectorOffset + (hFileInCache->Sectors[iSectorIndex] * hCacheFile->Sectors->Header->PhysicalSectorSize);
-        //if(fseek(fCacheFile, lReadPosition, SEEK_SET))
-        if(_fseeki64(fCacheFile, lReadPosition, SEEK_SET))
-            return retval;
+		//long lReadPosition = hCacheFile->Sectors->Header->FirstSectorOffset + (hFileInCache->Sectors[iSectorIndex] * hCacheFile->Sectors->Header->PhysicalSectorSize);
+		__int64 lReadPosition = hCacheFile->Sectors->Header->FirstSectorOffset + (hFileInCache->Sectors[iSectorIndex] * hCacheFile->Sectors->Header->PhysicalSectorSize);
+		//if(fseek(fCacheFile, lReadPosition, SEEK_SET))
+		if(_fseeki64(fCacheFile, lReadPosition, SEEK_SET))
+			return retval;
  
-        retval = fread(pvBuff, 1, uSize, fCacheFile);
+		retval = fread(pvBuff, 1, uSize, fCacheFile);
  
-        return retval;
-    }
+		return retval;
+	}
  
 	int CacheSeekFile(TFileInCacheHandle* hFile, long lOffset, ESteamSeekMethod esMethod)
 	{

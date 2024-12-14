@@ -30,7 +30,7 @@ STEAM_API int STEAM_CALL SteamStartup(unsigned int uUsingMask, TSteamError *pErr
 
 	if (!bSteamStartup)
 	{
-		if (uUsingMask | 1)
+		if (uUsingMask & STEAM_USING_FILESYSTEM)
 		{
 			bSteamStartup = TRUE;
 
@@ -38,55 +38,37 @@ STEAM_API int STEAM_CALL SteamStartup(unsigned int uUsingMask, TSteamError *pErr
 			{
 				CacheManager = new CCacheFileSystem();
 
-				if(!CacheManager)
+				if (bSteamBlobSystem)
 				{
-					if (bLogging) Logger->Write("Error Initializing Cache Manager ... Support for Extracted Content only!\n");
-					bSteamFileSystem = false;
-					bSteamBlobSystem = false;
-				}
-				else
-				{
-					ClientRegistryBlob = new CBlobFileSystem();
-
-					if(!ClientRegistryBlob)
+					CBlobFileSystem ClientRegistryBlob;
+					if (!ClientRegistryBlob.Open(szBlobFile))
 					{
+						// Try downloading the CDR using CookieAPI.lib / thanks to steamCooker
+						/*initCookieApi();
+						int cdrSize;
+						char * cdr=downloadContentDescriptionRecord("steam2.steampowered.com",27030,&cdrSize);
+						if(!cdr)
+						{
+						if (bLogging) Logger->Write("Unable to download ContentDescriptionRecord. Falling back to revApps.ini\n");
+						return TRUE;
+						}
+						int ok=importContentDescriptionRecordInBlob("ClientRegistry.blob","/TopKey/ContentDescriptionRecord",cdr,cdrSize);
+						if (!ok)
+						{
+						if (bLogging) Logger->Write("Unable to create ClientRegistry. Falling back to revApps.ini\n");
+						return TRUE;
+						}
+						if (bLogging) Logger->Write("ContentDescriptionRecord successfully downloaded.\n");*/
+
 						if (bLogging) Logger->Write("	Error Initializing Blob Manager ... Advanced Steam Functions Disabled!\n");
 						if (bLogging) Logger->Write("	GCF Support from Ini file only!\n");
 						bSteamBlobSystem = false;
 					}
 					else
 					{
-						if(!ClientRegistryBlob->Open(szBlobFile))
-						{
-							// Try downloading the CDR using CookieAPI.lib / thanks to steamCooker
-							/*initCookieApi();
-							int cdrSize;
-							char * cdr=downloadContentDescriptionRecord("steam2.steampowered.com",27030,&cdrSize);
-							if(!cdr)
-							{
-							if (bLogging) Logger->Write("Unable to download ContentDescriptionRecord. Falling back to revApps.ini\n");
-							return TRUE;
-							}
-							int ok=importContentDescriptionRecordInBlob("ClientRegistry.blob","/TopKey/ContentDescriptionRecord",cdr,cdrSize);
-							if (!ok)
-							{
-							if (bLogging) Logger->Write("Unable to create ClientRegistry. Falling back to revApps.ini\n");
-							return TRUE;
-							}
-							if (bLogging) Logger->Write("ContentDescriptionRecord successfully downloaded.\n");*/
-							return TRUE;
-						}
-
-						if(CBlobNode *CDRNode = ClientRegistryBlob->GetNodeByPath("ContentDescriptionRecord")) 
+						if (CBlobNode* CDRNode = ClientRegistryBlob.GetNodeByPath("ContentDescriptionRecord"))
 						{
 							CDR = new CContentDescriptionRecord(CDRNode->KeyValue->Value);
-
-							if(!CDR)
-							{
-								if (bLogging) Logger->Write("	Error Initializing CDR ... Advanced Steam Functions Disabled!\n");
-								if (bLogging) Logger->Write("	GCF Support from Ini file only!\n");
-								bSteamBlobSystem = false;
-							}
 						}
 						else
 						{
@@ -95,11 +77,13 @@ STEAM_API int STEAM_CALL SteamStartup(unsigned int uUsingMask, TSteamError *pErr
 							bSteamBlobSystem = false;
 						}
 					}
+
 				}
 			}
 		}
 	}
-	return TRUE;
+
+	return 1;
 }
 
 STEAM_API int STEAM_CALL SteamCleanup(TSteamError *pError)
@@ -108,6 +92,24 @@ STEAM_API int STEAM_CALL SteamCleanup(TSteamError *pError)
 	if (bLogging) Logger->Write("SteamCleanup\n");
 // #endif
 	SteamClearError(pError);
+
+	if (bSteamFileSystem)
+	{
+		if (CacheManager)
+		{
+			delete CacheManager;
+			CacheManager = NULL;
+		}
+
+		if (CDR)
+		{
+			delete CDR;
+			CDR = NULL;
+		}
+	}
+
+	bSteamStartup = FALSE;
+
 	return 1;
 }
 

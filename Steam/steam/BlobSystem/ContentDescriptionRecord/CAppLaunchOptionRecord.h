@@ -22,10 +22,21 @@ public:
 
 	CAppLaunchOptionRecord()
 	{
+		Description = NULL;
+		CommandLine = NULL;
+		IconIndex = 0;
+		NoDesktopShortcut = false;
+		NoStartMenuShortcut = false;
+		LongRunningUnattended = false;
 	}
 
 	~CAppLaunchOptionRecord()
 	{
+		if (Description)
+			delete[] Description;
+
+		if (CommandLine)
+			delete[] CommandLine;
 	}
 
 	char* Enumerate(char* LOBinary)

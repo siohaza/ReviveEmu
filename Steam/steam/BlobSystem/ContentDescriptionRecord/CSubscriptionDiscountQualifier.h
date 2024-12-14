@@ -16,10 +16,15 @@ public:
 
 	CSubscriptionDiscountQualifier()
 	{
+		QualifierId = 0;
+		Name = NULL;
+		SubscriptionId = 0;
 	}
 
 	~CSubscriptionDiscountQualifier()
 	{
+		if (Name)
+			delete[] Name;
 	}
 
 	char* Enumerate(char* SDQBinary)

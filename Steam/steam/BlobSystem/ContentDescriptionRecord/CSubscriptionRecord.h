@@ -48,7 +48,7 @@ public:
 	ESubBillingType BillingType;
 	unsigned int CostInCents;
 	int PeriodInMinutes;
-	std::vector<int*> AppIds;
+	std::vector<int> AppIds;
 	int RunAppId;
 	int OnSubscribeRunLaunchOptionIndex;
 	//CRateLimitRecord* RateLimitRecord;
@@ -69,10 +69,44 @@ public:
 
 	CSubscriptionRecord()
 	{
+		SubscriptionId = 0;
+		Name = NULL;
+		BillingType = eSBTNoCost;
+		CostInCents = 0;
+		PeriodInMinutes = 0;
+		RunAppId = 0;
+		OnSubscribeRunLaunchOptionIndex = 0;
+		IsPreorder = false;
+		RequiresShippingAddress = false;
+		DomesticCostInCents = 0;
+		InternationalCostInCents = 0;
+		RequiredKeyType = 0;
+		IsCyberCafe = false;
+		GameCode = 0;
+		GameCodeDescription = NULL;
+		IsDisabled = false;
+		RequiresCD = false;
+		TerritoryCode = 0;
+		IsSteam3Subscription = false;
 	}
 
 	~CSubscriptionRecord()
 	{
+		if (Name)
+			delete[] Name;
+
+		for (size_t i = 0; i < Discounts.size(); i++)
+			delete Discounts[i];
+
+		if (GameCodeDescription)
+			delete[] GameCodeDescription;
+
+		std::map<char*, char*>::iterator it;
+		for (it = ExtendedInfoRecords.begin(); it != ExtendedInfoRecords.end(); it++)
+		{
+			delete[] it->first;
+			delete[] it->second;
+		}
 	}
 
 	char* Enumerate(char* SubRBinary)

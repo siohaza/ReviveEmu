@@ -17,10 +17,15 @@ public:
 
 	CAppFilesystemRecord()
 	{
+		AppId = 0;
+		MountName = NULL;
+		IsOptional = false;
 	}
 
 	~CAppFilesystemRecord()
 	{
+		if (MountName)
+			delete[] MountName;
 	}
 
 	char* Enumerate(char* FSRBinary)
