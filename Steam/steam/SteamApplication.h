@@ -412,8 +412,9 @@ STEAM_API int SteamCheckAppOwnership() {
 	return 1;
 }
 
-STEAM_API int SteamIsSubscribed(unsigned int uSubscriptionId, int *pbIsSubscribed, int *pbIsSubscriptionPending, TSteamError *pError) {
-	if (bLogging && bLogAcc) Logger->Write("SteamIsSubscribed (%u)\n",uSubscriptionId);
+STEAM_API int SteamIsSubscribed(unsigned int uSubscriptionId, int* pbIsSubscribed, int* pbIsSubscriptionPending, TSteamError* pError)
+{
+	if (bLogging && bLogAcc) Logger->Write("SteamIsSubscribed (%u)\n", uSubscriptionId);
 
 	// IMPORTANT: Some builds of Garry's Mod have anti-piracy check that sees if SteamIsSubscribed starts with
 	// "push ebp" instruction which depends on if and how local vars are used. Be careful when changing this function.
@@ -429,52 +430,49 @@ STEAM_API int SteamIsSubscribed(unsigned int uSubscriptionId, int *pbIsSubscribe
 	switch (uSubscriptionId)
 	{
 	case 4: //Cyber Cafe Subscription
-	      *pbIsSubscribed = 0;
-		  return 1;
+		*pbIsSubscribed = 0;
+		return 1;
 	case 67: //VTT Subscription
-	      *pbIsSubscribed = 0;
-		  return 1;	
+		*pbIsSubscribed = 0;
+		return 1;
 	case 183: // Dark Messiah Might and Magic DE
-	      *pbIsSubscribed = 0;
-		  return 1;	
+		*pbIsSubscribed = 0;
+		return 1;
 	case 198: // Dark Messiah Might and Magic Limited Retail DE
-	      *pbIsSubscribed = 0;
-		  return 1;	
+		*pbIsSubscribed = 0;
+		return 1;
 	default:
-		  break;
+		break;
 	}
 
-	if (!bSteamFileSystem || (bSteamFileSystem && bSteamBlobSystem && !CDR))
+	if (!CDR)
 	{
 		*pbIsSubscribed = 1;
 		*pbIsSubscriptionPending = 0;
 		return 1;
 	}
 
-	if (bSteamBlobSystem)
+	for (unsigned int x = 0; x < CDR->SubscriptionsRecord.size(); x++)
 	{
-		for (unsigned int x = 0; x < CDR->SubscriptionsRecord.size(); x++)
+		if (CDR->SubscriptionsRecord[x]->SubscriptionId = uSubscriptionId)
 		{
-			if (CDR->SubscriptionsRecord[x]->SubscriptionId = uSubscriptionId)
-			{
-				*pbIsSubscriptionPending = 0;
-				*pbIsSubscribed = 1;
-				if (bLogging && bLogAcc)  Logger->Write("\tSubscribed!\n");
-				return 1;
-			}
+			*pbIsSubscribed = 1;
+			*pbIsSubscriptionPending = 0;
+			if (bLogging && bLogAcc) Logger->Write("\tSubscribed!\n");
+			return 1;
 		}
 	}
 
-	if (bLogging && bLogAcc)  Logger->Write("\tNot Subscribed!\n");
+	if (bLogging && bLogAcc) Logger->Write("\tNot Subscribed!\n");
 	*pbIsSubscribed = 0;
 	*pbIsSubscriptionPending = 0;
 
 	return 1;
 }
 
-STEAM_API int STEAM_CALL SteamIsAppSubscribed(unsigned int uAppId, int *pbIsAppSubscribed, int *pbIsSubscriptionPending, TSteamError *pError)
+STEAM_API int STEAM_CALL SteamIsAppSubscribed(unsigned int uAppId, int* pbIsAppSubscribed, int* pbIsSubscriptionPending, TSteamError* pError)
 {
-	if (bLogging && bLogAcc)  Logger->Write("SteamIsAppSubscribed: %u %u %u\n", uAppId, *pbIsAppSubscribed, *pbIsSubscriptionPending);
+	if (bLogging && bLogAcc) Logger->Write("SteamIsAppSubscribed: %u %u %u\n", uAppId, *pbIsAppSubscribed, *pbIsSubscriptionPending);
 
 	SteamClearError(pError);
 
@@ -483,30 +481,27 @@ STEAM_API int STEAM_CALL SteamIsAppSubscribed(unsigned int uAppId, int *pbIsAppS
 		SteamStartup(STEAM_USING_ALL, pError);
 	}
 
-	if (!bSteamFileSystem || (bSteamFileSystem && bSteamBlobSystem && !CDR))
+	if (!CDR)
 	{
 		//if (!bIsEnginePatched && !bSteamClient) PatchEngine();
-		*pbIsSubscriptionPending = 0;
 		*pbIsAppSubscribed = 1;
+		*pbIsSubscriptionPending = 0;
 		return 1;
 	}
 
-	if (bSteamBlobSystem)
+	for (unsigned int x = 0; x < CDR->ApplicationRecords.size(); x++)
 	{
-		for (unsigned int x = 0; x < CDR->ApplicationRecords.size(); x++)
+		if (CDR->ApplicationRecords[x]->AppId == uAppId)
 		{
-			if (CDR->ApplicationRecords[x]->AppId == uAppId)
-			{
-				//if (!bIsEnginePatched && !bSteamClient) PatchEngine();
-				*pbIsSubscriptionPending = 0;
-				*pbIsAppSubscribed = 1;
-				if (bLogging && bLogAcc)  Logger->Write("\tSubscribed!\n");
-				return 1;
-			}
+			//if (!bIsEnginePatched && !bSteamClient) PatchEngine();
+			*pbIsAppSubscribed = 1;
+			*pbIsSubscriptionPending = 0;
+			if (bLogging && bLogAcc) Logger->Write("\tSubscribed!\n");
+			return 1;
 		}
 	}
 
-	if (bLogging && bLogAcc)  Logger->Write("\tNot Subscribed!\n");
+	if (bLogging && bLogAcc) Logger->Write("\tNot Subscribed!\n");
 	*pbIsAppSubscribed = 0;
 	*pbIsSubscriptionPending = 0;
 
