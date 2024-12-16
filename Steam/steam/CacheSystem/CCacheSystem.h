@@ -483,7 +483,8 @@ public:
 		char szCachePattern[MAX_PATH];
 		strcpy(szCachePattern, cszPattern);
 		
-		GetFilenameInCache(szCachePattern);
+		if (!GetFilenameInCache(szCachePattern))
+			return NULL;
 
 		if (szCachePattern[0])
 		{
@@ -542,8 +543,9 @@ public:
 		if (hFind) 
 		{
 			delete hFind;
+			return 0;
 		}
-		return 0;
+		return -1;
 	}
 
 private:
@@ -658,20 +660,24 @@ private:
 		return true;
 	}
 
-	void GetFilenameInCache(char * cszFileName)
+	bool GetFilenameInCache(char * cszFileName)
 	{
 		char buf[MAX_PATH];
 		char szCWD[MAX_PATH];
 
-		_getcwd(szCWD, MAX_PATH);
+		if (!_getcwd(szCWD, MAX_PATH))
+			return false;
 
 		// Covert to lowercase for lookup.
 		V_strlower(cszFileName);
 
 		if (V_IsAbsolutePath(cszFileName))
 		{
-			V_RemoveDotSlashes(cszFileName);
-			V_MakeRelativePath(cszFileName, szCWD, buf, MAX_PATH);
+			if (!V_RemoveDotSlashes(cszFileName))
+				return false;
+
+			if (!V_MakeRelativePath(cszFileName, szCWD, buf, MAX_PATH))
+				return false;
 
 			// Normalize slashes.
 			V_FixSlashes(buf, '\\');
@@ -682,8 +688,8 @@ private:
 		}
 		else
 		{
-			V_FixDoubleSlashes(cszFileName);
-			V_FixSlashes(cszFileName, '\\');
+			if (!V_RemoveDotSlashes(cszFileName, '\\', true))
+				return false;
 
 			if (cszFileName[0] != '\\')
 			{
@@ -694,6 +700,8 @@ private:
 		}
 
 		//if (bLogging && bLogFS)Logger->Write("\tSearching cache with (%s - %s)\n", cszFileName, szCWD);
+
+		return true;
 	}
 
 	TManifestEntriesInCache* CacheFindFile(const char* cszFileName)
@@ -701,7 +709,8 @@ private:
 		char szFileNamebuffer[MAX_PATH];
 		strcpy(szFileNamebuffer, cszFileName);
 
-		GetFilenameInCache(szFileNamebuffer);
+		if (!GetFilenameInCache(szFileNamebuffer))
+			return NULL;
 
 		if (szFileNamebuffer[0])
 		{
