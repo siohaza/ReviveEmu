@@ -521,49 +521,35 @@ STEAM_API int SteamGetAppPurchaseCountry(unsigned int uAppId, char* szCountryBuf
 STEAM_API int SteamGetAppUserDefinedInfo(unsigned int uAppId, const char *cszPropertyName, char *szPropertyValue, unsigned int uBufSize, unsigned int *puPropertyValueLength, TSteamError *pError) {
 	if (bLogging) Logger->Write("SteamGetAppUserDefinedInfo\n");
 	SteamClearError(pError);
-	
-	char testVal[MAX_PATH];
-	char testVal2[MAX_PATH];
-	strcpy(testVal2,cszPropertyName);
-	_strlwr(testVal2);
 
 	int uAppRecord = GetAppRecordID(uAppId);
 		
 	if (uAppRecord)
 	{
-
 		CAppRecord* AppRecord = CDR->ApplicationRecords[uAppRecord];
 
 		if (AppRecord)
 		{
+			std::map<char*, char*>& records = AppRecord->UserDefinedRecords;
+			std::map<char*, char*>::iterator it;
 
-			std::map<char*, char*> UserDefinedRecord = AppRecord->UserDefinedRecords;
-
-			if (UserDefinedRecord.size() > 0)
+			for(it = records.begin(); it != records.end(); it++) 
 			{
+				const char* recordKey = it->first;
+				const char* recordVal = it->second;
 
-
-				std::map<char*, char*>::iterator UserDefinedRecordsIterator;
-
-				for( UserDefinedRecordsIterator = UserDefinedRecord.begin(); UserDefinedRecordsIterator != UserDefinedRecord.end(); UserDefinedRecordsIterator++ ) 
+				if (_stricmp(cszPropertyName, recordKey) == 0)
 				{
+					size_t len = strlen(recordVal);
 
-					strcpy(testVal,UserDefinedRecordsIterator->first);
-					_strlwr(testVal);
-
-					if (strcmp(testVal,testVal2) == 0)
+					if (uBufSize >= len + 1)
 					{
+						strcpy(szPropertyValue, recordVal);
 
-						if (uBufSize >= strlen(UserDefinedRecordsIterator->second))
-						{
-							strcpy(szPropertyValue,UserDefinedRecordsIterator->second);
-	
-							if (puPropertyValueLength)
-								*puPropertyValueLength = strlen(szPropertyValue);
+						if (puPropertyValueLength)
+							*puPropertyValueLength = len;
 
-							return 1;
-
-						}
+						return 1;
 					}
 				}
 			}
