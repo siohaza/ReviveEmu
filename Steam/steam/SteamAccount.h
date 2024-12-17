@@ -166,19 +166,31 @@ STEAM_API int STEAM_CALL SteamGetSubscriptionStats(TSteamSubscriptionStats *pSub
 	return 0;
 }
 
-
-
-STEAM_API int STEAM_CALL SteamGetUser(char *szUser, unsigned int uBufSize, unsigned int *puUserChars, TSteamGlobalUserID* pSteamGlobalUserID, TSteamError *pError)
+#ifdef STEAM2003
+STEAM_API int STEAM_CALL SteamGetUser(char *szUser, unsigned int uBufSize, unsigned int *puUserChars, TSteamError *pError)
 {
 // #ifdef DEBUG
 	if (bLogging && bLogAcc) Logger->Write("SteamGetUser\n");
-
 // #endif
+
 	strcpy(szUser, szSteamUser);
 	*puUserChars = strlen(szSteamUser);
 	SteamClearError(pError);
 	return 1;
 }
+#else
+STEAM_API int STEAM_CALL SteamGetUser(char *szUser, unsigned int uBufSize, unsigned int *puUserChars, TSteamGlobalUserID* pSteamGlobalUserID, TSteamError *pError)
+{
+// #ifdef DEBUG
+	if (bLogging && bLogAcc) Logger->Write("SteamGetUser\n");
+// #endif
+
+	strcpy(szUser, szSteamUser);
+	*puUserChars = strlen(szSteamUser);
+	SteamClearError(pError);
+	return 1;
+}
+#endif
 
 STEAM_API int STEAM_CALL SteamGetUserType(unsigned int* puArg1, TSteamError* pError)
 {

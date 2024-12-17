@@ -29,8 +29,8 @@ extern "C"
 ** Interface
 */
 
-STEAM_API unsigned int			STEAM_CALL	CreateInterface(const char* cszSteamDLLAppsystemInterfaceVersion, TSteamError *pError);
-STEAM_API unsigned int			STEAM_CALL	_f(const char* cszSteamInterface);
+STEAM_API void*					STEAM_CALL	CreateInterface(const char* cszSteamDLLAppsystemInterfaceVersion, int* pReturnCode);
+STEAM_API void*					STEAM_CALL	_f(const char* cszSteamInterface);
 
 /*
 ** Initialization
@@ -55,7 +55,6 @@ STEAM_API int					STEAM_CALL	SteamSetMaxStallCount( unsigned int uNumStalls, TSt
 ** Filesystem
 */
 
-SteamHandle_t SteamOpenFile2(const char* cszFileName, const char* cszMode, int iArg3, unsigned int* puSize, int* piArg5, TSteamError *pError);
 STEAM_API int					STEAM_CALL	SteamMountAppFilesystem(TSteamError *pError);
 STEAM_API int					STEAM_CALL	SteamUnmountAppFilesystem(TSteamError* pError);
 STEAM_API int					STEAM_CALL	SteamMountFilesystem(unsigned int uAppId, const char *szMountPath, TSteamError *pError);
@@ -147,7 +146,11 @@ STEAM_API int					STEAM_CALL	SteamGetSubscriptionPurchaseCountry();
 STEAM_API int					STEAM_CALL	SteamGetSubscriptionReceipt(unsigned int uSubscriptionId , TSteamSubscriptionReceipt* pSteamSubscriptionReceipt, TSteamError *pError);
 STEAM_API int					STEAM_CALL	SteamGetSubscriptionStats(TSteamSubscriptionStats *pSubscriptionStats, TSteamError *pError);
 STEAM_API int					STEAM_CALL	SteamGetTotalUpdateStats(TSteamUpdateStats *pUpdateStats, TSteamError *pError);
+#ifdef STEAM2003
+STEAM_API int					STEAM_CALL	SteamGetUser(char *szUser, unsigned int uBufSize, unsigned int *puUserChars, TSteamError *pError);
+#else
 STEAM_API int					STEAM_CALL	SteamGetUser(char *szUser, unsigned int uBufSize, unsigned int *puUserChars, TSteamGlobalUserID* pSteamGlobalUserID, TSteamError *pError);
+#endif
 STEAM_API int					STEAM_CALL	SteamGetUserType(unsigned int* puArg1, TSteamError* pError);
 STEAM_API int					STEAM_CALL	SteamIsAccountNameInUse();
 STEAM_API int					STEAM_CALL	SteamIsAppSubscribed(unsigned int uAppId, int *pbIsAppSubscribed, int *pbIsSubscriptionPending, TSteamError *pError);
@@ -228,12 +231,13 @@ STEAM_API SteamCallHandle_t		STEAM_CALL	SteamRefreshMinimumFootprintFiles(unsign
 STEAM_API int					STEAM_CALL	SteamSetNotificationCallback(SteamNotificationCallback_t pCallbackFunction, TSteamError *pError);
 STEAM_API int					STEAM_CALL	SteamWasBlobRegistryDeleted();
 STEAM_API int					STEAM_CALL	SteamCheckAppOwnership();
-int	SteamGetCurrentAppId(unsigned int* puAppId, TSteamError *pError);
-
-void PatchEngine(void);
 
 #ifdef __cplusplus
 }
 #endif
+
+SteamHandle_t SteamOpenFile2(const char* cszFileName, const char* cszMode, int iArg3, unsigned int* puSize, int* piArg5, TSteamError *pError);
+int SteamGetCurrentAppId(unsigned int* puAppId, TSteamError* pError);
+void PatchEngine(void);
 
 #endif

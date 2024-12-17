@@ -4,24 +4,23 @@
 CSteamDLLAppsystem001::CSteamDLLAppsystem001(){}
 CSteamDLLAppsystem001::~CSteamDLLAppsystem001(){}
 
-bool CSteamDLLAppsystem001::Dummy1(int arg1)
+bool CSteamDLLAppsystem001::Connect(CreateInterfaceFn factory)
 {
 	return true;
 }
-void CSteamDLLAppsystem001::Dummy2()
+void CSteamDLLAppsystem001::Disconnect()
 {
 	return;
 }
-int CSteamDLLAppsystem001::CreateSteamInterface(const char* cszSteamInterfaceVersion)
+void* CSteamDLLAppsystem001::QueryInterface(const char* pInterfaceName)
 {
-	return _f(cszSteamInterfaceVersion);
+	return _f(pInterfaceName);
 }
-int CSteamDLLAppsystem001::Dummy3()
+InitReturnVal_t CSteamDLLAppsystem001::Init()
 {
-	return 1;
+	return INIT_OK;
 }
-void CSteamDLLAppsystem001::Dummy4()
+void CSteamDLLAppsystem001::Shutdown()
 {
 	return;
 }
-
