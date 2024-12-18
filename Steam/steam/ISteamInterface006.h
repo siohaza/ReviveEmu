@@ -148,6 +148,6 @@ public:
 //ISteamInterface006 functions
 	virtual int FindServersNumServers(ESteamServerType eSteamServerType) = 0;
 	virtual int FindServersIterateServer(ESteamServerType eSteamServerType, int iIndex, char *szServerAddress, unsigned int uServerAddressChars) = 0;
-	virtual int FindServersGetErrorString() = 0;
+	virtual const char* FindServersGetErrorString() = 0;
 	virtual int CheckAppOwnership(unsigned int uAppId, void* pvArg2, void* pvArg3, TSteamError *pError) = 0;
 };

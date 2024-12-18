@@ -104,15 +104,37 @@ STEAM_API int STEAM_CALL SteamEncryptDataForThisMachine()
 	return 1;
 }
 
-STEAM_API int STEAM_CALL SteamFindServersGetErrorString()
+STEAM_API const char* STEAM_CALL SteamFindServersGetErrorString()
 {
 // #ifdef DEBUG
 	if (bLogging) Logger->Write("SteamFindServersGetErrorString\n");
 // #endif
-	return 0;
+	return "";
 }
 
-STEAM_API int STEAM_CALL SteamFindServersIterateServer(int arg1, int arg2, char *szServerAddress, unsigned int uServerAddressChars)
+// hl1master.steampowered.com
+// These have been shut down but keeping for historical purposes.
+const char* g_aHL1MasterServers[] =
+{
+	"208.78.164.208:27010",
+	"208.78.164.209:27010"
+};
+
+// hl2master.steampowered.com
+const char* g_aHL2MasterServers[] =
+{
+	"208.64.200.65:27011",
+	"192.69.99.29:27011",
+	"208.78.164.210:27011"
+};
+
+// cser.steampowered.com
+const char* g_aCSERServers[] = 
+{
+	"208.64.203.186:27013"
+};
+
+STEAM_API int STEAM_CALL SteamFindServersIterateServer(ESteamServerType eSteamServerType, unsigned int uIndex, char* szServerAddress, int iServerAddressChars)
 {
 // #ifdef DEBUG
 	if (bLogging) Logger->Write("SteamFindServersIterateServer\n");
@@ -123,33 +145,43 @@ STEAM_API int STEAM_CALL SteamFindServersIterateServer(int arg1, int arg2, char 
 		strcpy(szServerAddress, "empty");
 		int (*fptr)(int, int, char*, unsigned int);
 		*(void **)(&fptr) = GetProcAddress(GetModuleHandleA(szOrigSteamDll), "SteamFindServersIterateServer");
-		retval = (*fptr)(arg1, arg2, szServerAddress, uServerAddressChars);
-		if (bLogging) Logger->Write("\t (%u, %u, %s, %u) %u\n", arg1, arg2, szServerAddress, uServerAddressChars, retval);
+		retval = (*fptr)(eSteamServerType, uIndex, szServerAddress, iServerAddressChars);
+		if (bLogging) Logger->Write("\t (%u, %u, %s, %u) %u\n", eSteamServerType, uIndex, szServerAddress, iServerAddressChars, retval);
 		return retval;
 	}
-	if (arg1 == 3) // CSER Server
+
+	const char** pServers = NULL;
+	size_t iNumServers = 0;
+
+	switch (eSteamServerType)
 	{
-		// cser.steampowered.com
-		strcpy(szServerAddress, "208.64.203.186:27013");
-	}
-	else if (arg1 == 4) // Source Servers
-	{
-		// hl2master.steampowered.com
-		if (arg2 == 0) strcpy(szServerAddress, "208.64.200.65:27011");
-		if (arg2 == 1) strcpy(szServerAddress, "192.69.99.29:27011");
-		if (arg2 == 2) strcpy(szServerAddress, "208.78.164.210:27011");
-	}
-	else if (arg1 == 1) // Half-Life Servers
-	{
-		// hl1master.steampowered.com
-		if (arg2 == 0) strcpy(szServerAddress, "208.78.164.208:27010");
-		if (arg2 == 1) strcpy(szServerAddress, "208.78.164.209:27010");
+	case eSteamHalfLifeMasterServer:
+		pServers = g_aHL1MasterServers;
+		iNumServers = ARRAYSIZE(g_aHL1MasterServers);
+		break;
+	case eSteamCSERServer:
+		pServers = g_aCSERServers;
+		iNumServers = ARRAYSIZE(g_aCSERServers);
+		break;
+	case eSteamHalfLife2MasterServer:
+		pServers = g_aHL2MasterServers;
+		iNumServers = ARRAYSIZE(g_aHL2MasterServers);
+		break;
+	default:
+		break;
 	}
 
-	return 0;
+	if (pServers && uIndex < iNumServers)
+	{
+		strncpy(szServerAddress, pServers[uIndex], iServerAddressChars);
+		return 0;
+	}
+
+	szServerAddress[0] = '\0';
+	return -1;
 }
 
-STEAM_API int STEAM_CALL SteamFindServersNumServers(unsigned int arg1)
+STEAM_API int STEAM_CALL SteamFindServersNumServers(ESteamServerType eSteamServerType)
 {
 // #ifdef DEBUG
 	if (bLogging) Logger->Write("SteamFindServersNumServers\n");
@@ -159,21 +191,27 @@ STEAM_API int STEAM_CALL SteamFindServersNumServers(unsigned int arg1)
 		int retval = 1;
 		int (*fptr)(unsigned int);
 		*(void **)(&fptr) = GetProcAddress(GetModuleHandleA(szOrigSteamDll), "SteamFindServersNumServers");
-		retval = (*fptr)(arg1);
-		if (bLogging) Logger->Write("\t (%u) %u\n", arg1, retval);
+		retval = (*fptr)(eSteamServerType);
+		if (bLogging) Logger->Write("\t (%u) %u\n", eSteamServerType, retval);
 		return retval;
 	}
-	switch (arg1)
+
+	switch (eSteamServerType)
 	{
-	case 3: // CSER
-		return 1;
-	case 4: // HL2
-		return 3;
-	case 1: // HL1
-		return 2;
+	case eSteamHalfLifeMasterServer:
+		return ARRAYSIZE(g_aHL1MasterServers);
+		break;
+	case eSteamCSERServer:
+		return ARRAYSIZE(g_aCSERServers);
+		break;
+	case eSteamHalfLife2MasterServer:
+		return ARRAYSIZE(g_aHL2MasterServers);
+		break;
 	default:
-		return 0;
+		break;
 	}
+
+	return 0;
 }
 
 STEAM_API int STEAM_CALL SteamGetContentServerInfo()

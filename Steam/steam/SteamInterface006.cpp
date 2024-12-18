@@ -160,6 +160,6 @@ CSteamInterface006::~CSteamInterface006(){if (bLogging) Logger->Write("CSteamInt
 //SteamInterface006 functions	
 	int CSteamInterface006::FindServersNumServers(ESteamServerType eSteamServerType){return SteamFindServersNumServers(eSteamServerType);}
 	int CSteamInterface006::FindServersIterateServer(ESteamServerType eSteamServerType, int iIndex, char *szServerAddress, unsigned int uServerAddressChars){return SteamFindServersIterateServer(eSteamServerType, iIndex, szServerAddress, uServerAddressChars);}
-	int CSteamInterface006::FindServersGetErrorString(){return SteamFindServersGetErrorString();}
+	const char* CSteamInterface006::FindServersGetErrorString(){return SteamFindServersGetErrorString();}
 	int CSteamInterface006::CheckAppOwnership(unsigned int uAppId, void* pvArg2, void* pvArg3, TSteamError *pError){return SteamCheckAppOwnership(/*uAppId, pvArg2, pvArg3, pError*/);}
 
