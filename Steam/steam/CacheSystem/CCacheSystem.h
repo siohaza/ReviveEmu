@@ -546,7 +546,7 @@ public:
 	}
 
 private:
-	TManifestEntriesInCache* FindItem(unsigned int LastIndex, char* cszPattern)
+	TManifestEntriesInCache* FindItem(unsigned int LastIndex, const char* cszPattern)
 	{
 		if(strpbrk(cszPattern, "?*"))
 		{
@@ -567,7 +567,7 @@ private:
 		}
 		else
 		{
-			unsigned int EntryHash = murmur3_32((unsigned char*)cszPattern, strlen(cszPattern), MURMUR_SEED);		
+			unsigned int EntryHash = murmur3_32((const unsigned char*)cszPattern, strlen(cszPattern), MURMUR_SEED);		
 			auto it = HashTable.find(EntryHash);
 
 			if (it != HashTable.end())
@@ -586,7 +586,7 @@ private:
 		return NULL;
 	}
 
-	bool IsMatchingWithMask(char* szString, char* szMask)
+	bool IsMatchingWithMask(const char* szString, const char* szMask)
 	{
 		while(*szString != 0 || *szMask != 0)
 		{

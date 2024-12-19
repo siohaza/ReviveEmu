@@ -109,7 +109,7 @@ public:
 
 private:
 	
-	void BuildDirectoryTable(unsigned int ManifestEntryIndex, char* PathName, const char* ExtraMountPath)
+	void BuildDirectoryTable(unsigned int ManifestEntryIndex, const char* PathName, const char* ExtraMountPath)
 	{
 
 		char ExtraMount[MAX_PATH];
@@ -228,7 +228,7 @@ private:
 		DirectoryTable[ManifestEntryIndex].IsLocalCopyHasPriorityOverChache = IsLocalCopyHasPriorityOverChache(ManifestEntryIndex);
 	}
 
-	bool IsLocalCopyMade(unsigned int ManifestEntryIndex)
+	bool IsLocalCopyMade(unsigned int ManifestEntryIndex) const
 	{
 		for(unsigned int i = 0; i < Manifest->Header->CopyCount;i++)
 		{
@@ -240,7 +240,7 @@ private:
 		return false;
 	}
 
-	bool IsLocalCopyHasPriorityOverChache(unsigned int ManifestEntryIndex)
+	bool IsLocalCopyHasPriorityOverChache(unsigned int ManifestEntryIndex) const
 	{
 		for(unsigned int i = 0; i < Manifest->Header->LocalCount;i++)
 		{
