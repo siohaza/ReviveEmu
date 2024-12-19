@@ -22,8 +22,6 @@
 #include <vector>
 #include "registry.h"
 
-#define NUL '\0'
-
 unsigned int rootAppID = 0;
 CLogFile* Logger;
 char szSteamDLLPath[MAX_PATH];
@@ -51,7 +49,6 @@ char szSteamUser[MAX_PATH];
 char szOLDLanguage[MAX_PATH];
 char szBlobFile[MAX_PATH];
 char szAppIni[MAX_PATH];
-char chProcName[MAX_PATH];
 LPWSTR *szArglist;
 
 CLogFile* LoggerFileFailure;
@@ -102,59 +99,6 @@ static CCacheFileSystem* CacheManager = NULL;
 #include "SteamUserIDValidation.h"		//User ID validation
 #include "SteamMiniDump.h"				//Minidump
 #include "SteamMisc.h"					//Misc
-
-
-bool IsInPath(char* chPath, const char* cchStr);
-
-char *strrstr(char *x,char *y) 
-{
-	int m = strlen(x);
-	int n = strlen(y);
-	char *X = (char*)malloc(m+1);
-	char *Y = (char*)malloc(n+1);
-	int i;
-	for (i=0; i<m; i++) X[m-1-i] = x[i]; X[m] = 0;
-	for (i=0; i<n; i++) Y[n-1-i] = y[i]; Y[n] = 0;
-	char *Z = strstr(X,Y);
-	if (Z) 
-	{
-		int ro = Z-X;
-		int lo = ro+n-1;
-		int ol = m-1-lo;
-		Z = x+ol;
-	}
-	free(X); free(Y);
-	return Z;
-}
-
-char *_stristr(const char *String, const char *Pattern)
-{
-	char *pptr, *sptr, *start;
-
-	for (start = (char *)String; *start != NUL; start++)
-	{
-		/* find start of pattern in string */
-		for ( ; ((*start!=NUL) && (toupper(*start) != toupper(*Pattern))); start++)
-			;
-		if (NUL == *start)
-			return NULL;
-
-		pptr = (char *)Pattern;
-		sptr = (char *)start;
-
-		while (toupper(*sptr) == toupper(*pptr))
-		{
-			sptr++;
-			pptr++;
-
-			/* if end of pattern then pattern was found */
-
-			if (NUL == *pptr)
-				return (start);
-		}
-	}
-	return NULL;
-}
 
 
 bool inArgs(LPWSTR arg) {
@@ -228,11 +172,17 @@ void InitGlobalVaribles()
 			}
 		}
 	}
-	else *appid = 0;
+	else
+	{
+		*appid = 0;
+	}
 
 		if (!*appid)
 		{
-			GetModuleFileNameA(NULL, chProcName, MAX_PATH);
+		    char szExePath[MAX_PATH];
+		    GetModuleFileNameA(NULL, szExePath, MAX_PATH);
+			const char *chProcName = V_GetFileName(szExePath);
+
 			szArglist = CommandLineToArgvW(GetCommandLineW(), &nArgs);
 			if(inArgs(L"-game") == true) 
 			{
@@ -248,52 +198,52 @@ void InitGlobalVaribles()
 				{
 					if (!_stricmp(appid, "cstrike"))
 					{
-						if(_stristr(chProcName, "hl.exe")) strcpy(appid, "10");
-						if(_stristr(chProcName, "hl2.exe")) strcpy(appid, "240");
+					    if (!_stricmp(chProcName, "hl.exe")) strcpy(appid, "10");
+					    if (!_stricmp(chProcName, "hl2.exe")) strcpy(appid, "240");
 					}
 					else if (!_stricmp(appid, "dod"))
 					{
-						if(_stristr(chProcName, "hl.exe")) strcpy(appid, "30");
-						if(_stristr(chProcName, "hl2.exe")) strcpy(appid, "300");
+					    if (!_stricmp(chProcName, "hl.exe")) strcpy(appid, "30");
+					    if (!_stricmp(chProcName, "hl2.exe")) strcpy(appid, "300");
 					}
-					else if (!_stricmp(appid, "garrysmod"))
+				    else if (!_stricmp(appid, "garrysmod"))
 					{
-						if(_stristr(chProcName, "hl2.exe")) strcpy(appid, "4000");
+					    if (!_stricmp(chProcName, "hl2.exe")) strcpy(appid, "4000");
 					}
-					else if (!_stricmp(appid, "hl2mp"))
+				    else if (!_stricmp(appid, "hl2mp"))
 					{
-						if(_stristr(chProcName, "hl2.exe")) strcpy(appid, "320");
+					    if (!_stricmp(chProcName, "hl2.exe")) strcpy(appid, "320");
 					}
-					else if (!_stricmp(appid, "tf"))
+				    else if (!_stricmp(appid, "tf"))
 					{
-						if(_stristr(chProcName, "hl2.exe")) strcpy(appid, "440");
+					    if (!_stricmp(chProcName, "hl2.exe")) strcpy(appid, "440");
 					}
 					else if (!_stricmp(appid, "episodic"))
 					{
-						if(_stristr(chProcName, "hl2.exe")) strcpy(appid, "380");
+					    if (!_stricmp(chProcName, "hl2.exe")) strcpy(appid, "380");
 					}
 					else if (!_stricmp(appid, "ep2"))
 					{
-						if(_stristr(chProcName, "hl2.exe")) strcpy(appid, "420");
+					    if (!_stricmp(chProcName, "hl2.exe")) strcpy(appid, "420");
 					}
 					else if (!_stricmp(appid, "portal"))
 					{
-						if(_stristr(chProcName, "hl2.exe")) strcpy(appid, "400");
+					    if (!_stricmp(chProcName, "hl2.exe")) strcpy(appid, "400");
 					}
 					else if (!_stricmp(appid, "lostcoast"))
 					{
-						if(_stristr(chProcName, "hl2.exe")) strcpy(appid, "340");
+					    if (!_stricmp(chProcName, "hl2.exe")) strcpy(appid, "340");
 					}
 					else if (!_stricmp(appid, "launcher"))
 					{
-						if(_stristr(chProcName, "SourceSDK.exe")) strcpy(appid, "211");
+					    if (!_stricmp(chProcName, "SourceSDK.exe")) strcpy(appid, "211");
 					}
 					else
 						*appid = 0;
 				}
 			}
-			else if(_stristr(chProcName, "hl.exe")) strcpy(appid, "70");
-			else if(_stristr(chProcName, "hl2.exe")) strcpy(appid, "220");
+			else if(!_stricmp(chProcName, "hl.exe")) strcpy(appid, "70");
+			else if(!_stricmp(chProcName, "hl2.exe")) strcpy(appid, "220");
 		}
 
 			char chLogFile[MAX_PATH];
@@ -302,26 +252,21 @@ void InitGlobalVaribles()
 
 			if(GetModuleFileNameA(g_hModule, szSteamDLLPath, MAX_PATH))
 			{
-				char* pchLastSlash = strrstr(szSteamDLLPath, "bin\\");
-				if (pchLastSlash)
+				char szRelDLLPath[MAX_PATH];
+				bool gotRelPath = V_MakeRelativePath(szSteamDLLPath, szRunFromPath, szRelDLLPath, MAX_PATH);
+
+				// HACK: If Steam.dll is in "bin" subdirectory, use the working dir for our config files.
+				if (gotRelPath && _stricmp(szRelDLLPath, "bin\\steam.dll") == 0)
 				{
-					if (_stricmp(pchLastSlash,"bin\\steam.dll")==0)
-					{
-						*pchLastSlash = 0;
-					}
-					else
-					{
-						pchLastSlash = strrchr(szSteamDLLPath, '\\');
-						pchLastSlash++;
-						*pchLastSlash = 0;
-					}
+					strcpy(szSteamDLLPath, szRunFromPath);
 				}
-				else
-				{
-					pchLastSlash = strrchr(szSteamDLLPath, '\\');
-					pchLastSlash++;
-					*pchLastSlash = 0;
+		        else
+		        {
+					V_StripFilename(szSteamDLLPath);
 				}
+
+				V_AppendSlash(szSteamDLLPath, MAX_PATH);
+
 				strcpy(chIniFile, szSteamDLLPath);
 				strcat(chIniFile, "rev.ini");
 				strcpy(szAppIni, szSteamDLLPath);
@@ -348,8 +293,11 @@ void InitGlobalVaribles()
 					if (_stricmp(Logging, "True") == 0) 
 					{
 						bLogging = true;
-						GetModuleFileNameA(NULL, chProcName, MAX_PATH);
-						strcpy(chProcName, strrchr(chProcName, '\\')+1);
+
+				        char szExePath[MAX_PATH];
+				        GetModuleFileNameA(NULL, szExePath, MAX_PATH);
+				        const char* chProcName = V_GetFileName(szExePath);
+
 						strcpy(chLogFile, szSteamDLLPath);
 						strcat(chLogFile, chProcName);
 						strcat(chLogFile, "_REVOLUTiON.log");
@@ -586,11 +534,14 @@ void InitGlobalVaribles()
 					if (_stricmp(SteamClient, "True") == 0) 
 					{
 						bSteamClient = true;
-						GetModuleFileNameA(NULL, chProcName, MAX_PATH);
 						strcpy(chClientPath, szSteamDLLPath);
+
+						char szExePath[MAX_PATH];
+				        GetModuleFileNameA(NULL, szExePath, MAX_PATH);
+				        const char* chProcName = V_GetFileName(szExePath);
 				
-						if (_stristr(chProcName, "hlds.exe") || _stristr(chProcName, "hl.exe")) strcat(chClientPath, "steamclient.dll");
-						else if (_stristr(chProcName, "srcds.exe") || _stristr(chProcName, "hl2.exe") || _stristr(chProcName, "sdklauncher.exe")) strcat(chClientPath, "bin\\steamclient.dll");
+						if (!_stricmp(chProcName, "hlds.exe") || !_stricmp(chProcName, "hl.exe")) strcat(chClientPath, "steamclient.dll");
+						else if (!_stricmp(chProcName, "srcds.exe") || !_stricmp(chProcName, "hl2.exe") || !_stricmp(chProcName, "sdklauncher.exe")) strcat(chClientPath, "bin\\steamclient.dll");
 						else strcat(chClientPath, "steamclient.dll");
 						
 						if (bLogging) Logger->Write("-- Using Steam Client: %s\n", chClientPath);
@@ -621,23 +572,3 @@ void InitGlobalVaribles()
 			ExitProcess(0);
 
 }
-
-bool IsInPath(char* chPath, const char* cchStr)
-{
-	unsigned int i = 0, j = 0;
-Start:
-	while (i < strlen(chPath))
-		{
-			for (j = 0; j < strlen(cchStr); j++)
-			{
-				if (chPath[i+j] != cchStr[j])
-				{
-					i++;
-					goto Start;
-				}
-			}
-			return 1;
-		}
-		return 0;
-}
-
