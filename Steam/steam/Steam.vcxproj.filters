@@ -1,0 +1,348 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source Files\SteamInterface">
+      <UniqueIdentifier>{19a7d042-1cfc-48a4-b9e2-822cefd45202}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\SteamDLLAppsystem">
+      <UniqueIdentifier>{2ccdcdb7-1587-4e78-99b7-a97f5221f517}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\zlib">
+      <UniqueIdentifier>{e50bec2f-becd-459d-85b6-1d35c1a530c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Header Files\SteamInterface">
+      <UniqueIdentifier>{2f2bed88-8c9a-459f-b81c-08b2b785d2f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\SteamDLLAppsystem">
+      <UniqueIdentifier>{fc2795fd-110f-4487-9071-c2a7a713dce8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\BlobSystem">
+      <UniqueIdentifier>{cb447978-a1f7-47e6-b109-5b74ccbebdd3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\BlobSystem\ContentDescriptionRecord">
+      <UniqueIdentifier>{e2c026f6-ab48-4e82-9e9d-e42704d611a2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\CacheSystem">
+      <UniqueIdentifier>{bdbdaa77-1bd5-47c5-914f-0624a8c42fc6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\CacheSystem\Cache">
+      <UniqueIdentifier>{0d68f3e9-d142-4353-a49d-e9ae86876ffb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\zlib">
+      <UniqueIdentifier>{435bb63e-e751-41a7-952c-30aeed799859}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="IniFile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="logFile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MurmurHash.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="registry.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Steam.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="strtools.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="strtools_unicode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SteamInterface001.cpp">
+      <Filter>Source Files\SteamInterface</Filter>
+    </ClCompile>
+    <ClCompile Include="SteamInterface003.cpp">
+      <Filter>Source Files\SteamInterface</Filter>
+    </ClCompile>
+    <ClCompile Include="SteamInterface004.cpp">
+      <Filter>Source Files\SteamInterface</Filter>
+    </ClCompile>
+    <ClCompile Include="SteamInterface005.cpp">
+      <Filter>Source Files\SteamInterface</Filter>
+    </ClCompile>
+    <ClCompile Include="SteamInterface006.cpp">
+      <Filter>Source Files\SteamInterface</Filter>
+    </ClCompile>
+    <ClCompile Include="CriticalSection.cpp">
+      <Filter>Source Files\SteamDLLAppsystem</Filter>
+    </ClCompile>
+    <ClCompile Include="SteamDLLAppsystem.cpp">
+      <Filter>Source Files\SteamDLLAppsystem</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\adler32.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\compress.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\crc32.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\deflate.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\gzio.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\infback.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\inffast.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\inflate.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\inftrees.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\minigzip.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\trees.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\uncompr.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\zutil.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="Win32MiniDump.cpp">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Steam.def">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="rev.ini" />
+    <None Include="revApps.ini" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CriticalSection.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dbghelp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IniFile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="logFile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MurmurHash.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="registry.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Steam.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SteamAccount.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SteamApplication.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SteamAsyncCallHandling.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SteamCommon.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SteamFilesystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SteamInit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SteamInterface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SteamLogging.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SteamMiniDump.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SteamMisc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SteamUserIDValidation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="strtools.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Win32MiniDump.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ISteamInterface001.h">
+      <Filter>Header Files\SteamInterface</Filter>
+    </ClInclude>
+    <ClInclude Include="ISteamInterface003.h">
+      <Filter>Header Files\SteamInterface</Filter>
+    </ClInclude>
+    <ClInclude Include="ISteamInterface004.h">
+      <Filter>Header Files\SteamInterface</Filter>
+    </ClInclude>
+    <ClInclude Include="ISteamInterface005.h">
+      <Filter>Header Files\SteamInterface</Filter>
+    </ClInclude>
+    <ClInclude Include="ISteamInterface006.h">
+      <Filter>Header Files\SteamInterface</Filter>
+    </ClInclude>
+    <ClInclude Include="SteamInterface001.h">
+      <Filter>Header Files\SteamInterface</Filter>
+    </ClInclude>
+    <ClInclude Include="SteamInterface003.h">
+      <Filter>Header Files\SteamInterface</Filter>
+    </ClInclude>
+    <ClInclude Include="SteamInterface004.h">
+      <Filter>Header Files\SteamInterface</Filter>
+    </ClInclude>
+    <ClInclude Include="SteamInterface005.h">
+      <Filter>Header Files\SteamInterface</Filter>
+    </ClInclude>
+    <ClInclude Include="SteamInterface006.h">
+      <Filter>Header Files\SteamInterface</Filter>
+    </ClInclude>
+    <ClInclude Include="SteamDLLAppsystem001.h">
+      <Filter>Header Files\SteamDLLAppsystem</Filter>
+    </ClInclude>
+    <ClInclude Include="BlobSystem\BlobSystemCommon.h">
+      <Filter>Header Files\BlobSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="BlobSystem\CBlobNode.h">
+      <Filter>Header Files\BlobSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="BlobSystem\CBlobSystem.h">
+      <Filter>Header Files\BlobSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="BlobSystem\CContentDescriptionRecord.h">
+      <Filter>Header Files\BlobSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="BlobSystem\ContentDescriptionRecord\CAppFilesystemRecord.h">
+      <Filter>Header Files\BlobSystem\ContentDescriptionRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="BlobSystem\ContentDescriptionRecord\CAppIconRecord.h">
+      <Filter>Header Files\BlobSystem\ContentDescriptionRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="BlobSystem\ContentDescriptionRecord\CAppLaunchOptionRecord.h">
+      <Filter>Header Files\BlobSystem\ContentDescriptionRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="BlobSystem\ContentDescriptionRecord\CAppRecord.h">
+      <Filter>Header Files\BlobSystem\ContentDescriptionRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="BlobSystem\ContentDescriptionRecord\CAppVersionRecord.h">
+      <Filter>Header Files\BlobSystem\ContentDescriptionRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="BlobSystem\ContentDescriptionRecord\CSubscriptionDiscountQualifier.h">
+      <Filter>Header Files\BlobSystem\ContentDescriptionRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="BlobSystem\ContentDescriptionRecord\CSubscriptionDiscountRecord.h">
+      <Filter>Header Files\BlobSystem\ContentDescriptionRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="BlobSystem\ContentDescriptionRecord\CSubscriptionRecord.h">
+      <Filter>Header Files\BlobSystem\ContentDescriptionRecord</Filter>
+    </ClInclude>
+    <ClInclude Include="CacheSystem\CacheSystemCommon.h">
+      <Filter>Header Files\CacheSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="CacheSystem\CCacheSystem.h">
+      <Filter>Header Files\CacheSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="CacheSystem\Cache\CCache.h">
+      <Filter>Header Files\CacheSystem\Cache</Filter>
+    </ClInclude>
+    <ClInclude Include="CacheSystem\Cache\CCacheAllocationTable.h">
+      <Filter>Header Files\CacheSystem\Cache</Filter>
+    </ClInclude>
+    <ClInclude Include="CacheSystem\Cache\CCacheBlock.h">
+      <Filter>Header Files\CacheSystem\Cache</Filter>
+    </ClInclude>
+    <ClInclude Include="CacheSystem\Cache\CCacheChecksumTable.h">
+      <Filter>Header Files\CacheSystem\Cache</Filter>
+    </ClInclude>
+    <ClInclude Include="CacheSystem\Cache\CCacheManifest.h">
+      <Filter>Header Files\CacheSystem\Cache</Filter>
+    </ClInclude>
+    <ClInclude Include="CacheSystem\Cache\CCacheSectors.h">
+      <Filter>Header Files\CacheSystem\Cache</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\crc32.h">
+      <Filter>Header Files\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\deflate.h">
+      <Filter>Header Files\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\inffast.h">
+      <Filter>Header Files\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\inffixed.h">
+      <Filter>Header Files\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\inflate.h">
+      <Filter>Header Files\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\inftrees.h">
+      <Filter>Header Files\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\trees.h">
+      <Filter>Header Files\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\zconf.h">
+      <Filter>Header Files\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\zconf.in.h">
+      <Filter>Header Files\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\zlib.h">
+      <Filter>Header Files\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\zutil.h">
+      <Filter>Header Files\zlib</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Steam.RES">
+      <Filter>Resource Files</Filter>
+    </Resource>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="INSTALL.TXT" />
+    <Text Include="ISSUES.TXT" />
+    <Text Include="THANKS.TXT" />
+    <Text Include="VERSION.TXT" />
+  </ItemGroup>
+</Project>
