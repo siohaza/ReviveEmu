@@ -34,7 +34,7 @@ public:
 			delete DiscountQualifiers[i];
 	}
 
-	char* Enumerate(char* SDRBinary)
+	const char* Enumerate(const char* SDRBinary)
 	{
 		TNodeHeader *NodeHeader = (TNodeHeader*)SDRBinary;
 		if(NodeHeader->magic != NodeMagicNum)
@@ -43,7 +43,7 @@ public:
 		}
 		else
 		{
-			char* NodeEnd = SDRBinary + NodeHeader->datalength;
+			const char* NodeEnd = SDRBinary + NodeHeader->datalength;
 			SDRBinary += sizeof(TNodeHeader);
 
 			while(SDRBinary < NodeEnd)
@@ -69,8 +69,8 @@ public:
 							TNodeHeader *SDQNodeHeader = (TNodeHeader*)SDRBinary;
 							if(SDQNodeHeader->magic == NodeMagicNum)
 							{
-								char* SDQBinary = SDRBinary;
-								char* SDQNodeEnd = SDQBinary + SDQNodeHeader->datalength;
+								const char* SDQBinary = SDRBinary;
+								const char* SDQNodeEnd = SDQBinary + SDQNodeHeader->datalength;
 								SDQBinary += sizeof(TNodeHeader);
 
 								while(SDQBinary < SDQNodeEnd)

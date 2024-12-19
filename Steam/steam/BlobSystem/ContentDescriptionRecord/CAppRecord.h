@@ -102,7 +102,7 @@ public:
 			delete[] LegacyInstallDirName;
 	}
 
-	char* Enumerate(char* AppRBinary)
+	const char* Enumerate(const char* AppRBinary)
 	{
 		TNodeHeader *NodeHeader = (TNodeHeader*)AppRBinary;
 		if(NodeHeader->magic != NodeMagicNum)
@@ -111,7 +111,7 @@ public:
 		}
 		else
 		{
-			char* NodeEnd = AppRBinary + NodeHeader->datalength;
+			const char* NodeEnd = AppRBinary + NodeHeader->datalength;
 			AppRBinary += sizeof(TNodeHeader);
 
 			while(AppRBinary < NodeEnd)
@@ -155,8 +155,8 @@ public:
 							if(LONodeHeader->magic == NodeMagicNum)
 							{
 
-								char* LOBinary = AppRBinary;
-								char* LONodeEnd = LOBinary + LONodeHeader->datalength;
+								const char* LOBinary = AppRBinary;
+								const char* LONodeEnd = LOBinary + LONodeHeader->datalength;
 								LOBinary += sizeof(TNodeHeader);
 
 								while(LOBinary < LONodeEnd)
@@ -192,8 +192,8 @@ public:
 
 							if(VRNodeHeader->magic == NodeMagicNum)
 							{
-								char* VRBinary = AppRBinary;
-								char* VRNodeEnd = VRBinary + VRNodeHeader->datalength;
+								const char* VRBinary = AppRBinary;
+								const char* VRNodeEnd = VRBinary + VRNodeHeader->datalength;
 								VRBinary += sizeof(TNodeHeader);
 
 								while(VRBinary < VRNodeEnd)
@@ -220,8 +220,8 @@ public:
 
 							if(FSRNodeHeader->magic == NodeMagicNum)
 							{
-								char* FSRBinary = AppRBinary;
-								char* FSRNodeEnd = FSRBinary + FSRNodeHeader->datalength;
+								const char* FSRBinary = AppRBinary;
+								const char* FSRNodeEnd = FSRBinary + FSRNodeHeader->datalength;
 								FSRBinary += sizeof(TNodeHeader);
 
 								while(FSRBinary < FSRNodeEnd)
@@ -248,8 +248,8 @@ public:
 
 							if(UDRNodeHeader->magic == NodeMagicNum)
 							{
-								char* UDRBinary = AppRBinary;
-								char* UDRNodeEnd = UDRBinary + UDRNodeHeader->datalength;
+								const char* UDRBinary = AppRBinary;
+								const char* UDRNodeEnd = UDRBinary + UDRNodeHeader->datalength;
 								UDRBinary += sizeof(TNodeHeader);
 
 								while(UDRBinary < UDRNodeEnd)

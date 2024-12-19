@@ -25,10 +25,10 @@ public:
 	std::vector<CSubscriptionRecord*> SubscriptionsRecord;
 	std::map<unsigned int, char*> AllAppsPublicKeysRecord;
 
-	CContentDescriptionRecord(char* CDRBinary)
+	CContentDescriptionRecord(const char* CDRBinary)
 	{
-		char* CDRData;
-		char* NodeEnd; 
+		const char* CDRData;
+		const char* NodeEnd; 
 		Bytef* zBuffer = NULL;
 
 		TNodeHeader *NodeHeader = (TNodeHeader*)CDRBinary;
@@ -78,8 +78,8 @@ public:
 						TNodeHeader *AppNodeHeader = (TNodeHeader*)CDRData;
 						if(AppNodeHeader->magic == NodeMagicNum)
 						{
-							char* AppRBinary = CDRData;
-							char* AppNodeEnd = AppRBinary + AppNodeHeader->datalength;
+							const char* AppRBinary = CDRData;
+							const char* AppNodeEnd = AppRBinary + AppNodeHeader->datalength;
 							AppRBinary += sizeof(TNodeHeader);
 
 							while(AppRBinary < AppNodeEnd)
@@ -99,8 +99,8 @@ public:
 						TNodeHeader *SubNodeHeader = (TNodeHeader*)CDRData;
 						if(SubNodeHeader->magic == NodeMagicNum)
 						{
-							char* SubRBinary = CDRData;
-							char* SubNodeEnd = SubRBinary + SubNodeHeader->datalength;
+							const char* SubRBinary = CDRData;
+							const char* SubNodeEnd = SubRBinary + SubNodeHeader->datalength;
 							SubRBinary += sizeof(TNodeHeader);
 
 							while(SubRBinary < SubNodeEnd)
@@ -128,8 +128,8 @@ public:
 						TNodeHeader *APKRNodeHeader = (TNodeHeader*)CDRData;
 						if(APKRNodeHeader->magic == NodeMagicNum)
 						{
-							char* APKRBinary = CDRData;
-							char* APKRNodeEnd = APKRBinary + APKRNodeHeader->datalength;
+							const char* APKRBinary = CDRData;
+							const char* APKRNodeEnd = APKRBinary + APKRNodeHeader->datalength;
 							APKRBinary += sizeof(TNodeHeader);
 
 							while(APKRBinary < APKRNodeEnd)

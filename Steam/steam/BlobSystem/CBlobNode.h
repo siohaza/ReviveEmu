@@ -29,7 +29,7 @@ public:
 		}
 	}
 
-	void Populate(char *NodeBinary)
+	void Populate(const char *NodeBinary)
 	{
 		TNodeHeader *NodeHeader = (TNodeHeader*)NodeBinary;
 		if(NodeHeader->magic == NodeMagicNum)
@@ -40,7 +40,7 @@ public:
 	}
 
 private:
-	char* SubKeys(char *NodeBinary)
+	const char* SubKeys(const char *NodeBinary)
 	{
 		TNodeHeader *NodeHeader = (TNodeHeader*)NodeBinary;
 		if(NodeHeader->magic != NodeMagicNum)
@@ -68,7 +68,7 @@ private:
 		return (NodeBinary + NodeHeader->nullpadding);
 	}
 
-	char* KeyEntry(char *NodeBinary)
+	const char* KeyEntry(const char *NodeBinary)
 	{
 		this->Type = Key;
 		TNode *Node = (TNode*)NodeBinary;
@@ -82,7 +82,7 @@ private:
 		return NodeBinary;
 	}
 
-	char* KeyEntries(char *NodeBinary)
+	const char* KeyEntries(const char *NodeBinary)
 	{
 		TNodeHeader *NodeHeader = (TNodeHeader*)NodeBinary;
 		if(NodeHeader->magic != NodeMagicNum)
@@ -95,7 +95,7 @@ private:
 		}
 		else
 		{
-			char* NodeEnd = NodeBinary + NodeHeader->datalength;
+			const char* NodeEnd = NodeBinary + NodeHeader->datalength;
 			NodeBinary += sizeof(TNodeHeader);
 			while(NodeBinary != NULL && NodeBinary < NodeEnd)
 			{
@@ -107,7 +107,7 @@ private:
 		return (NodeBinary + NodeHeader->nullpadding);
 	}
 
-	char* ValueProperties(char *NodeBinary)
+	const char* ValueProperties(const char *NodeBinary)
 	{
 		TNodeHeader *NodeHeader = (TNodeHeader*)NodeBinary;
 		if(NodeHeader->magic != NodeMagicNum)
@@ -144,7 +144,7 @@ private:
 		return (NodeBinary + NodeHeader->nullpadding);
 	}
 
-	char* ValueEntry(char *NodeBinary)
+	const char* ValueEntry(const char *NodeBinary)
 	{
 		this->Type = Value;
 		TNode *Node = (TNode*)NodeBinary;
@@ -158,7 +158,7 @@ private:
 		return NodeBinary;
 	}
 
-	char* ValueEntries(char *NodeBinary)
+	const char* ValueEntries(const char *NodeBinary)
 	{
 		TNodeHeader *NodeHeader = (TNodeHeader*)NodeBinary;
 		if(NodeHeader->magic != NodeMagicNum)
@@ -171,7 +171,7 @@ private:
 		}
 		else
 		{
-			char* NodeEnd = NodeBinary + NodeHeader->datalength;
+			const char* NodeEnd = NodeBinary + NodeHeader->datalength;
 			NodeBinary += sizeof(TNodeHeader);
 			while(NodeBinary != NULL && NodeBinary < NodeEnd)
 			{

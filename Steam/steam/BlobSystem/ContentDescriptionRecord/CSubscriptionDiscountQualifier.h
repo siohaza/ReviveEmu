@@ -27,7 +27,7 @@ public:
 			delete[] Name;
 	}
 
-	char* Enumerate(char* SDQBinary)
+	const char* Enumerate(const char* SDQBinary)
 	{
 		TNodeHeader *NodeHeader = (TNodeHeader*)SDQBinary;
 
@@ -37,7 +37,7 @@ public:
 		}
 		else
 		{
-			char* NodeEnd = SDQBinary + NodeHeader->datalength;
+			const char* NodeEnd = SDQBinary + NodeHeader->datalength;
 			SDQBinary += sizeof(TNodeHeader);
 
 			while(SDQBinary < NodeEnd)

@@ -45,7 +45,7 @@ public:
 			delete[] DepotEncryptionKey;
 	}
 
-	char* Enumerate(char* VRBinary)
+	const char* Enumerate(const char* VRBinary)
 	{
 		TNodeHeader *NodeHeader = (TNodeHeader*)VRBinary;
 		if(NodeHeader->magic != NodeMagicNum)
@@ -54,7 +54,7 @@ public:
 		}
 		else
 		{
-			char* NodeEnd = VRBinary + NodeHeader->datalength;
+			const char* NodeEnd = VRBinary + NodeHeader->datalength;
 			VRBinary += sizeof(TNodeHeader);
 
 			while(VRBinary < NodeEnd)
@@ -86,8 +86,8 @@ public:
 
 							if(LOIRNodeHeader->magic == NodeMagicNum)
 							{
-								char* LOIRBinary = VRBinary;
-								char* LOIRNodeEnd = LOIRBinary + LOIRNodeHeader->datalength;
+								const char* LOIRBinary = VRBinary;
+								const char* LOIRNodeEnd = LOIRBinary + LOIRNodeHeader->datalength;
 								LOIRBinary += sizeof(TNodeHeader);
 
 								while(LOIRBinary < LOIRNodeEnd)

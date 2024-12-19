@@ -16,7 +16,8 @@ public:
 
 	~CBlobFileSystem()
 	{
-		delete TopKey;
+		if (TopKey)
+			delete TopKey;
 	}
 
 	bool Open(const char* cszFileName)
@@ -40,9 +41,9 @@ public:
 		return false;
 	}
 
-	CBlobNode *GetNodeByPath(const char* cszNodePath)
+	CBlobNode *GetNodeByPath(const char* cszNodePath) const
 	{
-		char* szTempNodePath = new char[strlen(cszNodePath)+1];
+		char szTempNodePath[MAX_PATH];
 		strcpy(szTempNodePath, cszNodePath);
 		char* szNodeName = strtok(szTempNodePath, "\\");
 		std::vector<CBlobNode*>::iterator NodesIterator = TopKey->Nodes.begin();
@@ -53,7 +54,6 @@ public:
 				szNodeName = strtok(NULL, "\\");
 				if(szNodeName == NULL)
 				{
-					delete [] szTempNodePath;
 					return (CBlobNode*)*NodesIterator;
 				}
 				if(((CBlobNode*)*NodesIterator)->Nodes.size() != 0)
@@ -67,7 +67,7 @@ public:
 				}
 			}
 		}
-		delete [] szTempNodePath;
+
 		return NULL;
 	}
 };

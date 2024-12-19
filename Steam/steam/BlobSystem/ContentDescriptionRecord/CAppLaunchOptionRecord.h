@@ -39,7 +39,7 @@ public:
 			delete[] CommandLine;
 	}
 
-	char* Enumerate(char* LOBinary)
+	const char* Enumerate(const char* LOBinary)
 	{
 		TNodeHeader *NodeHeader = (TNodeHeader*)LOBinary;
 		if(NodeHeader->magic != NodeMagicNum)
@@ -48,7 +48,7 @@ public:
 		}
 		else
 		{
-			char* NodeEnd = LOBinary + NodeHeader->datalength;
+			const char* NodeEnd = LOBinary + NodeHeader->datalength;
 			LOBinary += sizeof(TNodeHeader);
 
 			while(LOBinary < NodeEnd)

@@ -109,7 +109,7 @@ public:
 		}
 	}
 
-	char* Enumerate(char* SubRBinary)
+	const char* Enumerate(const char* SubRBinary)
 	{
 		TNodeHeader *NodeHeader = (TNodeHeader*)SubRBinary;
 		if(NodeHeader->magic != NodeMagicNum)
@@ -118,7 +118,7 @@ public:
 		}
 		else
 		{
-			char* NodeEnd = SubRBinary + NodeHeader->datalength;
+			const char* NodeEnd = SubRBinary + NodeHeader->datalength;
 			SubRBinary += sizeof(TNodeHeader);
 
 			while(SubRBinary < NodeEnd)
@@ -182,8 +182,8 @@ public:
 
 							if(SDNodeHeader->magic == NodeMagicNum)
 							{
-								char* SDBinary = SubRBinary;
-								char* SDNodeEnd = SDBinary + SDNodeHeader->datalength;
+								const char* SDBinary = SubRBinary;
+								const char* SDNodeEnd = SDBinary + SDNodeHeader->datalength;
 								SDBinary += sizeof(TNodeHeader);
 
 								while(SDBinary < SDNodeEnd)
@@ -268,8 +268,8 @@ public:
 
 							if(EIRNodeHeader->magic == NodeMagicNum)
 							{
-								char* EIRBinary = SubRBinary;
-								char* EIRNodeEnd = EIRBinary + EIRNodeHeader->datalength;
+								const char* EIRBinary = SubRBinary;
+								const char* EIRNodeEnd = EIRBinary + EIRNodeHeader->datalength;
 								EIRBinary += sizeof(TNodeHeader);
 
 								while(EIRBinary < EIRNodeEnd)

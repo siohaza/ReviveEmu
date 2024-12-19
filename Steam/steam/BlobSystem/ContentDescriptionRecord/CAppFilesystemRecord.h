@@ -34,7 +34,7 @@ public:
 			delete[] OS;
 	}
 
-	char* Enumerate(char* FSRBinary)
+	const char* Enumerate(const char* FSRBinary)
 	{
 		TNodeHeader *NodeHeader = (TNodeHeader*)FSRBinary;
 		if(NodeHeader->magic != NodeMagicNum)
@@ -43,7 +43,7 @@ public:
 		}
 		else
 		{
-			char* NodeEnd = FSRBinary + NodeHeader->datalength;
+			const char* NodeEnd = FSRBinary + NodeHeader->datalength;
 			FSRBinary += sizeof(TNodeHeader);
 
 			while(FSRBinary < NodeEnd)
