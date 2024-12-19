@@ -50,10 +50,9 @@ public:
 	~CCacheFileSystem()
 	{
 		// Unmount everything.
-		std::vector<TCacheHandle*>::iterator it;
-		for (it = Caches.begin(); it != Caches.end(); it++) 
+		for (TCacheHandle *hCache : Caches)
 		{
-			UnmountCache((CacheHandle)*it);
+			UnmountCache((CacheHandle)hCache);
 		}
 	}
 
@@ -68,10 +67,9 @@ public:
 		int dot = FullPath.find_last_of('\\');
 		std::string szTemp = FullPath.substr(dot + 1);
 
-		std::vector<TCacheHandle*>::iterator it;
-		for (it = Caches.begin(); it != Caches.end(); it++) 
+		for (TCacheHandle* hCache : Caches)
 		{
-			CCache* CheckCacheFile = (*it)->hCacheFile;
+			CCache* CheckCacheFile = hCache->hCacheFile;
 			if (strcmp(CheckCacheFile->Name,szTemp.c_str()) == 0)
 			{
 				if (bLogging && bLogFS)	Logger->Write("	Cache is already mounted: %s\n", cszFileName);
@@ -105,8 +103,7 @@ public:
 
 	bool UnmountCache(CacheHandle hCacheToMount)
 	{
-		std::vector<TCacheHandle*>::iterator it;
-		for (it = Caches.begin(); it != Caches.end(); it++)
+		for (auto it = Caches.begin(); it != Caches.end(); it++)
 		{
 			TCacheHandle *hCache = *it;
 			if (hCache == (TCacheHandle*)hCacheToMount)
@@ -556,7 +553,7 @@ private:
 			GlobalIndexCounter = LastIndex;
 			while(GlobalIndexCounter < GlobalDirectoryTableSize)
 			{		
-				TGlobalDirectory &FindItem = GlobalDirectoryTable[GlobalIndexCounter];
+				TGlobalDirectory& FindItem = GlobalDirectoryTable[GlobalIndexCounter];
 
 				if(IsMatchingWithMask(FindItem.FullName, cszPattern))
 				{
@@ -570,13 +567,12 @@ private:
 		}
 		else
 		{
-			unsigned int EntryHash = murmur3_32((unsigned char*)cszPattern, strlen(cszPattern), MURMUR_SEED);
-			
-			std::map<unsigned int, TGlobalDirectory>::iterator HashIterator = HashTable.find(EntryHash);
+			unsigned int EntryHash = murmur3_32((unsigned char*)cszPattern, strlen(cszPattern), MURMUR_SEED);		
+			auto it = HashTable.find(EntryHash);
 
-			if(HashIterator != HashTable.end())
+			if (it != HashTable.end())
 			{
-				TGlobalDirectory &FindItem = HashIterator->second;
+				TGlobalDirectory& FindItem = it->second;
 
 				CCache* CacheFile = (CCache*)FindItem.pCache;
 				TManifestEntriesInCache* ItemFound = &CacheFile->DirectoryTable[FindItem.Index];

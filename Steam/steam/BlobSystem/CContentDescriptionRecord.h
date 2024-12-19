@@ -169,8 +169,7 @@ public:
 		for (size_t i = 0; i < SubscriptionsRecord.size(); i++)
 			delete SubscriptionsRecord[i];
 
-		std::map<unsigned int, char*>::iterator it;
-		for (it = AllAppsPublicKeysRecord.begin(); it != AllAppsPublicKeysRecord.end(); it++)
-			delete[] it->second;
+		for (auto &record : AllAppsPublicKeysRecord)
+			delete[] record.second;
 	}
 };

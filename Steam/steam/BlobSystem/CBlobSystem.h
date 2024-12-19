@@ -41,25 +41,25 @@ public:
 		return false;
 	}
 
-	CBlobNode *GetNodeByPath(const char* cszNodePath) const
+	CBlobNode* GetNodeByPath(const char* cszNodePath) const
 	{
 		char szTempNodePath[MAX_PATH];
 		strcpy(szTempNodePath, cszNodePath);
 		char* szNodeName = strtok(szTempNodePath, "\\");
-		std::vector<CBlobNode*>::iterator NodesIterator = TopKey->Nodes.begin();
-		std::vector<CBlobNode*>::iterator NodesEnd = TopKey->Nodes.end();
-		for(; NodesIterator != NodesEnd; NodesIterator++ ) {
-			if(strcmp(((CBlobNode*)*NodesIterator)->Name, szNodeName) == 0 && szNodeName != NULL)
+
+		for (CBlobNode* pNode : TopKey->Nodes)
+		{
+			if (strcmp(pNode->Name, szNodeName) == 0 && szNodeName != NULL)
 			{
 				szNodeName = strtok(NULL, "\\");
-				if(szNodeName == NULL)
+				if (szNodeName == NULL)
 				{
-					return (CBlobNode*)*NodesIterator;
+					return pNode;
 				}
-				if(((CBlobNode*)*NodesIterator)->Nodes.size() != 0)
+
+				if (pNode->Nodes.size() != 0)
 				{
-					std::vector<CBlobNode*>::iterator NodesIterator = ((CBlobNode*)*NodesIterator)->Nodes.begin();
-					std::vector<CBlobNode*>::iterator NodesEnd = ((CBlobNode*)*NodesIterator)->Nodes.end();
+					// TODO: Search recursively.
 				}
 				else
 				{

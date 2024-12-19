@@ -101,11 +101,10 @@ public:
 		if (GameCodeDescription)
 			delete[] GameCodeDescription;
 
-		std::map<char*, char*>::iterator it;
-		for (it = ExtendedInfoRecords.begin(); it != ExtendedInfoRecords.end(); it++)
+		for (auto& record : ExtendedInfoRecords)
 		{
-			delete[] it->first;
-			delete[] it->second;
+			delete[] record.first;
+			delete[] record.second;
 		}
 	}
 

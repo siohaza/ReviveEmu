@@ -90,11 +90,10 @@ public:
 			delete VersionsRecord[i];
 		for (size_t i = 0; i < FilesystemsRecord.size(); i++)
 			delete FilesystemsRecord[i];
-		std::map<char*, char*>::iterator it;
-		for (it = UserDefinedRecords.begin(); it != UserDefinedRecords.end(); it++)
+		for (auto& record : UserDefinedRecords)
 		{
-			delete[] it->first;
-			delete[] it->second;
+			delete[] record.first;
+			delete[] record.second;
 		}
 		if (BetaVersionPassword)
 			delete[] BetaVersionPassword;

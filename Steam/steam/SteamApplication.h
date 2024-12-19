@@ -531,12 +531,11 @@ STEAM_API int SteamGetAppUserDefinedInfo(unsigned int uAppId, const char *cszPro
 		if (AppRecord)
 		{
 			std::map<char*, char*>& records = AppRecord->UserDefinedRecords;
-			std::map<char*, char*>::iterator it;
 
-			for(it = records.begin(); it != records.end(); it++) 
+			for(auto& record : records) 
 			{
-				const char* recordKey = it->first;
-				const char* recordVal = it->second;
+				const char* recordKey = record.first;
+				const char* recordVal = record.second;
 
 				if (_stricmp(cszPropertyName, recordKey) == 0)
 				{
