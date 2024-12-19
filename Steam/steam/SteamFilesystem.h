@@ -282,9 +282,6 @@ STEAM_API int SteamMountFilesystem(unsigned int uAppId, const char *szMountPath,
 
 	ENTER_CRITICAL_SECTION;
 
-	if (!*appid)
-		_itoa(uAppId, appid, 10);
-
 	if(CDR)
 	{
 		unsigned int uAppRecord = GetAppRecordID(uAppId);
@@ -332,7 +329,7 @@ STEAM_API int SteamMountFilesystem(unsigned int uAppId, const char *szMountPath,
 				}
 
 				if (bLogging && bLogFS)
-					Logger->Write("Loading Default Cache Requirements for AppID(%s)\n", appid);
+					Logger->Write("Loading Default Cache Requirements for AppID(%d)\n", uAppId);
 
 				MountFileSystemByID(uAppRecord, "");
 			}
@@ -364,7 +361,7 @@ STEAM_API int SteamMountAppFilesystem(TSteamError *pError) {
 
 	if (bSteamFileSystem == true)
 	{
-		if (!*appid)
+		if (!appid)
 		{
 			MessageBoxA(NULL, "You are trying to launch an unknown App ID, please specify -appid on the command line.", "AppID?", 0);
 			ExitProcess(0xffffffff);
@@ -372,31 +369,29 @@ STEAM_API int SteamMountAppFilesystem(TSteamError *pError) {
 
 		if (bSteamBlobSystem == true && CDR)
 		{
-			return SteamMountFilesystem(atoi(appid), "", pError);
+			return SteamMountFilesystem(appid, "", pError);
 		}
 		else
 		{
 			CIniFile AppIni(szAppIni);
-			char szKey[MAX_PATH];
-			char buffer[MAX_PATH];
+			char szSection[64];
+			char szKey[64];
 			char szPath[MAX_PATH];
 			char *szGCF;
 			int i;
+
+			sprintf(szSection, "%d", appid);
 
 			for(i = 1; i < 50; i++)
 			{
 				for (unsigned int uIndex = 0; uIndex < CacheLocations.size(); uIndex++)
 				{
-					strcpy(szPath, CacheLocations[uIndex]);
-
-					strcpy(szKey,"GCF");
-					_itoa(i, buffer, 10);
-					strcat(szKey, buffer);
-
-					szGCF = AppIni.IniReadValue(appid, szKey);
+					sprintf(szKey, "GCF%d", i);
+					szGCF = AppIni.IniReadValue(szSection, szKey);
 
 					if(szGCF != NULL)
 					{
+						strcpy(szPath, CacheLocations[uIndex]);
 						strcat(szPath, "\\");
 						strcat(szPath, szGCF);
 
@@ -407,11 +402,11 @@ STEAM_API int SteamMountAppFilesystem(TSteamError *pError) {
 					{
 						break;
 					}
-
-					memset(szKey,0,255);
 				}
 			}
 		}
+
+		return 1;
 	}
 
 	return 1;
@@ -437,7 +432,7 @@ STEAM_API int SteamUnmountAppFilesystem(TSteamError* pError) {
 		GlobalDirectoryTableSize = 0;
 		GlobalIndexCounter = 0;
 
-		if (bLogging && bLogFS) Logger->Write("Cache Unmounted for AppID %s\n", appid);
+		if (bLogging && bLogFS) Logger->Write("Cache Unmounted for AppID %d\n", appid);
 	}
 
 	SteamClearError(pError);

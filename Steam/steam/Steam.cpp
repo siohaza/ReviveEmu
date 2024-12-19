@@ -40,7 +40,7 @@ int nArgs;
 bool bSteamFileSystem = false;
 bool bSteamBlobSystem = false;
 std::vector<unsigned int> vecGCF;
-char appid[10];
+unsigned int appid = 0;
 char szGCFPath[MAX_PATH * 5];
 static std::vector<char*> CacheLocations;
 
@@ -160,90 +160,88 @@ void InitGlobalVaribles()
 	int envBufferLen = GetEnvironmentVariableA("SteamAppId", envBuffer, sizeof(envBuffer));
 	if (envBufferLen && envBufferLen < sizeof(envBuffer))
 	{
-		strcpy(appid, envBuffer);
+		appid = strtol(envBuffer, NULL, 10);
 	}
-	else if (inArgs(L"-appid") == true) 
+	else if (inArgs(L"-appid")) 
 	{
 		for(int i=0; i<nArgs; i++)
 		{
 			if(_wcsicmp(szArglist[i],L"-appid") == 0)
 			{
-				wcstombs(appid, szArglist[i + 1], 255);
+				appid = wcstol(szArglist[i + 1], NULL, 10);
 			}
 		}
 	}
 	else
 	{
-		*appid = 0;
+		appid = 0;
 	}
 
-		if (!*appid)
+		if (!appid)
 		{
 		    char szExePath[MAX_PATH];
 		    GetModuleFileNameA(NULL, szExePath, MAX_PATH);
 			const char *chProcName = V_GetFileName(szExePath);
 
-			szArglist = CommandLineToArgvW(GetCommandLineW(), &nArgs);
-			if(inArgs(L"-game") == true) 
+			if(inArgs(L"-game")) 
 			{
-				for(int j=0; j<nArgs; j++) 
-				{
-					if(_wcsicmp(szArglist[j],L"-game") == 0) 
-					{
-						wcstombs(appid, szArglist[j + 1], 255);
-					}
-				}
+			    char szGameDir[MAX_PATH];
 
-				if (appid)
+				for (int j = 0; j < nArgs; j++)
+			    {
+				    if (_wcsicmp(szArglist[j], L"-game") == 0)
+				    {
+					    wcstombs(szGameDir, szArglist[j + 1], MAX_PATH);
+				    }
+			    }
+
+				if (!_stricmp(szGameDir, "cstrike"))
 				{
-					if (!_stricmp(appid, "cstrike"))
-					{
-					    if (!_stricmp(chProcName, "hl.exe")) strcpy(appid, "10");
-					    if (!_stricmp(chProcName, "hl2.exe")) strcpy(appid, "240");
-					}
-					else if (!_stricmp(appid, "dod"))
-					{
-					    if (!_stricmp(chProcName, "hl.exe")) strcpy(appid, "30");
-					    if (!_stricmp(chProcName, "hl2.exe")) strcpy(appid, "300");
-					}
-				    else if (!_stricmp(appid, "garrysmod"))
-					{
-					    if (!_stricmp(chProcName, "hl2.exe")) strcpy(appid, "4000");
-					}
-				    else if (!_stricmp(appid, "hl2mp"))
-					{
-					    if (!_stricmp(chProcName, "hl2.exe")) strcpy(appid, "320");
-					}
-				    else if (!_stricmp(appid, "tf"))
-					{
-					    if (!_stricmp(chProcName, "hl2.exe")) strcpy(appid, "440");
-					}
-					else if (!_stricmp(appid, "episodic"))
-					{
-					    if (!_stricmp(chProcName, "hl2.exe")) strcpy(appid, "380");
-					}
-					else if (!_stricmp(appid, "ep2"))
-					{
-					    if (!_stricmp(chProcName, "hl2.exe")) strcpy(appid, "420");
-					}
-					else if (!_stricmp(appid, "portal"))
-					{
-					    if (!_stricmp(chProcName, "hl2.exe")) strcpy(appid, "400");
-					}
-					else if (!_stricmp(appid, "lostcoast"))
-					{
-					    if (!_stricmp(chProcName, "hl2.exe")) strcpy(appid, "340");
-					}
-					else if (!_stricmp(appid, "launcher"))
-					{
-					    if (!_stricmp(chProcName, "SourceSDK.exe")) strcpy(appid, "211");
-					}
-					else
-						*appid = 0;
+				    if (!_stricmp(chProcName, "hl.exe")) appid = 10;
+				    if (!_stricmp(chProcName, "hl2.exe")) appid = 240;
 				}
+				else if (!_stricmp(szGameDir, "dod"))
+				{
+				    if (!_stricmp(chProcName, "hl.exe")) appid = 30;
+				    if (!_stricmp(chProcName, "hl2.exe")) appid = 300;
+				}
+				else if (!_stricmp(szGameDir, "garrysmod"))
+				{
+				    if (!_stricmp(chProcName, "hl2.exe")) appid = 4000;
+				}
+				else if (!_stricmp(szGameDir, "hl2mp"))
+				{
+				    if (!_stricmp(chProcName, "hl2.exe")) appid = 320;
+				}
+				else if (!_stricmp(szGameDir, "tf"))
+				{
+				    if (!_stricmp(chProcName, "hl2.exe")) appid = 440;
+				}
+				else if (!_stricmp(szGameDir, "episodic"))
+				{
+				    if (!_stricmp(chProcName, "hl2.exe")) appid = 380;
+				}
+				else if (!_stricmp(szGameDir, "ep2"))
+				{
+				    if (!_stricmp(chProcName, "hl2.exe")) appid = 420;
+				}
+				else if (!_stricmp(szGameDir, "portal"))
+				{
+				    if (!_stricmp(chProcName, "hl2.exe")) appid = 400;
+				}
+				else if (!_stricmp(szGameDir, "lostcoast"))
+				{
+				    if (!_stricmp(chProcName, "hl2.exe")) appid = 340;
+				}
+				else if (!_stricmp(szGameDir, "launcher"))
+				{
+				    if (!_stricmp(chProcName, "SourceSDK.exe")) appid = 211;
+				}
+				else
+					appid = 0;
 			}
-			else if(!_stricmp(chProcName, "hl.exe")) strcpy(appid, "70");
-			else if(!_stricmp(chProcName, "hl2.exe")) strcpy(appid, "220");
+			else if(!_stricmp(chProcName, "hl.exe")) appid = 70;
+			else if(!_stricmp(chProcName, "hl2.exe")) appid = 220;
 		}
 
 			char chLogFile[MAX_PATH];
