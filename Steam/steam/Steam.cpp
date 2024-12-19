@@ -83,7 +83,7 @@ unsigned int GlobalIndexCounter = 0;
 
 static CContentDescriptionRecord* CDR = NULL;
 std::vector<TGlobalDirectory> GlobalDirectoryTable;
-static std::map<unsigned int, TGlobalDirectory> HashTable;
+static std::map<uint32_t, TGlobalDirectory> HashTable;
 
 #include "CacheSystem\CCacheSystem.h"	//Cache
 

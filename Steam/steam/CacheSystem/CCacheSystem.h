@@ -567,7 +567,7 @@ private:
 		}
 		else
 		{
-			unsigned int EntryHash = murmur3_32((const unsigned char*)cszPattern, strlen(cszPattern), MURMUR_SEED);		
+			uint32_t EntryHash = murmur3_32((const uint8_t*)cszPattern, strlen(cszPattern), MURMUR_SEED);		
 			auto it = HashTable.find(EntryHash);
 
 			if (it != HashTable.end())
@@ -732,7 +732,7 @@ private:
 				TGlobalDirectory FindThisItem;
 				ActualDirEntry = &DirectoryTable[CacheIndex];
 
-				unsigned int EntryHash = murmur3_32((unsigned char*)ActualDirEntry->FullName, strlen(ActualDirEntry->FullName), MURMUR_SEED);
+				uint32_t EntryHash = murmur3_32((uint8_t*)(ActualDirEntry->FullName), strlen(ActualDirEntry->FullName), MURMUR_SEED);
 
 				FindThisItem.pCache = ActualDirEntry->pCache;
 				FindThisItem.FullName = ActualDirEntry->FullName;
