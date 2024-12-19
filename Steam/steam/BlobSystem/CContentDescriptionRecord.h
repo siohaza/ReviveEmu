@@ -29,9 +29,9 @@ public:
 	{
 		char* CDRData;
 		char* NodeEnd; 
+		Bytef* zBuffer = NULL;
 
 		TNodeHeader *NodeHeader = (TNodeHeader*)CDRBinary;
-
 
 		if(NodeHeader->magic != NodeMagicNum)
 		{
@@ -39,20 +39,18 @@ public:
 
 			if(NodeHeaderCompressed->magic == NodeMagicNumCompressed)
 			{
-
 				WORD header=*(WORD*)CDRBinary;
 				DWORD compressedSize=*(DWORD*)(CDRBinary+0x02);
 				DWORD uncompressedSize=*(DWORD*)(CDRBinary+0x0A);
 				WORD unknown2=*(WORD*)(CDRBinary+0x12);
-				char * zData=CDRBinary+0x14;
-				char * zbuffer= new char[(DWORD)uncompressedSize];
+				Bytef* zData=(Bytef*)(CDRBinary+0x14);
+				zBuffer=new Bytef[uncompressedSize];
    
-				int result=uncompress((unsigned char*)zbuffer,&uncompressedSize,(unsigned char*)zData,(DWORD)compressedSize);
+				int result=uncompress(zBuffer,&uncompressedSize,zData,compressedSize);
 			
-				CDRData = zbuffer;
+				CDRData = (char*)zBuffer;
 				NodeEnd = CDRData + NodeHeaderCompressed->datalength;
 			}
-
 		}
 		else
 		{
@@ -63,7 +61,6 @@ public:
 		CDRData += sizeof(TNodeHeader);
 		while(CDRData < NodeEnd)
 		{
-
 			TDescriptorNode *DNode = (TDescriptorNode*)CDRData;
 			CDRData += sizeof(TDescriptorNode);
 
@@ -157,9 +154,11 @@ public:
 				default:
 						CDRData += DNode->datalength;
 						break;
-
 			}
 		}
+
+		if (zBuffer)
+			delete[] zBuffer;
 	}
 
 	~CContentDescriptionRecord()
