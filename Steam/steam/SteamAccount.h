@@ -185,8 +185,16 @@ STEAM_API int STEAM_CALL SteamGetUser(char *szUser, unsigned int uBufSize, unsig
 	if (bLogging && bLogAcc) Logger->Write("SteamGetUser\n");
 // #endif
 
-	strcpy(szUser, szSteamUser);
+	strncpy(szUser, szSteamUser, uBufSize);
 	*puUserChars = strlen(szSteamUser);
+	
+	if (pSteamGlobalUserID)
+	{
+		pSteamGlobalUserID->m_SteamInstanceID = 0;
+		pSteamGlobalUserID->Split.High32bits = 0;
+		pSteamGlobalUserID->Split.Low32bits = g_dwClientId / 2;
+	}
+
 	SteamClearError(pError);
 	return 1;
 }
@@ -226,7 +234,7 @@ STEAM_API int STEAM_CALL SteamIsLoggedIn(int *pbIsLoggedIn, TSteamError *pError)
 		}
 	}
 
-	return TRUE;
+	return 1;
 }
 
 STEAM_API int STEAM_CALL SteamIsSecureComputer(int *pbIsSecure, TSteamError *pError)
