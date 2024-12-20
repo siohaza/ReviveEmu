@@ -276,6 +276,7 @@
     <ClInclude Include="logFile.h" />
     <ClInclude Include="MurmurHash.h" />
     <ClInclude Include="registry.h" />
+    <ClInclude Include="RevCommon.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Steam.h" />
     <ClInclude Include="SteamAccount.h" />

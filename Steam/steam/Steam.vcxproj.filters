@@ -333,6 +333,9 @@
     <ClInclude Include="zlib\zutil.h">
       <Filter>Header Files\zlib</Filter>
     </ClInclude>
+    <ClInclude Include="RevCommon.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Steam.RES">

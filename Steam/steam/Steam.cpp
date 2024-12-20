@@ -75,6 +75,7 @@ unsigned int GlobalDirectoryTableSize = 0;
 unsigned int GlobalIndexCounter = 0;
 
 #include "Steam.h"
+#include "RevCommon.h"
 
 #include "BlobSystem\CBlobSystem.h"		//Blob
 
