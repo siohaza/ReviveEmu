@@ -3,8 +3,6 @@
 #include "SteamEngineClient.h"
 
 extern CLogFile* Logger;
-extern char szOrigSteamDll[MAX_PATH];
-extern BOOL bSteamDll;
 extern BOOL bLogging;
 BOOL bSteamStartup = FALSE;
 
@@ -118,16 +116,12 @@ STEAM_API int STEAM_CALL SteamGetVersion(char *szVersion, unsigned int uVersionB
 // #ifdef DEBUG
 	if (bLogging) Logger->Write("SteamGetVersion\n");
 // #endif
-	int retval = 1;
-	if (bSteamDll)
-	{
-		int (*fptr)(char*, unsigned int);
-		*(void **)(&fptr) = GetProcAddress(GetModuleHandleA(szOrigSteamDll), "SteamGetVersion");
-		retval = (*fptr)(szVersion, uVersionBufSize);
-		if (bLogging) Logger->Write("\t%u, %s\n", retval, szVersion);
-	}
-	strcpy(szVersion, "2.0.0.0");
-	return retval;
+
+	if (!szVersion)
+		return 0;
+
+	strncpy(szVersion, "2.0.0.0", uVersionBufSize);
+	return 1;
 }
 
 STEAM_API int STEAM_CALL SteamShutdownEngine(TSteamError *pError)

@@ -13,9 +13,14 @@ STEAM_API int STEAM_CALL SteamProcessCall(SteamCallHandle_t handle, TSteamProgre
 	if (bLogging) Logger->Write("SteamProcessCall\n");
 // #endif
 	SteamClearError(pError);
-	pProgress->bValid = TRUE;
-	strcpy(pProgress->szProgress, "100%");
-	pProgress->uPercentDone = 100;
+
+	if (pProgress)
+	{
+		pProgress->bValid = 1;
+		pProgress->uPercentDone = 100;
+		strcpy(pProgress->szProgress, "100%");
+	}
+
 	return 1;
 }
 

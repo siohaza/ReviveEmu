@@ -173,8 +173,13 @@ STEAM_API int STEAM_CALL SteamGetUser(char *szUser, unsigned int uBufSize, unsig
 	if (bLogging && bLogAcc) Logger->Write("SteamGetUser\n");
 // #endif
 
-	strcpy(szUser, szSteamUser);
-	*puUserChars = strlen(szSteamUser);
+	if (!szUser)
+		return 0;
+
+	strncpy(szUser, szSteamUser, uBufSize);
+	if (puUserChars)
+		*puUserChars = strlen(szSteamUser);
+
 	SteamClearError(pError);
 	return 1;
 }
@@ -185,8 +190,12 @@ STEAM_API int STEAM_CALL SteamGetUser(char *szUser, unsigned int uBufSize, unsig
 	if (bLogging && bLogAcc) Logger->Write("SteamGetUser\n");
 // #endif
 
-	strncpy(szUser, szSteamUser, uBufSize);
-	*puUserChars = strlen(szSteamUser);
+	if (szUser)
+	{
+		strncpy(szUser, szSteamUser, uBufSize);
+		if (puUserChars)
+			*puUserChars = strlen(szSteamUser);
+	}
 	
 	if (pSteamGlobalUserID)
 	{
