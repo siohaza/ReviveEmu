@@ -220,20 +220,8 @@ STEAM_API int STEAM_CALL SteamIsLoggedIn(int *pbIsLoggedIn, TSteamError *pError)
 {
     if(bLogging) Logger->Write("SteamIsLoggedIn\n");
 	
-	//pbIsLoggedIn[1] = 1; Wasn't loading SteamMountAppFilesystem
-	*pbIsLoggedIn = 1; // This works
+	*pbIsLoggedIn = 1;
 	SteamClearError(pError);
- 
-	if (!bSteamClient)
-	{
-		FARPROC InitGlobalInstance = GetProcAddress(LoadLibraryA("steam_api.dll"), "SteamAPI_InitGlobalInstance");
-		if((DWORD)InitGlobalInstance != 0) 
-		{
-			InitGlobalInstance();
-			if(bLogging) Logger->Write("SteamAPI_InitGlobalInstance\n");
-		}
-	}
-
 	return 1;
 }
 
