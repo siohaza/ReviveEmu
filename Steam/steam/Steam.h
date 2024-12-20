@@ -59,7 +59,7 @@ STEAM_API int					STEAM_CALL	SteamMountAppFilesystem(TSteamError *pError);
 STEAM_API int					STEAM_CALL	SteamUnmountAppFilesystem(TSteamError* pError);
 STEAM_API int					STEAM_CALL	SteamMountFilesystem(unsigned int uAppId, const char *szMountPath, TSteamError *pError);
 STEAM_API int					STEAM_CALL	SteamUnmountFilesystem(unsigned int uAppId, TSteamError *pError);
-STEAM_API SteamHandle_t			STEAM_CALL	SteamOpenFileEx(const char *cszFileName, const char *cszMode, unsigned int *size, TSteamError *pError);
+STEAM_API SteamHandle_t			STEAM_CALL	SteamOpenFileEx(const char *cszFileName, const char *cszMode, unsigned int *puFileSize, TSteamError *pError);
 STEAM_API SteamHandle_t			STEAM_CALL	SteamOpenFile(const char *cszFileName, const char *cszMode, TSteamError *pError);
 STEAM_API SteamHandle_t			STEAM_CALL	SteamOpenTmpFile(TSteamError *pError);
 STEAM_API int					STEAM_CALL	SteamFlushFile(SteamHandle_t hFile, TSteamError *pError);
@@ -74,9 +74,9 @@ STEAM_API int					STEAM_CALL	SteamSeekFile(SteamHandle_t hFile, long lOffset, ES
 STEAM_API long					STEAM_CALL	SteamSizeFile(SteamHandle_t hFile, TSteamError *pError);
 STEAM_API long					STEAM_CALL	SteamTellFile(SteamHandle_t hFile, TSteamError *pError);
 STEAM_API int					STEAM_CALL	SteamStat(const char *cszFileName, TSteamElemInfo *pInfo, TSteamError *pError);
-STEAM_API int					STEAM_CALL	SteamFindClose(SteamHandle_t hFind, TSteamError *pError);
+STEAM_API int					STEAM_CALL	SteamFindClose(SteamHandle_t hDirectory, TSteamError *pError);
 STEAM_API SteamHandle_t			STEAM_CALL	SteamFindFirst(const char *cszPattern, ESteamFindFilter eFilter, TSteamElemInfo *pFindInfo, TSteamError *pError);
-STEAM_API int					STEAM_CALL	SteamFindNext(SteamHandle_t hFind, TSteamElemInfo *pFindInfo, TSteamError *pError);
+STEAM_API int					STEAM_CALL	SteamFindNext(SteamHandle_t hDirectory, TSteamElemInfo *pFindInfo, TSteamError *pError);
 STEAM_API int					STEAM_CALL	SteamGetLocalFileCopy(const char *cszFileName, TSteamError *pError);
 STEAM_API int					STEAM_CALL	SteamIsFileImmediatelyAvailable(const char *cszName, TSteamError *pError);
 STEAM_API int					STEAM_CALL	SteamHintResourceNeed(const char *cszHintList, int bForgetEverything, TSteamError *pError);
@@ -236,7 +236,7 @@ STEAM_API int					STEAM_CALL	SteamCheckAppOwnership();
 }
 #endif
 
-SteamHandle_t SteamOpenFile2(const char* cszFileName, const char* cszMode, int iArg3, unsigned int* puSize, int* piArg5, TSteamError *pError);
+SteamHandle_t SteamOpenFile2(const char* cszFileName, const char* cszMode, int nFlags, unsigned int* puFileSize, int* pbLocal, TSteamError* pError);
 int SteamGetCurrentAppId(unsigned int* puAppId, TSteamError* pError);
 void PatchEngine(void);
 

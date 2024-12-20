@@ -122,6 +122,9 @@ public:
 
 	TFileInCacheHandle* CacheOpenFileEx(const char *cszFileName, const char *cszMode, unsigned int *puSize)
 	{
+		if (strpbrk(cszMode, "wa"))
+			return NULL;
+
 		if (TManifestEntriesInCache* FileToOpen = CacheFindFile(cszFileName))
 		{
 			TFileInCacheHandle* hFile = new TFileInCacheHandle();
@@ -133,7 +136,7 @@ public:
 				*puSize = FileToOpen->Size;
 			}
 
-			strcpy(hFile->mode, cszMode);
+			strncpy(hFile->mode, cszMode, sizeof(hFile->mode));
 
 			//LoggerFileOpened = true;
 

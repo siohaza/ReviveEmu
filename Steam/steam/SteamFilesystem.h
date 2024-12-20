@@ -195,11 +195,11 @@ void MountExtraLanguageCaches(const char * szName, const char * szLanguage, bool
 	}
 }
 
-SteamHandle_t SteamOpenFile2(const char* cszFileName, const char* cszMode, int iArg3, unsigned int* puSize, int* piArg5, TSteamError *pError)
+SteamHandle_t SteamOpenFile2(const char* cszFileName, const char* cszMode, int nFlags, unsigned int* puFileSize, int* pbLocal, TSteamError* pError)
 {
 	ENTER_CRITICAL_SECTION;
 
-	if (bLogging && bLogFS) Logger->Write("SteamOpenFileEx(%s, %s, %u, %u, %u)\n", cszFileName, cszMode, iArg3, puSize, piArg5);
+	if (bLogging && bLogFS) Logger->Write("SteamOpenFileEx(%s, %s, %u, %u, %u)\n", cszFileName, cszMode, nFlags, puFileSize, pbLocal);
 
 	std::string FullPath(cszFileName);
 	int dot = FullPath.find_last_of('\\');
@@ -221,12 +221,9 @@ SteamHandle_t SteamOpenFile2(const char* cszFileName, const char* cszMode, int i
 		szLoggerMode = cszMode;
 	}
 
-	char filename[MAX_PATH];
-	strcpy(filename, cszFileName);
-
 	SteamClearError(pError);
 
-	if(strpbrk(filename, "?*"))
+	if (strpbrk(cszFileName, "?*"))
 	{
 		pError->eSteamError = eSteamErrorNotFound;
 		if (bLogging && bLogFS) Logger->Write("\tFile not found (%s)\n", cszFileName);
@@ -237,47 +234,53 @@ SteamHandle_t SteamOpenFile2(const char* cszFileName, const char* cszMode, int i
 	char szFullPath[MAX_PATH];
 	V_MakeAbsolutePath(szFullPath, MAX_PATH, cszFileName);
 
+	TFileInCacheHandle* hCacheFile = NULL;
 	FILE* pFile = fopen(szFullPath, cszMode);
 
-	if(pFile && puSize != NULL)
+	if (pFile)
 	{
-		fseek(pFile,0,SEEK_END);
-		*puSize = ftell(pFile);
-		fseek(pFile,0,SEEK_SET);
+		hCacheFile = new TFileInCacheHandle();
+		memset(hCacheFile, 0, sizeof(TFileInCacheHandle));
+		hCacheFile->IsFileLocal = 1;
+		hCacheFile->LocalFile = pFile;
+
+		if (puFileSize)
+		{
+			fseek(pFile, 0, SEEK_END);
+			*puFileSize = ftell(pFile);
+			fseek(pFile, 0, SEEK_SET);
+		}
+
+		if (pbLocal)
+			*pbLocal = 1;
+
+		if (bLogging && bLogFS) Logger->Write("\tOpened 0x%08X from Local(%s) %s >> %s\n", (long)hCacheFile, cszMode, FileName.c_str(), PathName.c_str());
+		LoggerFileOpened = true;
 	}
-
-	TFileInCacheHandle* hFile = NULL;
-
-	if(pFile == NULL)
+	else
 	{
 		if (bSteamFileSystem == true)
-			hFile = CacheManager->CacheOpenFileEx(cszFileName, cszMode, puSize);
+			hCacheFile = CacheManager->CacheOpenFileEx(cszFileName, cszMode, puFileSize);
 
-		if (!hFile)
+		if (!hCacheFile)
 		{
 			pError->eSteamError = eSteamErrorNotFound;
 			if (bLogging && bLogFS) Logger->Write("\tFile not found (%s)\n", cszFileName);
 		}
 		else
 		{
-			if (bLogging && bLogFS) Logger->Write("\tOpened 0x%08X from Cache(%s) %s\n", (long)hFile, cszMode, cszFileName);
+			if (pbLocal)
+				*pbLocal = 0;
+
+			if (bLogging && bLogFS) Logger->Write("\tOpened 0x%08X from Cache(%s) %s\n", (long)hCacheFile, cszMode, cszFileName);
 		}
 	}
-	else
-	{
-		hFile = new TFileInCacheHandle();
-		memset(hFile, 0, sizeof(TFileInCacheHandle));
-		hFile->IsFileLocal = 1;
-		hFile->LocalFile = pFile;
 
-		if (bLogging && bLogFS) Logger->Write("\tOpened 0x%08X from Local(%s) %s >> %s\n", (long)hFile, cszMode, FileName.c_str(), PathName.c_str() );
-		LoggerFileOpened = true;
-	}
-
-	return (SteamHandle_t)hFile;
+	return (SteamHandle_t)hCacheFile;
 }
 
-STEAM_API int SteamMountFilesystem(unsigned int uAppId, const char *szMountPath, TSteamError *pError) {
+STEAM_API int SteamMountFilesystem(unsigned int uAppId, const char *szMountPath, TSteamError *pError)
+{
 	if (bLogging) Logger->Write("SteamMountFilesystem (%u, %s)\n", uAppId, szMountPath);
 
 	ENTER_CRITICAL_SECTION;
@@ -298,7 +301,7 @@ STEAM_API int SteamMountFilesystem(unsigned int uAppId, const char *szMountPath,
 				for(unsigned int x = 0; x < CDR->ApplicationRecords[uAppRecord]->FilesystemsRecord.size(); x++)
 				{
 					CAppFilesystemRecord* pFSRecord = CDR->ApplicationRecords[uAppRecord]->FilesystemsRecord[x];
-					
+
 					// Don't mount depots from other operating systems.
 #if defined(_WIN32)
 					const char *cszHostOS = "windows";
@@ -347,14 +350,16 @@ STEAM_API int SteamMountFilesystem(unsigned int uAppId, const char *szMountPath,
 	return 1;
 }
 
-STEAM_API int SteamUnmountFilesystem(unsigned int uAppID, TSteamError *pError ) {
+STEAM_API int SteamUnmountFilesystem(unsigned int uAppID, TSteamError* pError)
+{
 	if (bLogging) Logger->Write("SteamUnmountFilesystem (%u)\n", uAppID);
 	SteamClearError(pError);
 
 	return 1;
 }
 
-STEAM_API int SteamMountAppFilesystem(TSteamError *pError) {
+STEAM_API int SteamMountAppFilesystem(TSteamError *pError)
+{
 	if (bLogging) Logger->Write("SteamMountAppFilesystem\n");
 
 	SteamClearError(pError);
@@ -413,8 +418,8 @@ STEAM_API int SteamMountAppFilesystem(TSteamError *pError) {
 }
 
 
-STEAM_API int SteamUnmountAppFilesystem(TSteamError* pError) {
-
+STEAM_API int SteamUnmountAppFilesystem(TSteamError* pError)
+{
 	ENTER_CRITICAL_SECTION;
 
 	if (bLogging) Logger->Write("SteamUnmountAppFilesystem\n");
@@ -440,75 +445,84 @@ STEAM_API int SteamUnmountAppFilesystem(TSteamError* pError) {
 }
 
 
-STEAM_API SteamHandle_t SteamOpenFileEx(const char *cszFileName, const char *cszMode, unsigned int *puSize, TSteamError *pError) {
-
-	return SteamOpenFile2(cszFileName, cszMode, NULL, puSize, NULL, pError);
-
+STEAM_API SteamHandle_t SteamOpenFileEx(const char* cszFileName, const char* cszMode, unsigned int* puFileSize, TSteamError* pError)
+{
+	return SteamOpenFile2(cszFileName, cszMode, 0, puFileSize, NULL, pError);
 }
 
-STEAM_API SteamHandle_t SteamOpenFile(const char *cszFileName, const char *cszMode, TSteamError *pError) {
-
-	return SteamOpenFile2(cszFileName, cszMode, NULL, NULL, NULL, pError);
-
+STEAM_API SteamHandle_t SteamOpenFile(const char* cszFileName, const char* cszMode, TSteamError* pError)
+{
+	return SteamOpenFile2(cszFileName, cszMode, 0, NULL, NULL, pError);
 }
 
-STEAM_API unsigned int SteamReadFile(void *pBuf, unsigned int uSize, unsigned int uCount, SteamHandle_t hFile, TSteamError *pError ) {
-
+STEAM_API unsigned int SteamReadFile(void* pBuf, unsigned int uSize, unsigned int uCount, SteamHandle_t hFile, TSteamError* pError)
+{
 	ENTER_CRITICAL_SECTION;
 
+	//if (bLogging && bLogFS) Logger->Write("SteamReadFile(0x%08X, %u, %u, 0x%08X)\n", pBuf, uSize, uCount, (long)hFile);
+
 	SteamClearError(pError);
-	int readedbytes;
 
-	 if(((TFileInCacheHandle*)hFile)->IsFileLocal)
-	 {
-		  readedbytes = fread(pBuf, uSize, uCount, ((TFileInCacheHandle*)hFile)->LocalFile);
+	TFileInCacheHandle* hCacheFile = (TFileInCacheHandle*)hFile;
+	unsigned int readamount = 0;
 
-	 } else {
-		  readedbytes = CacheManager->CacheReadFile(pBuf,uSize,uCount, (TFileInCacheHandle*)hFile);
-	 }
+	if (hCacheFile->IsFileLocal)
+	{
+		readamount = fread(pBuf, uSize, uCount, hCacheFile->LocalFile);
 
-	 if(readedbytes != uSize * uCount) {
-		pError->eSteamError = eSteamErrorEOF;
-		return readedbytes;
-	 }
-	 //return readedbytes;
-	 return readedbytes;
+		if (readamount != uCount && feof(hCacheFile->LocalFile))
+		{
+			pError->eSteamError = eSteamErrorEOF;
+		}
+	}
+	else
+	{
+		readamount = CacheManager->CacheReadFile(pBuf, uSize, uCount, hCacheFile);
 
+		if (readamount != uSize * uCount)
+		{
+			pError->eSteamError = eSteamErrorEOF;
+		}
+
+		if (uSize > 1)
+		{
+			readamount /= uSize;
+		}
+	}
+
+	return readamount;
 }
 
-STEAM_API int SteamCloseFile(SteamHandle_t hFile, TSteamError *pError) {
-
+STEAM_API int SteamCloseFile(SteamHandle_t hFile, TSteamError* pError)
+{
 	ENTER_CRITICAL_SECTION;
 
 	if (bLogging && bLogFS) Logger->Write("SteamCloseFile(0x%08X)\n", (long)hFile);
 
 	SteamClearError(pError);
 
-	int retval = 0;
-	TFileInCacheHandle* pCacheFile = (TFileInCacheHandle*)hFile;
+	TFileInCacheHandle* hCacheFile = (TFileInCacheHandle*)hFile;
+	int retval = EOF;
 
-	if (pCacheFile->IsFileLocal)
+	if (hCacheFile->IsFileLocal)
 	{
-		FILE* pFile = pCacheFile->LocalFile;
+		FILE* pFile = hCacheFile->LocalFile;
 		retval = fclose(pFile);
-		delete pCacheFile;
+		delete hCacheFile;
 	}
 	else
 	{
-		retval = CacheManager->CacheCloseFile(pCacheFile);
+		retval = CacheManager->CacheCloseFile(hCacheFile);
 	}
 
 	return retval;
 }
 
-STEAM_API SteamHandle_t SteamFindFirst(const char *cszPattern, ESteamFindFilter eFilter, TSteamElemInfo *pFindInfo, TSteamError *pError ) {
-
+STEAM_API SteamHandle_t SteamFindFirst(const char *cszPattern, ESteamFindFilter eFilter, TSteamElemInfo *pFindInfo, TSteamError *pError )
+{
 	ENTER_CRITICAL_SECTION;
 
 	if (bLogging && bLogFS) Logger->Write("SteamFindFirst(%s)\n", cszPattern);
-
-	char filename[MAX_PATH];
-	strcpy(filename, cszPattern);
 
 	SteamClearError(pError);
 
@@ -519,7 +533,7 @@ STEAM_API SteamHandle_t SteamFindFirst(const char *cszPattern, ESteamFindFilter 
 		{
 			if (bSteamFileSystem)
 			{
-				TFindHandle* hFind = CacheManager->CacheFindFirst(filename, eFilter, pFindInfo);
+				TFindHandle* hFind = CacheManager->CacheFindFirst(cszPattern, eFilter, pFindInfo);
 				if (hFind)
 				{
 					return (SteamHandle_t)hFind;
@@ -528,7 +542,7 @@ STEAM_API SteamHandle_t SteamFindFirst(const char *cszPattern, ESteamFindFilter 
 				if (eFilter == eSteamFindRemoteOnly)
 				{
 					pError->eSteamError = eSteamErrorNotFound;
-					if (bLogging && bLogFS) Logger->Write("\tFile pattern not found in cache (%s)\n", filename);
+					if (bLogging && bLogFS) Logger->Write("\tFile pattern not found in cache (%s)\n", cszPattern);
 					return STEAM_INVALID_HANDLE;
 				}
 			}
@@ -539,11 +553,11 @@ STEAM_API SteamHandle_t SteamFindFirst(const char *cszPattern, ESteamFindFilter 
 	case eSteamFindLocalOnly:
 		{
 			_finddata_t finddata;
-			intptr_t hLocalFind = _findfirst(filename, &finddata);
+			intptr_t hLocalFind = _findfirst(cszPattern, &finddata);
 			if (hLocalFind == -1)
 			{
 				pError->eSteamError = eSteamErrorNotFound;
-				if (bLogging && bLogFS) Logger->Write("\tFile pattern not found (%s)\n", filename);
+				if (bLogging && bLogFS) Logger->Write("\tFile pattern not found (%s)\n", cszPattern);
 				return STEAM_INVALID_HANDLE;
 			}
 			pFindInfo->bIsDir = ((finddata.attrib & _A_SUBDIR) != 0);
@@ -562,43 +576,43 @@ STEAM_API SteamHandle_t SteamFindFirst(const char *cszPattern, ESteamFindFilter 
 			hFind->LocalFind = hLocalFind;
 			hFind->eFilter = eFilter;
 			strcpy(hFind->szPattern, cszPattern);
-			if (bLogging && bLogFS) Logger->Write("\tFound Local file (%s) using pattern (%s)\n", finddata.name, filename);
+			if (bLogging && bLogFS) Logger->Write("\tFound Local file (%s) using pattern (%s)\n", finddata.name, cszPattern);
 
 			return (SteamHandle_t)hFind;
 		}
 	default:
 		{
 			pError->eSteamError = eSteamErrorBadArg;
-			if (bLogging && bLogFS) Logger->Write("\tFile not found (%s) <BAD ARGUMENT>\n", filename);
+			if (bLogging && bLogFS) Logger->Write("\tFile not found (%s) <BAD ARGUMENT>\n", cszPattern);
 			return STEAM_INVALID_HANDLE;
 		}
 	}
 }
 
-STEAM_API int SteamFindNext(SteamHandle_t hDirectory, TSteamElemInfo *pFindInfo, TSteamError *pError ) {
-
+STEAM_API int SteamFindNext(SteamHandle_t hDirectory, TSteamElemInfo *pFindInfo, TSteamError *pError )
+{
 	ENTER_CRITICAL_SECTION;
 
 	if (bLogging && bLogFS) Logger->Write("SteamFindNext\n");
 
 	SteamClearError(pError);
 
-	TFindHandle* pFind = reinterpret_cast<TFindHandle*>(hDirectory);
+	TFindHandle* hCacheFind = reinterpret_cast<TFindHandle*>(hDirectory);
 
-	if (!strpbrk(pFind->szPattern, "?*"))
+	if (!strpbrk(hCacheFind->szPattern, "?*"))
 	{
 		return -1;
 	}
 
-	if (!pFind->IsFindLocal && (pFind->eFilter == eSteamFindAll || pFind->eFilter == eSteamFindRemoteOnly))
+	if (!hCacheFind->IsFindLocal && (hCacheFind->eFilter == eSteamFindAll || hCacheFind->eFilter == eSteamFindRemoteOnly))
 	{
-		int retval = CacheManager->CacheFindNext(pFind, pFindInfo);
+		int retval = CacheManager->CacheFindNext(hCacheFind, pFindInfo);
 
-		if (retval == -1 && pFind->eFilter == eSteamFindAll)
+		if (retval == -1 && hCacheFind->eFilter == eSteamFindAll)
 		{
 			// switch to local search
 			_finddata_t finddata;
-			intptr_t hLocalFind = _findfirst(pFind->szPattern, &finddata);
+			intptr_t hLocalFind = _findfirst(hCacheFind->szPattern, &finddata);
 
 			if (hLocalFind != -1)
 			{
@@ -610,8 +624,8 @@ STEAM_API int SteamFindNext(SteamHandle_t hDirectory, TSteamElemInfo *pFindInfo,
 				pFindInfo->lLastModificationTime = (long)finddata.time_write;
 				strcpy(pFindInfo->cszName, finddata.name);
 
-				pFind->IsFindLocal = true;
-				pFind->LocalFind = hLocalFind;
+				hCacheFind->IsFindLocal = true;
+				hCacheFind->LocalFind = hLocalFind;
 
 				SteamClearError(pError);
 				if (bLogging && bLogFS) Logger->Write("\tFound Local file (%s)\n", finddata.name);
@@ -625,10 +639,10 @@ STEAM_API int SteamFindNext(SteamHandle_t hDirectory, TSteamElemInfo *pFindInfo,
 		return retval;
 	}
 
-	if ((pFind->IsFindLocal && (pFind->eFilter == eSteamFindAll || pFind->eFilter == eSteamFindLocalOnly)) || !bSteamFileSystem)
+	if ((hCacheFind->IsFindLocal && (hCacheFind->eFilter == eSteamFindAll || hCacheFind->eFilter == eSteamFindLocalOnly)) || !bSteamFileSystem)
 	{
 		_finddata_t finddata;
-		int retval = _findnext(pFind->LocalFind, &finddata);
+		int retval = _findnext(hCacheFind->LocalFind, &finddata);
 
 		if (retval != -1)
 		{
@@ -649,302 +663,336 @@ STEAM_API int SteamFindNext(SteamHandle_t hDirectory, TSteamElemInfo *pFindInfo,
 	return -1;
 }
 
-STEAM_API int SteamFindClose(SteamHandle_t hDirectory, TSteamError *pError ) {
-
+STEAM_API int SteamFindClose(SteamHandle_t hDirectory, TSteamError* pError)
+{
 	ENTER_CRITICAL_SECTION;
 
 	if (bLogging && bLogFS) Logger->Write("SteamFindClose\n");
 
 	SteamClearError(pError);
 
-	int retval = 0;
-	TFindHandle* pFind = (TFindHandle*)hDirectory;
+	TFindHandle* hCacheFind = (TFindHandle*)hDirectory;
+	int retval = -1;
 
-	if (pFind->IsFindLocal)
+	if (hCacheFind->IsFindLocal)
 	{
-		retval = _findclose(pFind->LocalFind);
-		delete pFind;
+		retval = _findclose(hCacheFind->LocalFind);
+		delete hCacheFind;
 	}
 	else
 	{
-		retval = CacheManager->CacheFindClose(pFind);
-	}
-
-	if (retval == -1)
-	{
-		pError->eSteamError = eSteamErrorNotFound;
+		retval = CacheManager->CacheFindClose(hCacheFind);
 	}
 
 	return retval;
 }
 
-STEAM_API int SteamStat(const char* cszFileName, TSteamElemInfo *pInfo, TSteamError *pError) {
-
+STEAM_API int SteamStat(const char* cszFileName, TSteamElemInfo* pInfo, TSteamError* pError)
+{
 	ENTER_CRITICAL_SECTION;
 
 	if (bLogging && bLogFS) Logger->Write("SteamStat(%s, 0x%p, 0x%p)\n", cszFileName, pInfo, pError);
 
-	char filename[MAX_PATH];
-	strcpy(filename, cszFileName);
-
-
 	SteamClearError(pError);
 
-	struct _stat buf;
-	int dwRet = -1;
-
-	if(strpbrk(filename, "?*")) {
+	if (strpbrk(cszFileName, "?*"))
+	{
 		pError->eSteamError = eSteamErrorNotFound;
-		if (bLogging && bLogFS) Logger->Write("\tFile not found (%s)\n", filename);
-		return dwRet;
+		if (bLogging && bLogFS) Logger->Write("\tFile not found (%s)\n", cszFileName);
+		return -1;
 	}
 
-	dwRet = _stat(filename, &buf);
-	if(!dwRet)
+	struct _stat buf;
+	int retval = _stat(cszFileName, &buf);
+	if (retval == 0)
 	{
 		pInfo->bIsDir = ((buf.st_mode & S_IFMT) == S_IFDIR);
 
 		pInfo->uSizeOrCount = buf.st_size;
 		pInfo->bIsLocal = 1;
-		strcpy(pInfo->cszName, filename);
+		strcpy(pInfo->cszName, cszFileName);
 		pInfo->lCreationTime = (long)buf.st_ctime;
 		pInfo->lLastAccessTime = (long)buf.st_atime;
 		pInfo->lLastModificationTime = (long)buf.st_mtime;
-
 	}
 	else if (bSteamFileSystem == true)
 	{
-		dwRet = CacheManager->CacheStat(filename, pInfo);
-		if (dwRet != 0)
-		{
-			pError->eSteamError = eSteamErrorNotFound;
-			if (bLogging && bLogFS) Logger->Write("\tFile not found (%s)\n", filename);
-		}
+		retval = CacheManager->CacheStat(cszFileName, pInfo);
 	}
-	return dwRet;
+
+	if (retval != 0)
+	{
+		pError->eSteamError = eSteamErrorNotFound;
+		if (bLogging && bLogFS) Logger->Write("\tFile not found (%s)\n", cszFileName);
+	}
+
+	return retval;
 }
 
 
-STEAM_API int SteamFlushFile(SteamHandle_t hFile, TSteamError *pError ) {
+STEAM_API int SteamFlushFile(SteamHandle_t hFile, TSteamError* pError)
+{
+	ENTER_CRITICAL_SECTION;
+
 	if (bLogging && bLogFS) Logger->Write("SteamFlushFile(0x%08X)\n", (long)hFile);
+
 	SteamClearError(pError);
 
-	int hRetVal = -1;
+	TFileInCacheHandle* hCacheFile = (TFileInCacheHandle*)hFile;
+	int retval = EOF;
 
-	if (!((TFileInCacheHandle*)hFile)->IsFileLocal)
+	if (hCacheFile->IsFileLocal)
 	{
-
-		if (bLogging && bLogFS) Logger->Write("\tFlush Cache File not yet written\n");
-
-		/*if (CacheManager->CacheReadFile(&cChar, 1, 1, (TFileInCacheHandle*)hFile) == 1)
-		{
-			return (int)cChar;
-		}
-		return hRetVal;*/
+		retval = fflush(hCacheFile->LocalFile);
 	}
 	else
 	{
-		hRetVal =  fflush(((TFileInCacheHandle*)hFile)->LocalFile);
+		// Should never happen.
+		if (bLogging && bLogFS) Logger->Write("\tTried to flush cache file (0x%08X)\n", (long)hFile);
+		pError->eSteamError = eSteamErrorAccessDenied;
 	}
 
-
-	return hRetVal;
+	return retval;
 }
 
-STEAM_API int SteamGetc(SteamHandle_t hFile, TSteamError *pError ) {
-
+STEAM_API int SteamGetc(SteamHandle_t hFile, TSteamError* pError)
+{
 	ENTER_CRITICAL_SECTION;
 
 	if (bLogging && bLogFS) Logger->Write("SteamGetc(0x%08X)\n", (long)hFile);
 
 	SteamClearError(pError);
 
-	int hRetVal = -1;
+	TFileInCacheHandle* hCacheFile = (TFileInCacheHandle*)hFile;
+	int retval = EOF;
 
-	unsigned char cChar;
-
-	if (!((TFileInCacheHandle*)hFile)->IsFileLocal)
+	if (hCacheFile->IsFileLocal)
 	{
-		if (CacheManager->CacheReadFile(&cChar, 1, 1, (TFileInCacheHandle*)hFile) == 1)
-		{
-			return (int)cChar;
-		}
-		return hRetVal;
+		retval = fgetc(hCacheFile->LocalFile);
 	}
 	else
 	{
-		return fgetc(((TFileInCacheHandle*)hFile)->LocalFile);
+		unsigned char cChar;
+		if (CacheManager->CacheReadFile(&cChar, 1, 1, hCacheFile) == 1)
+		{
+			retval = (int)cChar;
+		}
+		else
+		{
+			retval = EOF;
+		}
 	}
+
+	return retval;
 }
 
-STEAM_API SteamHandle_t SteamOpenTmpFile(TSteamError *pError ) {
+STEAM_API SteamHandle_t SteamOpenTmpFile(TSteamError* pError)
+{
+	ENTER_CRITICAL_SECTION;
+
 	if (bLogging && bLogFS) Logger->Write("SteamOpenTmpFile\n");
+
 	SteamClearError(pError);
 
-	return STEAM_INVALID_HANDLE;
+	TFileInCacheHandle* hCacheFile = NULL;
+	FILE* pFile = tmpfile();
+
+	if (pFile)
+	{
+		hCacheFile = new TFileInCacheHandle();
+		memset(hCacheFile, 0, sizeof(TFileInCacheHandle));
+		hCacheFile->IsFileLocal = 1;
+		hCacheFile->LocalFile = pFile;
+	}
+
+	return (SteamHandle_t)hCacheFile;
 }
 
-STEAM_API int SteamPutc(int cChar, SteamHandle_t hFile, TSteamError *pError ) {
+STEAM_API int SteamPutc(int cChar, SteamHandle_t hFile, TSteamError* pError)
+{
+	ENTER_CRITICAL_SECTION;
 
 	if (bLogging && bLogFS) Logger->Write("SteamPutc(%u, 0x%08X)\n", cChar, (long)hFile);
+
 	SteamClearError(pError);
 
-	return -1;
+	TFileInCacheHandle* hCacheFile = (TFileInCacheHandle*)hFile;
+	int retval = EOF;
+
+	if (hCacheFile->IsFileLocal)
+	{
+		retval = fputc(cChar, hCacheFile->LocalFile);
+	}
+	else
+	{
+		// Should never happen.
+		if (bLogging && bLogFS) Logger->Write("\tTried to write to cache file!!! (0x%08X)\n", (long)hFile);
+		pError->eSteamError = eSteamErrorAccessDenied;
+	}
+
+	return retval;
 }
 
-STEAM_API int SteamSeekFile(SteamHandle_t hFile, long lOffset, ESteamSeekMethod esMethod, TSteamError *pError ) {
-
+STEAM_API int SteamSeekFile(SteamHandle_t hFile, long lOffset, ESteamSeekMethod esMethod, TSteamError* pError)
+{
 	ENTER_CRITICAL_SECTION;
 
 	if (bLogging && bLogFS) Logger->Write("SteamSeekFile(0x%08X, %u, %u)\n", (long)hFile, lOffset, esMethod);
 
-	int retval = -1;
 	SteamClearError(pError);
-	if(((TFileInCacheHandle*)hFile)->IsFileLocal)
-	{
 
-		retval = fseek(((TFileInCacheHandle*)hFile)->LocalFile, lOffset, esMethod);
+	TFileInCacheHandle* hCacheFile = (TFileInCacheHandle*)hFile;
+	int retval = -1;
+
+	if (hCacheFile->IsFileLocal)
+	{
+		retval = fseek(hCacheFile->LocalFile, lOffset, esMethod);
 		if (retval != 0)
 		{
-			pError->eSteamError = eSteamErrorSeek;
 			if (bLogging && bLogFS) Logger->Write("\tLocal seek failed (0x%08X)\n", (long)hFile);
 		}
 	}
 	else
 	{
-		retval = CacheManager->CacheSeekFile(((TFileInCacheHandle*)hFile),lOffset,esMethod);
+		retval = CacheManager->CacheSeekFile(hCacheFile, lOffset, esMethod);
 		if (retval != 0)
 		{
-			pError->eSteamError = eSteamErrorSeek;
 			if (bLogging && bLogFS) Logger->Write("\tCache seek failed (0x%08X)\n", (long)hFile);
 		}
 	}
+
 	return retval;
 }
 
-STEAM_API unsigned int SteamWriteFile(const void *pBuf, unsigned int uSize, unsigned int uCount, SteamHandle_t hFile, TSteamError *pError)
+STEAM_API unsigned int SteamWriteFile(const void* pBuf, unsigned int uSize, unsigned int uCount, SteamHandle_t hFile, TSteamError* pError)
 {
 	ENTER_CRITICAL_SECTION;
-
 
 	if (bLogging && bLogFS) Logger->Write("SteamWriteFile(0x%08X, %u, %u, 0x%08X)\n", pBuf, uSize, uCount, (long)hFile);
 
 	SteamClearError(pError);
-	unsigned int res = 0;
-		res = fwrite(pBuf, uSize, uCount, ((TFileInCacheHandle*)hFile)->LocalFile);
-		if (res < uCount) {
-			if (bLogging && bLogFS) Logger->Write("\tWrite failed (0x%08X)\n", (long)hFile);
-			pError->eSteamError = eSteamErrorUnknown;
-			return 0;
-		}
-	return res;
-}
 
-STEAM_API long SteamTellFile(SteamHandle_t hFile, TSteamError *pError) {
+	TFileInCacheHandle* hCacheFile = (TFileInCacheHandle*)hFile;
+	unsigned int writeamount = 0;
 
-	ENTER_CRITICAL_SECTION;
-
-
-	long retval = -1;
-	SteamClearError(pError);
-
-	if(((TFileInCacheHandle*)hFile)->IsFileLocal)
+	if (hCacheFile->IsFileLocal)
 	{
-		retval = ftell(((TFileInCacheHandle*)hFile)->LocalFile);
-		if (retval == -1)
+		writeamount = fwrite(pBuf, uSize, uCount, hCacheFile->LocalFile);
+		if (writeamount < uCount)
 		{
-			pError->eSteamError = eSteamErrorUnknown;
-			if (bLogging && bLogFS) Logger->Write("\tLocal Tell failed (0x%08X)\n", (long)hFile);
-		}
-		else
-		{
-			if (bLogging && bLogFS) Logger->Write("SteamTellFile(0x%08X) %u\n",(long)hFile, retval);
+			if (bLogging && bLogFS) Logger->Write("\tWrite failed (0x%08X)\n", (long)hFile);
 		}
 	}
 	else
 	{
-		retval = CacheManager->CacheTellFile(((TFileInCacheHandle*)hFile));
+		// Should never happen.
+		if (bLogging && bLogFS) Logger->Write("\tTried to write to cache file!!! (0x%08X)\n", (long)hFile);
+		pError->eSteamError = eSteamErrorAccessDenied;
+	}
+
+	return writeamount;
+}
+
+STEAM_API long SteamTellFile(SteamHandle_t hFile, TSteamError* pError)
+{
+	ENTER_CRITICAL_SECTION;
+
+	if (bLogging && bLogFS) Logger->Write("SteamTellFile(0x%08X)\n", (long)hFile);
+
+	SteamClearError(pError);
+
+	TFileInCacheHandle* hCacheFile = (TFileInCacheHandle*)hFile;
+	int retval = -1;
+
+	if (hCacheFile->IsFileLocal)
+	{
+		retval = ftell(hCacheFile->LocalFile);
 		if (retval == -1)
 		{
-			pError->eSteamError = eSteamErrorUnknown;
-			if (bLogging && bLogFS) Logger->Write("\tCache Tell failed (0x%08X)\n", (long)hFile);
+			if (bLogging && bLogFS) Logger->Write("\tLocal Tell failed (0x%08X)\n", (long)hFile);
 		}
-		else
+	}
+	else
+	{
+		retval = CacheManager->CacheTellFile(hCacheFile);
+		if (retval == -1)
 		{
-			if (bLogging && bLogFS) Logger->Write("SteamTellFile(0x%08X) %u\n",(long)hFile, retval);
+			if (bLogging && bLogFS) Logger->Write("\tCache Tell failed (0x%08X)\n", (long)hFile);
 		}
 	}
 
 	return retval;
 }
 
-STEAM_API long SteamSizeFile(SteamHandle_t hFile, TSteamError *pError ) {
-
+STEAM_API long SteamSizeFile(SteamHandle_t hFile, TSteamError* pError)
+{
 	ENTER_CRITICAL_SECTION;
 
 	if (bLogging && bLogFS) Logger->Write("SteamSizeFile(0x%08X)\n", (long)hFile);
 
 	SteamClearError(pError);
 
-	if(((TFileInCacheHandle*)hFile)->IsFileLocal)
+	TFileInCacheHandle* hCacheFile = (TFileInCacheHandle*)hFile;
+	int retval = -1;
+
+	if (hCacheFile->IsFileLocal)
 	{
-		FILE *f = ((TFileInCacheHandle*)hFile)->LocalFile;
-		if(f)
+		FILE* f = hCacheFile->LocalFile;
+		int pos = ftell(f);
+		if (pos >= 0)
 		{
-			int pos = ftell(f);
 			fseek(f, 0, SEEK_END);
-			int size = ftell(f);
+			retval = ftell(f);
 			fseek(f, pos, SEEK_SET);
-			return size;
-		} else {
-			pError->eSteamError = eSteamErrorNotFound;
-			if (bLogging && bLogFS) Logger->Write("\tHandle not valid (0x%08X)\n", (long)hFile);
-			return -1;
 		}
 	}
 	else
 	{
-		return CacheManager->CacheSizeFile((TFileInCacheHandle*)hFile);
+		retval = CacheManager->CacheSizeFile((TFileInCacheHandle*)hFile);
 	}
+
+	return retval;
 }
 
-STEAM_API int SteamGetLocalFileCopy(const char* cszFileName, TSteamError* pError) {
-
+STEAM_API int SteamGetLocalFileCopy(const char* cszFileName, TSteamError* pError)
+{
 	ENTER_CRITICAL_SECTION;
 
 	if (bLogging && bLogFS) Logger->Write("SteamGetLocalFileCopy(%s)\n", cszFileName);
 
-	char filename[MAX_PATH];
-	strcpy(filename, cszFileName);
-
-
 	SteamClearError(pError);
 
-	if(filename[1] != ':')
+	if (!V_IsAbsolutePath(cszFileName))
 	{
 		char pathbuffer[MAX_PATH];
-		_searchenv(filename, "PATH", pathbuffer);
-		if(pathbuffer[0] != 0)
+		_searchenv(cszFileName, "PATH", pathbuffer);
+		if (*pathbuffer)
 		{
-			if (bLogging && bLogFS) Logger->Write("\tFound ENV (%s)\n", filename);
+			if (bLogging && bLogFS) Logger->Write("\tFound ENV (%s)\n", cszFileName);
 			return 1;
 		}
-	} else if(FILE* file = fopen(filename, "r")) {
-		fclose(file);
-		if (bLogging && bLogFS) Logger->Write("\tFound Local (%s)\n", filename);
-		return 1;
+	}
+	else
+	{
+		struct _stat buf;
+		int retval = _stat(cszFileName, &buf);
+		if (retval == 0 && (buf.st_mode & _S_IFREG))
+		{
+			if (bLogging && bLogFS) Logger->Write("\tFound Local (%s)\n", cszFileName);
+			return 1;
+		}
 	}
 
 	//Changed to always try cache if others fail - for dedicated server to work
 	if (bSteamFileSystem)
 	{
-		TFileInCacheHandle* hFile = CacheManager->CacheOpenFileEx(filename, "rb", NULL);
+		TFileInCacheHandle* hFile = CacheManager->CacheOpenFileEx(cszFileName, "rb", NULL);
 		if (hFile)
 		{
 			int retval = CacheManager->CacheExtractFile(hFile, NULL);
 			if (retval != 0)
 			{
-				if (bLogging && bLogFS) Logger->Write("\tFound Cache (%s)\n", filename);
+				if (bLogging && bLogFS) Logger->Write("\tFound Cache (%s)\n", cszFileName);
 				delete hFile;
 				return 1;
 			}
@@ -956,87 +1004,121 @@ STEAM_API int SteamGetLocalFileCopy(const char* cszFileName, TSteamError* pError
 	}
 
 	pError->eSteamError = eSteamErrorNotFound;
-	if (bLogging && bLogFS) Logger->Write("\tFile not found (%s)\n", filename);
+	if (bLogging && bLogFS) Logger->Write("\tFile not found (%s)\n", cszFileName);
 	return 0;
 }
 
-
-STEAM_API int SteamIsFileImmediatelyAvailable(const char *cszName, TSteamError *pError ) {
-
+STEAM_API int SteamIsFileImmediatelyAvailable(const char* cszName, TSteamError* pError)
+{
 	ENTER_CRITICAL_SECTION;
 
 	if (bLogging && bLogFS) Logger->Write("SteamIsFileImmediatelyAvailable(%s)\n", cszName);
 
-	char filename[MAX_PATH];
-	strcpy(filename, cszName);
+	SteamClearError(pError);
 
-
-	struct stat buf;
-	int i = stat ( filename, &buf );
-	if ( i == 0 )
+	TSteamElemInfo info;
+	int retval = SteamStat(cszName, &info, pError);
+	if (retval == 0)
 	{
-		SteamClearError(pError);
-		if (bLogging && bLogFS) Logger->Write("\tFile is Local (%s)\n", filename);
+		if (bLogging && bLogFS) Logger->Write("\tFile is Local (%s)\n", cszName);
 		return 1;
 	}
-	if (bLogging && bLogFS) Logger->Write("\tFile not Local (%s)\n", filename);
+
+	if (bLogging && bLogFS) Logger->Write("\tFile not Local (%s)\n", cszName);
 	return 0;
 }
 
-
-
-STEAM_API int SteamPrintFile(SteamHandle_t hFile, TSteamError *pError, const char *cszFormat, ... ) {
-
+STEAM_API int SteamPrintFile(SteamHandle_t hFile, TSteamError* pError, const char* cszFormat, ...)
+{
 	ENTER_CRITICAL_SECTION;
 
 	if (bLogging && bLogFS) Logger->Write("SteamPrintFile(0x%08X)\n", (long)hFile);
 
-	FILE *f = (FILE*)hFile;
-	va_list ap;
-	va_start(ap, cszFormat);
-	vfprintf(f,cszFormat,ap);
-	va_end(ap);
 	SteamClearError(pError);
 
-	return 1;
+	TFileInCacheHandle* hCacheFile = (TFileInCacheHandle*)hFile;
+	int writeamount = 0;
+
+	if (hCacheFile->IsFileLocal)
+	{
+		va_list ap;
+		va_start(ap, cszFormat);
+		writeamount = vfprintf(hCacheFile->LocalFile, cszFormat, ap);
+		va_end(ap);
+	}
+	else
+	{
+		// Should never happen.
+		if (bLogging && bLogFS) Logger->Write("\tTried to write to cache file!!! (0x%08X)\n", (long)hFile);
+		pError->eSteamError = eSteamErrorAccessDenied;
+	}
+
+	return writeamount;
 }
 
-STEAM_API int STEAM_CALL SteamSetvBuf(SteamHandle_t hFile, void* pBuf, ESteamBufferMethod eMethod, unsigned int uBytes, TSteamError *pError)
+STEAM_API int STEAM_CALL SteamSetvBuf(SteamHandle_t hFile, void* pBuf, ESteamBufferMethod eMethod, unsigned int uBytes, TSteamError* pError)
 {
-	if (bLogging && bLogFS) Logger->Write("SteamSetvBuf\n");
+	ENTER_CRITICAL_SECTION;
+
+	if (bLogging && bLogFS) Logger->Write("SteamSetvBuf (0x%08X, 0x%08X, %u, %u)\n", (long)hFile, pBuf, eMethod, uBytes);
+
 	SteamClearError(pError);
-	return 0;
+
+	TFileInCacheHandle* hCacheFile = (TFileInCacheHandle*)hFile;
+	int retval = -1;
+
+	if (hCacheFile->IsFileLocal)
+	{
+		FILE* pFile = hCacheFile->LocalFile;
+		int mode = 0;
+
+		if (eMethod == eSteamBufferMethodFBF)
+			mode = _IOFBF;
+		else if (eMethod == eSteamBufferMethodNBF)
+			mode = _IONBF;
+		else
+			return -1;
+
+		retval = setvbuf(pFile, (char*)pBuf, mode, uBytes);
+	}
+	else
+	{
+		if (bLogging && bLogFS) Logger->Write("\tSteamSetvBuf not implemented for cache files (0x%08X)\n", (long)hFile);
+		pError->eSteamError = eSteamErrorUnknown;
+	}
+
+	return retval;
 }
 
-STEAM_API int STEAM_CALL SteamHintResourceNeed(const char *cszHintList, int bForgetEverything, TSteamError *pError)
+STEAM_API int STEAM_CALL SteamHintResourceNeed(const char* cszHintList, int bForgetEverything, TSteamError* pError)
 {
 	if (bLogging && bLogFS) Logger->Write("SteamHintResourceNeed: %s, %d\n", cszHintList, bForgetEverything);
 	SteamClearError(pError);
 	return 1;
 }
 
-STEAM_API int STEAM_CALL SteamForgetAllHints(TSteamError *pError)
+STEAM_API int STEAM_CALL SteamForgetAllHints(TSteamError* pError)
 {
 	if (bLogging && bLogFS) Logger->Write("SteamForgetAllHints\n");
 	SteamClearError(pError);
 	return 1;
 }
 
-STEAM_API int STEAM_CALL SteamPauseCachePreloading(TSteamError *pError)
+STEAM_API int STEAM_CALL SteamPauseCachePreloading(TSteamError* pError)
 {
 	if (bLogging && bLogFS) Logger->Write("SteamPauseCachePreloading\n");
 	SteamClearError(pError);
 	return 1;
 }
 
-STEAM_API int STEAM_CALL SteamResumeCachePreloading(TSteamError *pError)
+STEAM_API int STEAM_CALL SteamResumeCachePreloading(TSteamError* pError)
 {
 	if (bLogging && bLogFS) Logger->Write("SteamResumeCachePreloading\n");
 	SteamClearError(pError);
 	return 1;
 }
 
-STEAM_API int STEAM_CALL SteamGetCacheFilePath(unsigned int uAppId,  char* szFilePath, unsigned int uBufferLength, unsigned int* puRecievedLength, TSteamError *pError)
+STEAM_API int STEAM_CALL SteamGetCacheFilePath(unsigned int uAppId, char* szFilePath, unsigned int uBufferLength, unsigned int* puRecievedLength, TSteamError* pError)
 {
 	if (bLogging && bLogFS) Logger->Write("SteamGetCacheFilePath\n");
 	SteamClearError(pError);

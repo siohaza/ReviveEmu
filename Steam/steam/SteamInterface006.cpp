@@ -28,7 +28,7 @@ CSteamInterface006::~CSteamInterface006(){if (bLogging) Logger->Write("CSteamInt
 	int CSteamInterface006::SetvBuf(SteamHandle_t hFile, void* pBuf, ESteamBufferMethod eMethod, unsigned int uBytes, TSteamError *pError){/*if(bLogging && bLogFS)Logger->Write("[006] ");*/return SteamSetvBuf(hFile, pBuf, eMethod, uBytes, pError);}
 	int CSteamInterface006::FlushFile(SteamHandle_t hFile, TSteamError *pError){/*if(bLogging && bLogFS)Logger->Write("[006] ");*/return SteamFlushFile(hFile, pError);}
 	SteamHandle_t CSteamInterface006::OpenFile(const char *cszName, const char *cszMode, TSteamError *pError){/*if(bLogging && bLogFS)Logger->Write("[006] ");*/return SteamOpenFile(cszName, cszMode, pError);}
-	SteamHandle_t CSteamInterface006::OpenFileEx(const char* cszFileName, const char* cszMode, int iArg3, unsigned int* puSize, int* piArg5, TSteamError *pError){/*if(bLogging && bLogFS)Logger->Write("[006] ");*/return SteamOpenFile2(cszFileName, cszMode, iArg3, puSize, piArg5, pError);}
+	SteamHandle_t CSteamInterface006::OpenFileEx(const char* cszFileName, const char* cszMode, int nFlags, unsigned int* puFileSize, int* pbLocal, TSteamError *pError){/*if(bLogging && bLogFS)Logger->Write("[006] ");*/return SteamOpenFile2(cszFileName, cszMode, nFlags, puFileSize, pbLocal, pError);}
 	SteamHandle_t CSteamInterface006::OpenTmpFile(TSteamError* pError){/*if(bLogging && bLogFS)Logger->Write("[006] ");*/return SteamOpenTmpFile(pError);}
 	void CSteamInterface006::ClearError(TSteamError* pError){return SteamClearError(pError);}
 	int CSteamInterface006::GetVersion(char* szVersion, unsigned int uVersionBufSize){return SteamGetVersion(szVersion, uVersionBufSize);}
