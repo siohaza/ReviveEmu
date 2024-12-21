@@ -493,6 +493,8 @@ STEAM_API unsigned int SteamReadFile(void* pBuf, unsigned int uSize, unsigned in
 	return readamount;
 }
 
+extern BOOL bSteamStartup;
+
 STEAM_API int SteamCloseFile(SteamHandle_t hFile, TSteamError* pError)
 {
 	ENTER_CRITICAL_SECTION;
@@ -500,6 +502,16 @@ STEAM_API int SteamCloseFile(SteamHandle_t hFile, TSteamError* pError)
 	if (bLogging && bLogFS) Logger->Write("SteamCloseFile(0x%08X)\n", (long)hFile);
 
 	SteamClearError(pError);
+
+	// HACK: This is a workaround for a bug in CS:S Beta srcds which randomly calls SteamCloseFile with
+	// a garbage parameter if run without -steam. Real Steam fails out due to a check that throws
+	// a C++ exception if the engine never called SteamStartup.
+	// Ideally, we should do this for every function except for user validation but whatever.
+	if (!bSteamStartup)
+	{
+		pError->eSteamError = eSteamErrorLibraryNotInitialized;
+		return EOF;
+	}
 
 	TFileInCacheHandle* hCacheFile = (TFileInCacheHandle*)hFile;
 	int retval = EOF;
