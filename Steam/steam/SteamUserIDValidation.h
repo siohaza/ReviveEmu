@@ -12,19 +12,22 @@ enum ERevClientType
 {
 	eClientRev = 0,
 	eClientLegit,
+	eClientLegitWrapper,
 	eClientUnknown
 };
 
 struct TRevUserValidationHandle
 {
 	ERevClientType ClientType;
+	TSteamGlobalUserID SteamID;
+	unsigned int UserID;
 	unsigned int ClientIP;
 	unsigned int ClientLocalIP;
 	SteamUserIDTicketValidationHandle_t LegitHandle;
 	ESteamError ReturnCode;
 };
 
-std::vector<TRevUserValidationHandle *> RevUserValidations;
+std::vector<TRevUserValidationHandle *> g_RevUserValidations;
 
 typedef ESteamError (STEAM_CALL *SteamInitializeUserIDTicketValidatorCall)(const char*, const char*, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int); 
 typedef ESteamError (STEAM_CALL *SteamStartValidatingUserIDTicketCall)(void*, unsigned int, unsigned int, SteamUserIDTicketValidationHandle_t*);
@@ -34,6 +37,17 @@ typedef ESteamError (STEAM_CALL *SteamProcessOngoingUserIDTicketValidationCall)(
 													  unsigned char*,
 													  size_t,
 													  size_t*);
+
+const char* GetUserIDString(const TSteamGlobalUserID& steamid)
+{
+	static char idstr[128];
+	_snprintf(idstr, sizeof(idstr) - 1, "STEAM_%u:%u:%u", (SteamInstanceID_t)steamid.m_SteamInstanceID,
+	          (unsigned int)((SteamLocalUserID_t)steamid.m_SteamLocalUserID.Split.High32bits),
+	          (unsigned int)((SteamLocalUserID_t)steamid.m_SteamLocalUserID.Split.Low32bits));
+	idstr[sizeof(idstr) - 1] = '\0';
+
+	return idstr;
+}
 
 STEAM_API ESteamError STEAM_CALL SteamGetEncryptedUserIDTicket(const void *pEncryptionKeyReceivedFromAppServer, unsigned int uEncryptionKeyLength, void *pOutputBuffer, unsigned int uSizeOfOutputBuffer, unsigned int *pReceiveSizeOfEncryptedTicket, TSteamError *pError)
 {
@@ -49,13 +63,13 @@ STEAM_API ESteamError STEAM_CALL SteamGetEncryptedUserIDTicket(const void *pEncr
 	}
 	if (bLogging && bLogUserId) Logger->Write("\tSerial Number: %u\n", g_dwClientId);
 	
-	struct sRevTicket sGetRevTicket;
+	struct TRevTicket sGetRevTicket;
 	sGetRevTicket.Signature = REVTICKET_SIGNATURE;
 	sGetRevTicket.Version = REVTICKET_VERSION;
 	sGetRevTicket.UserID = g_dwClientId;
 	sGetRevTicket.LocalIP = 0; // TODO: Maybe set this?
-	memcpy(pOutputBuffer, &sGetRevTicket, sizeof(sRevTicket));
-	*pReceiveSizeOfEncryptedTicket = sizeof(sRevTicket);
+	memcpy(pOutputBuffer, &sGetRevTicket, sizeof(TRevTicket));
+	*pReceiveSizeOfEncryptedTicket = sizeof(TRevTicket);
 
 	SteamClearError(pError);
 	return eSteamErrorNone;
@@ -87,11 +101,11 @@ STEAM_API ESteamError STEAM_CALL SteamShutdownUserIDTicketValidator()
 	if (bLogging && bLogUserId) Logger->Write("SteamShutdownUserIDTicketValidator\n");
 // #endif
 
-	for (TRevUserValidationHandle* hRevHandle : RevUserValidations)
+	for (TRevUserValidationHandle* hRevHandle : g_RevUserValidations)
 	{
 		delete hRevHandle;
 	}
-	RevUserValidations.clear();
+	g_RevUserValidations.clear();
 
 	if (bSteamDll)
 	{
@@ -142,12 +156,13 @@ STEAM_API ESteamError STEAM_CALL SteamStartValidatingUserIDTicket(void *pEncrypt
 
 		if (retval == eSteamErrorNone || retval == eSteamErrorNotFinishedProcessing)
 		{
-			if (bLogging && bLogUserId) Logger->Write("\t Client using legitimate STEAM account.\n");
+			if (bLogging && bLogUserId) Logger->Write("\t Client using legitimate Steam account.\n");
 
 			TRevUserValidationHandle* hRevHandle = new TRevUserValidationHandle();
+			memset(hRevHandle, 0, sizeof(TRevUserValidationHandle));
 			hRevHandle->ClientType = eClientLegit;
 			hRevHandle->LegitHandle = *pReceiveHandle;
-			RevUserValidations.push_back(hRevHandle);
+			g_RevUserValidations.push_back(hRevHandle);
 
 			*pReceiveHandle = hRevHandle;
 			if (bLogging && bLogUserId) Logger->Write("\t Returned handle 0x%X\n", hRevHandle);
@@ -161,21 +176,24 @@ STEAM_API ESteamError STEAM_CALL SteamStartValidatingUserIDTicket(void *pEncrypt
 		return eSteamErrorUnknown;
 	}
 
+	TRevUserValidationHandle* hRevHandle = new TRevUserValidationHandle();
+	memset(hRevHandle, 0, sizeof(TRevUserValidationHandle));
+
 	uint32_t uCheckTicket = *(uint32_t*)pEncryptedUserIDTicketFromClient;
 	if (uCheckTicket == REVTICKET_SIGNATURE)
 	{
+		// This is our auth ticket format.
 		if (bLogging && bLogUserId) Logger->Write("\t Client using REVOLUTiON emulator.\n");
 
-		const sRevTicket* pRevTicket = (sRevTicket*)pEncryptedUserIDTicketFromClient;
-
-		TRevUserValidationHandle* hRevHandle = new TRevUserValidationHandle();
 		hRevHandle->ClientType = eClientRev;
+		const TRevTicket* pRevTicket = (TRevTicket*)pEncryptedUserIDTicketFromClient;
 
 		if (pRevTicket->Version == REVTICKET_VERSION)
 		{
-			if (uSizeOfEncryptedUserIDTicketFromClient == sizeof(sRevTicket))
+			if (uSizeOfEncryptedUserIDTicketFromClient == sizeof(TRevTicket))
 			{
-				hRevHandle->ClientIP = pRevTicket->UserID;
+				hRevHandle->UserID = pRevTicket->UserID;
+				hRevHandle->ClientIP = ObservedClientIPAddr;
 				hRevHandle->ClientLocalIP = pRevTicket->LocalIP;
 				hRevHandle->ReturnCode = eSteamErrorNone;
 			}
@@ -190,26 +208,44 @@ STEAM_API ESteamError STEAM_CALL SteamStartValidatingUserIDTicket(void *pEncrypt
 			if (bLogging && bLogUserId) Logger->Write("\t REVOLUTiON auth ticket version %u not supported.\n", pRevTicket->Version);
 			hRevHandle->ReturnCode = eSteamErrorInvalidUserIDTicket;
 		}
+	}
+	else if (uCheckTicket == STEAMTICKET_SIGNATURE)
+	{
+		// This is auth ticket used by Valve's official Steam2 wrapper dll.
+		if (bLogging && bLogUserId) Logger->Write("\t Client using legitimate Steam account.\n");
 
-		RevUserValidations.push_back(hRevHandle);
+		hRevHandle->ClientType = eClientLegitWrapper;
+		static_assert(sizeof(TSteam2WrapperTicket) == 32, "Size of steam2wrapper ticket is not 32 bytes");
+		const TSteam2WrapperTicket* pTicket = (TSteam2WrapperTicket*)pEncryptedUserIDTicketFromClient;
 
-		*pReceiveHandle = hRevHandle;
-		if (bLogging && bLogUserId) Logger->Write("\t Returned handle 0x%X\n", hRevHandle);
+		if (uSizeOfEncryptedUserIDTicketFromClient == sizeof(TSteam2WrapperTicket))
+		{
+			hRevHandle->SteamID = pTicket->SteamID;
+			hRevHandle->ClientIP = ObservedClientIPAddr;
+			hRevHandle->ClientLocalIP = pTicket->LocalIP;
+			hRevHandle->ReturnCode = eSteamErrorNone;
+		}
+		else
+		{
+			if (bLogging && bLogUserId) Logger->Write("\t Malformed Steam auth ticket.\n");
+			hRevHandle->ReturnCode = eSteamErrorCorruptEncryptedUserIDTicket;
+		}
 	}
 	else
 	{
+		// Unknown client, generate SteamID from IP address.
 		if (bLogging && bLogUserId) Logger->Write("\t Client not using REVOLUTiON emulator.\n");
 
-		TRevUserValidationHandle* hRevHandle = new TRevUserValidationHandle();
 		hRevHandle->ClientType = eClientUnknown;
 		hRevHandle->ClientIP = ObservedClientIPAddr;
 		hRevHandle->ClientLocalIP = 0;
 		hRevHandle->ReturnCode = bAllowNonRev ? eSteamErrorNone : eSteamErrorInvalidUserIDTicket;
-		RevUserValidations.push_back(hRevHandle);
-
-		*pReceiveHandle = hRevHandle;
-		if (bLogging && bLogUserId) Logger->Write("\t Returned handle 0x%X\n", hRevHandle);
 	}
+
+	g_RevUserValidations.push_back(hRevHandle);
+
+	*pReceiveHandle = hRevHandle;
+	if (bLogging && bLogUserId) Logger->Write("\t Returned handle 0x%X\n", hRevHandle);
 
 	return eSteamErrorNotFinishedProcessing;
 }
@@ -233,9 +269,10 @@ STEAM_API ESteamError STEAM_CALL SteamStartValidatingNewValveCDKey(void *pEncryp
 			if (bLogging && bLogUserId) Logger->Write("\t Client using legitimate STEAM account.\n");
 
 			TRevUserValidationHandle* hRevHandle = new TRevUserValidationHandle();
+			memset(hRevHandle, 0, sizeof(TRevUserValidationHandle));
 			hRevHandle->ClientType = eClientLegit;
 			hRevHandle->LegitHandle = *pReceiveHandle;
-			RevUserValidations.push_back(hRevHandle);
+			g_RevUserValidations.push_back(hRevHandle);
 
 			*pReceiveHandle = hRevHandle;
 			return retval;
@@ -271,18 +308,32 @@ STEAM_API ESteamError STEAM_CALL SteamProcessOngoingUserIDTicketValidation(Steam
 	if (hRevHandle->ReturnCode != eSteamErrorNone)
 		return hRevHandle->ReturnCode;
 
-	if (bLogging && bLogUserId) Logger->Write("\t Received ID: %u -> Account ID: %u\n", hRevHandle->ClientIP, hRevHandle->ClientIP / 2);
 	if (hRevHandle->ClientType == eClientRev)
 	{
 		pReceiveValidSteamGlobalUserID->m_SteamInstanceID = 0;
-		pReceiveValidSteamGlobalUserID->Split.High32bits = 0;
-		pReceiveValidSteamGlobalUserID->Split.Low32bits = hRevHandle->ClientIP / 2;
+		pReceiveValidSteamGlobalUserID->m_SteamLocalUserID.Split.High32bits = 0;
+		pReceiveValidSteamGlobalUserID->m_SteamLocalUserID.Split.Low32bits = hRevHandle->UserID / 2;
+
+		if (bLogging && bLogUserId) Logger->Write("\t Received ID: %u -> %s\n",
+			hRevHandle->UserID,
+			GetUserIDString(*pReceiveValidSteamGlobalUserID));
+	}
+	else if (hRevHandle->ClientType == eClientLegitWrapper)
+	{
+		*pReceiveValidSteamGlobalUserID = hRevHandle->SteamID;
+
+		if (bLogging && bLogUserId) Logger->Write("\t Received Steam ID: %s\n",
+			GetUserIDString(*pReceiveValidSteamGlobalUserID));
 	}
 	else
 	{
 		pReceiveValidSteamGlobalUserID->m_SteamInstanceID = 0;
-		pReceiveValidSteamGlobalUserID->Split.High32bits = hRevHandle->ClientIP % 2;
-		pReceiveValidSteamGlobalUserID->Split.Low32bits = hRevHandle->ClientIP / 2;
+		pReceiveValidSteamGlobalUserID->m_SteamLocalUserID.Split.High32bits = hRevHandle->ClientIP % 2;
+		pReceiveValidSteamGlobalUserID->m_SteamLocalUserID.Split.Low32bits = hRevHandle->ClientIP / 2;
+
+		if (bLogging && bLogUserId) Logger->Write("\t Received IP: %u -> %s\n",
+			hRevHandle->ClientIP,
+			GetUserIDString(*pReceiveValidSteamGlobalUserID));
 	}
 
 	if (pReceiveClientLocalIPAddr)
@@ -313,12 +364,12 @@ STEAM_API void STEAM_CALL SteamAbortOngoingUserIDTicketValidation(SteamUserIDTic
 		if (bLogging && bLogUserId) Logger->Write("\t returned.\n");
 	}
 
-	for (auto it = RevUserValidations.begin(); it != RevUserValidations.end(); it++)
+	for (auto it = g_RevUserValidations.begin(); it != g_RevUserValidations.end(); it++)
 	{
 		if (hRevHandle == *it)
 		{
 			delete hRevHandle;
-			RevUserValidations.erase(it);
+			g_RevUserValidations.erase(it);
 			break;
 		}
 	}

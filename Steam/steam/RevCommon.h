@@ -71,11 +71,22 @@ const unsigned char m_encrypted[648] =
 #define REVTICKET_SIGNATURE     0x52455646 // "REVF"
 #define REVTICKET_VERSION       1
 
-struct sRevTicket {
+struct __declspec(align(8)) TRevTicket
+{
 	uint32_t Signature;
 	uint32_t Version;
 	uint32_t UserID;
 	uint32_t LocalIP;
+};
+
+#define STEAMTICKET_SIGNATURE 0x63845768
+
+struct __declspec(align(8)) TSteam2WrapperTicket
+{
+    uint32_t Signature;
+	TSteamGlobalUserID SteamID;
+    uint32_t LocalIP;
+    uint32_t Handle;
 };
 
 #endif

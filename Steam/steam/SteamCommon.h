@@ -646,13 +646,13 @@ typedef	unsigned long long	SteamLocalUserID_t;		// MUST be 64 bits
 // For platforms without 64-bit int support, we provide access via a union that splits it into 
 // high and low unsigned 32-bit ints.  Such platforms will only need to compare LocalUserIDs 
 // for equivalence anyway - not perform arithmetic with them.
-struct TSteamSplitLocalUserID
+struct __declspec(align(8)) TSteamSplitLocalUserID
 {
 	unsigned int	Low32bits;
 	unsigned int	High32bits;
 };
 
-struct TSteamGlobalUserID
+struct __declspec(align(8)) TSteamGlobalUserID
 {
 	SteamInstanceID_t		m_SteamInstanceID;
 
@@ -660,7 +660,7 @@ struct TSteamGlobalUserID
 	{
 		SteamLocalUserID_t		As64bits;
 		TSteamSplitLocalUserID	Split;
-	};
+	} m_SteamLocalUserID;
 
 };
 
