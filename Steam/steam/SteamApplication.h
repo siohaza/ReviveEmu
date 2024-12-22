@@ -483,7 +483,6 @@ STEAM_API int STEAM_CALL SteamIsAppSubscribed(unsigned int uAppId, int* pbIsAppS
 
 	if (!CDR)
 	{
-		//if (!bIsEnginePatched && !bSteamClient) PatchEngine();
 		*pbIsAppSubscribed = 1;
 		*pbIsSubscriptionPending = 0;
 		return 1;
@@ -493,7 +492,6 @@ STEAM_API int STEAM_CALL SteamIsAppSubscribed(unsigned int uAppId, int* pbIsAppS
 	{
 		if (CDR->ApplicationRecords[x]->AppId == uAppId)
 		{
-			//if (!bIsEnginePatched && !bSteamClient) PatchEngine();
 			*pbIsAppSubscribed = 1;
 			*pbIsSubscriptionPending = 0;
 			if (bLogging && bLogAcc) Logger->Write("\tSubscribed!\n");

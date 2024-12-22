@@ -3,7 +3,6 @@
 extern CLogFile* Logger;
 extern BOOL bLogging;
 extern BOOL bLogAcc;
-extern BOOL bIsEnginePatched;
 extern BOOL bSteamClient;
 
 

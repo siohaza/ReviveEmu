@@ -28,7 +28,6 @@ char szSteamDLLPath[MAX_PATH];
 BOOL bSteamDll = false;
 char szOrigSteamDll[MAX_PATH];
 BOOL bLogging = false;
-BOOL bIsEnginePatched = false;
 BOOL bLogAcc = false;
 BOOL bLogFS = false;
 BOOL bLogUserId = false;

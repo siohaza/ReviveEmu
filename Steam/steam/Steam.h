@@ -238,6 +238,5 @@ STEAM_API int					STEAM_CALL	SteamCheckAppOwnership();
 
 SteamHandle_t SteamOpenFile2(const char* cszFileName, const char* cszMode, int nFlags, unsigned int* puFileSize, int* pbLocal, TSteamError* pError);
 int SteamGetCurrentAppId(unsigned int* puAppId, TSteamError* pError);
-void PatchEngine(void);
 
 #endif
