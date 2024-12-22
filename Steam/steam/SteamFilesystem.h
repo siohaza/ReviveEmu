@@ -368,7 +368,7 @@ STEAM_API int SteamMountAppFilesystem(TSteamError *pError)
 	{
 		if (!appid)
 		{
-			MessageBoxA(NULL, "You are trying to launch an unknown App ID, please specify -appid on the command line.", "AppID?", 0);
+			MessageBoxA(NULL, "You are trying to launch an unknown App ID, please specify -appid on the command line or write App ID into steam_appid.txt.", "RevEmu - AppID?", 0);
 			ExitProcess(0xffffffff);
 		}
 

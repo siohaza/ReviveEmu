@@ -156,25 +156,33 @@ void InitGlobalVaribles()
 	char szRunFromPath[MAX_PATH];
 	_getcwd(szRunFromPath, MAX_PATH);
 
+	appid = 0;
+
 	char envBuffer[128];
 	int envBufferLen = GetEnvironmentVariableA("SteamAppId", envBuffer, sizeof(envBuffer));
 	if (envBufferLen && envBufferLen < sizeof(envBuffer))
 	{
 		appid = strtol(envBuffer, NULL, 10);
 	}
-	else if (inArgs(L"-appid")) 
+	else if (FILE* fp = fopen("steam_appid.txt", "rb"))
 	{
-		for(int i=0; i<nArgs; i++)
+		char fileBuffer[256];
+		if (fgets(fileBuffer, sizeof(fileBuffer), fp))
 		{
-			if(_wcsicmp(szArglist[i],L"-appid") == 0)
+			appid = strtol(fileBuffer, NULL, 10);
+		}
+
+		fclose(fp);
+	}
+	else if (inArgs(L"-appid"))
+	{
+		for (int i = 0; i < nArgs; i++)
+		{
+			if (_wcsicmp(szArglist[i], L"-appid") == 0)
 			{
 				appid = wcstol(szArglist[i + 1], NULL, 10);
 			}
 		}
-	}
-	else
-	{
-		appid = 0;
 	}
 
 		if (!appid)
