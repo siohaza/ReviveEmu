@@ -225,12 +225,11 @@ STEAM_API int					STEAM_CALL	SteamEncryptDataForThisMachine();
 STEAM_API const char*			STEAM_CALL	SteamFindServersGetErrorString();
 STEAM_API int					STEAM_CALL	SteamFindServersIterateServer(ESteamServerType eSteamServerType, unsigned int uIndex, char *szServerAddress, int iServerAddressChars);
 STEAM_API int					STEAM_CALL	SteamFindServersNumServers(ESteamServerType eSteamServerType);
-STEAM_API int					STEAM_CALL	SteamGetContentServerInfo();
-//STEAM_API int					STEAM_CALL	SteamRefreshMinimumFootprintFiles();
+STEAM_API int					STEAM_CALL	SteamGetContentServerInfo(unsigned int uAppId, unsigned int* pServerId, unsigned int* pServerIpAddress, TSteamError *pError);
 STEAM_API SteamCallHandle_t		STEAM_CALL	SteamRefreshMinimumFootprintFiles(unsigned int uAppId, TSteamError *pError);
 STEAM_API int					STEAM_CALL	SteamSetNotificationCallback(SteamNotificationCallback_t pCallbackFunction, TSteamError *pError);
-STEAM_API int					STEAM_CALL	SteamWasBlobRegistryDeleted();
-STEAM_API int					STEAM_CALL	SteamCheckAppOwnership();
+STEAM_API int					STEAM_CALL	SteamWasBlobRegistryDeleted(int *puWasDeleted, TSteamError *pError);
+STEAM_API int					STEAM_CALL	SteamCheckAppOwnership(unsigned int uAppId, int* pbOwned, TSteamGlobalUserID* pSteamID, TSteamError* pError);
 
 #ifdef __cplusplus
 }

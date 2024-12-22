@@ -214,7 +214,7 @@ STEAM_API int STEAM_CALL SteamFindServersNumServers(ESteamServerType eSteamServe
 	return 0;
 }
 
-STEAM_API int STEAM_CALL SteamGetContentServerInfo()
+STEAM_API int STEAM_CALL SteamGetContentServerInfo(unsigned int uAppId, unsigned int* pServerId, unsigned int* pServerIpAddress, TSteamError* pError)
 {
 // #ifdef DEBUG
 	if (bLogging) Logger->Write("SteamGetContentServerInfo\n");
@@ -230,13 +230,29 @@ STEAM_API int STEAM_CALL SteamSetNotificationCallback(SteamNotificationCallback_
 	return 1;
 }
 
-STEAM_API int STEAM_CALL SteamWasBlobRegistryDeleted()
+STEAM_API int STEAM_CALL SteamWasBlobRegistryDeleted(int* puWasDeleted, TSteamError* pError)
 {
-	return 0;
+	if (bLogging) Logger->Write("SteamWasBlobRegistryDeleted\n");
+
+	SteamClearError(pError);
+	*puWasDeleted = 0;
+	return 1;
 }
 
 int SteamGetCurrentAppId(unsigned int* puAppId, TSteamError *pError)
 {
+	if (bLogging) Logger->Write("SteamGetCurrentAppId\n");
+
+	SteamClearError(pError);
+
+	if (!appid)
+	{
+		*puAppId = 0;
+		pError->eSteamError = eSteamErrorUnknown;
+		return 0;
+	}
+
+	*puAppId = appid;
 	return 1;
 }
 

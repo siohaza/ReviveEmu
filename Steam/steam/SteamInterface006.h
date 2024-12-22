@@ -125,7 +125,7 @@ public:
 	virtual SteamCallHandle_t UpdateAccountBillingInfo(const TSteamPaymentCardInfo *pPaymentCardInfo, TSteamError *pError); // 1;}
 	virtual SteamCallHandle_t UpdateSubscriptionBillingInfo(unsigned int uSubscriptionId, const TSteamSubscriptionBillingInfo *pSubscriptionBillingInfo, TSteamError *pError); // 1;}
 	virtual int GetSponsorUrl(unsigned int uAppId, char *szUrl, unsigned int uBufSize, unsigned int *pUrlChars, TSteamError *pError); // 1;}
-	virtual int GetContentServerInfo(unsigned int uArg1, unsigned int* puArg2, unsigned int* puArg3, TSteamError *pError); // 1;}
+	virtual int GetContentServerInfo(unsigned int uAppId, unsigned int* pServerId, unsigned int* pServerIpAddress, TSteamError* pError); // 1;}
 	virtual SteamCallHandle_t GetAppUpdateStats(unsigned int uAppId, ESteamAppUpdateStatsQueryType eSteamAppUpdateStatsQueryType, TSteamUpdateStats *pUpdateStats, TSteamError *pError); // 1;}
 	virtual int GetTotalUpdateStats(TSteamUpdateStats *pUpdateStats, TSteamError *pError); // 1;}
 	virtual SteamCallHandle_t CreateCachePreloaders(TSteamError *pError); // 1;}
@@ -148,5 +148,5 @@ public:
 	virtual int FindServersNumServers(ESteamServerType eSteamServerType); // 1;}
 	virtual int FindServersIterateServer(ESteamServerType eSteamServerType, int iIndex, char *szServerAddress, unsigned int uServerAddressChars); // 1;}
 	virtual const char* FindServersGetErrorString(); // 1;}
-	virtual int CheckAppOwnership(unsigned int uAppId, void* pvArg2, void* pvArg3, TSteamError *pError); // 1;}
+	virtual int CheckAppOwnership(unsigned int uAppId, int* pbOwned, TSteamGlobalUserID* pSteamID, TSteamError* pError); // 1;}
 };

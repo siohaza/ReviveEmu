@@ -138,7 +138,7 @@ CSteamInterface006::~CSteamInterface006(){if (bLogging) Logger->Write("CSteamInt
 	SteamCallHandle_t CSteamInterface006::UpdateAccountBillingInfo(const TSteamPaymentCardInfo *pPaymentCardInfo, TSteamError *pError){return SteamUpdateAccountBillingInfo(pPaymentCardInfo, pError);}
 	SteamCallHandle_t CSteamInterface006::UpdateSubscriptionBillingInfo(unsigned int uSubscriptionId, const TSteamSubscriptionBillingInfo *pSubscriptionBillingInfo, TSteamError *pError){return SteamUpdateSubscriptionBillingInfo(uSubscriptionId, pSubscriptionBillingInfo, pError);}
 	int CSteamInterface006::GetSponsorUrl(unsigned int uAppId, char *szUrl, unsigned int uBufSize, unsigned int *pUrlChars, TSteamError *pError){return SteamGetSponsorUrl(uAppId, szUrl, uBufSize, pUrlChars, pError);}
-	int CSteamInterface006::GetContentServerInfo(unsigned int uArg1, unsigned int* puArg2, unsigned int* puArg3, TSteamError *pError){return SteamGetContentServerInfo(/*uArg1, puArg2, puArg3, pError*/);}
+	int CSteamInterface006::GetContentServerInfo(unsigned int uAppId, unsigned int* pServerId, unsigned int* pServerIpAddress, TSteamError* pError){return SteamGetContentServerInfo(uAppId, pServerId, pServerIpAddress, pError);}
 	SteamCallHandle_t CSteamInterface006::GetAppUpdateStats(unsigned int uAppId, ESteamAppUpdateStatsQueryType eSteamAppUpdateStatsQueryType, TSteamUpdateStats *pUpdateStats, TSteamError *pError){return SteamGetAppUpdateStats(uAppId, eSteamAppUpdateStatsQueryType, pUpdateStats, pError);}
 	int CSteamInterface006::GetTotalUpdateStats(TSteamUpdateStats *pUpdateStats, TSteamError *pError){return SteamGetTotalUpdateStats(pUpdateStats, pError);}
 	SteamCallHandle_t CSteamInterface006::CreateCachePreloaders(TSteamError *pError){return SteamCreateCachePreloaders(pError);}
@@ -161,5 +161,5 @@ CSteamInterface006::~CSteamInterface006(){if (bLogging) Logger->Write("CSteamInt
 	int CSteamInterface006::FindServersNumServers(ESteamServerType eSteamServerType){return SteamFindServersNumServers(eSteamServerType);}
 	int CSteamInterface006::FindServersIterateServer(ESteamServerType eSteamServerType, int iIndex, char *szServerAddress, unsigned int uServerAddressChars){return SteamFindServersIterateServer(eSteamServerType, iIndex, szServerAddress, uServerAddressChars);}
 	const char* CSteamInterface006::FindServersGetErrorString(){return SteamFindServersGetErrorString();}
-	int CSteamInterface006::CheckAppOwnership(unsigned int uAppId, void* pvArg2, void* pvArg3, TSteamError *pError){return SteamCheckAppOwnership(/*uAppId, pvArg2, pvArg3, pError*/);}
+	int CSteamInterface006::CheckAppOwnership(unsigned int uAppId, int* pbOwned, TSteamGlobalUserID* pSteamID, TSteamError* pError){return SteamCheckAppOwnership(uAppId, pbOwned, pSteamID, pError);}
 

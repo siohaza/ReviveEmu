@@ -407,9 +407,28 @@ STEAM_API SteamCallHandle_t SteamLaunchApp(unsigned int uAppId, unsigned int uLa
 }
 
 
-STEAM_API int SteamCheckAppOwnership() {
+STEAM_API int SteamCheckAppOwnership(unsigned int uAppId, int* pbOwned, TSteamGlobalUserID* pSteamID, TSteamError* pError) {
 	if (bLogging) Logger->Write("SteamCheckAppOwnership\n");
-	return 1;
+
+	SteamClearError(pError);
+
+	/*
+	TSteamGlobalUserID mySteamID;
+	if (!SteamGetUser(NULL, 0, NULL, &mySteamID, pError))
+	{
+		*pbOwned = false;
+		return 0;
+	}
+
+	if (memcmp(&mySteamID, pSteamID, sizeof(TSteamGlobalUserID)) != 0)
+	{
+		*pbOwned = false;
+		return 1;
+	}
+	*/
+
+	int pending = false;
+	return SteamIsAppSubscribed(uAppId, pbOwned, &pending, pError);
 }
 
 STEAM_API int SteamIsSubscribed(unsigned int uSubscriptionId, int* pbIsSubscribed, int* pbIsSubscriptionPending, TSteamError* pError)
