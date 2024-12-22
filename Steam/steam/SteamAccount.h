@@ -282,6 +282,7 @@ STEAM_API SteamCallHandle_t STEAM_CALL SteamRefreshLogin(const char *cszPassphra
 // #ifdef DEBUG
 	if (bLogging && bLogAcc)  Logger->Write("SteamRefreshLogin\n");
 // #endif
+	SteamClearError(pError);
 	return 1;
 }
 
