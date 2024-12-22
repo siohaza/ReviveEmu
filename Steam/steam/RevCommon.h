@@ -69,13 +69,21 @@ const unsigned char m_encrypted[648] =
 };
 
 #define REVTICKET_SIGNATURE     0x52455646 // "REVF"
-#define REVTICKET_VERSION       1
+#define REVTICKET_VERSION       2
 
 struct __declspec(align(8)) TRevTicket
 {
 	uint32_t Signature;
 	uint32_t Version;
-	uint32_t UserID;
+	uint64_t SteamID;
+	uint32_t LocalIP;
+};
+
+struct __declspec(align(8)) TRevTicketV1
+{
+	uint32_t Signature;
+	uint32_t Version;
+	uint32_t AccountID;
 	uint32_t LocalIP;
 };
 

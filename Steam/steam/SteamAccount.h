@@ -198,9 +198,7 @@ STEAM_API int STEAM_CALL SteamGetUser(char *szUser, unsigned int uBufSize, unsig
 	
 	if (pSteamGlobalUserID)
 	{
-		pSteamGlobalUserID->m_SteamInstanceID = 0;
-		pSteamGlobalUserID->m_SteamLocalUserID.Split.High32bits = 0;
-		pSteamGlobalUserID->m_SteamLocalUserID.Split.Low32bits = g_dwClientId / 2;
+		g_SteamID.ConvertToSteam2(pSteamGlobalUserID);
 	}
 
 	SteamClearError(pError);

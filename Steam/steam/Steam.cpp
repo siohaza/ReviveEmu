@@ -32,7 +32,6 @@ BOOL bLogAcc = false;
 BOOL bLogFS = false;
 BOOL bLogUserId = false;
 BOOL bSteamClient = false;
-DWORD g_dwClientId;
 bool bAllowNonRev = true;
 
 int nArgs;
@@ -85,8 +84,7 @@ static std::map<uint32_t, TGlobalDirectory> HashTable;
 #include "CacheSystem\CCacheSystem.h"	//Cache
 
 static CCacheFileSystem* CacheManager = NULL;
-
-
+CSteamID g_SteamID;
 
 #include "SteamFilesystem.h"			//Filesystem
 
@@ -570,9 +568,10 @@ void InitGlobalVaribles()
 				//
 				// Initialize the unique User ID used to authenticate with game server
 				//
-				GetVolumeInformationA(NULL, NULL, NULL, &g_dwClientId, NULL, NULL, NULL, NULL);
+				DWORD serialNumber;
+				GetVolumeInformationA(NULL, NULL, NULL, &serialNumber, NULL, NULL, NULL, NULL);
+				g_SteamID.Set(serialNumber, k_EUniversePublic, k_EAccountTypeIndividual);
 				return;
-
 			}
 			
 			ExitProcess(0);

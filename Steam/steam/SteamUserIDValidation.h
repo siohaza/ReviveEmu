@@ -19,8 +19,8 @@ enum ERevClientType
 struct TRevUserValidationHandle
 {
 	ERevClientType ClientType;
-	TSteamGlobalUserID SteamID;
-	unsigned int UserID;
+	TSteamGlobalUserID Steam2ID;
+	CSteamID Steam3ID;
 	unsigned int ClientIP;
 	unsigned int ClientLocalIP;
 	SteamUserIDTicketValidationHandle_t LegitHandle;
@@ -61,12 +61,13 @@ STEAM_API ESteamError STEAM_CALL SteamGetEncryptedUserIDTicket(const void *pEncr
 		Logger->Write("\tTicket Size Address: 0x%X\n", pReceiveSizeOfEncryptedTicket);
 		Logger->Write("\tError Address: 0x%X\n", pError);
 	}
-	if (bLogging && bLogUserId) Logger->Write("\tSerial Number: %u\n", g_dwClientId);
+	if (bLogging && bLogUserId) Logger->Write("\t---\n");
+	if (bLogging && bLogUserId) Logger->Write("\tSteamID: %llu\n", g_SteamID.ConvertToUint64());
 	
 	struct TRevTicket sGetRevTicket;
 	sGetRevTicket.Signature = REVTICKET_SIGNATURE;
 	sGetRevTicket.Version = REVTICKET_VERSION;
-	sGetRevTicket.UserID = g_dwClientId;
+	sGetRevTicket.SteamID = g_SteamID.ConvertToUint64();
 	sGetRevTicket.LocalIP = 0; // TODO: Maybe set this?
 	memcpy(pOutputBuffer, &sGetRevTicket, sizeof(TRevTicket));
 	*pReceiveSizeOfEncryptedTicket = sizeof(TRevTicket);
@@ -178,6 +179,7 @@ STEAM_API ESteamError STEAM_CALL SteamStartValidatingUserIDTicket(void *pEncrypt
 
 	TRevUserValidationHandle* hRevHandle = new TRevUserValidationHandle();
 	memset(hRevHandle, 0, sizeof(TRevUserValidationHandle));
+	hRevHandle->ClientIP = ObservedClientIPAddr;
 
 	uint32_t uCheckTicket = *(uint32_t*)pEncryptedUserIDTicketFromClient;
 	if (uCheckTicket == REVTICKET_SIGNATURE)
@@ -192,8 +194,7 @@ STEAM_API ESteamError STEAM_CALL SteamStartValidatingUserIDTicket(void *pEncrypt
 		{
 			if (uSizeOfEncryptedUserIDTicketFromClient == sizeof(TRevTicket))
 			{
-				hRevHandle->UserID = pRevTicket->UserID;
-				hRevHandle->ClientIP = ObservedClientIPAddr;
+				hRevHandle->Steam3ID = pRevTicket->SteamID;
 				hRevHandle->ClientLocalIP = pRevTicket->LocalIP;
 				hRevHandle->ReturnCode = eSteamErrorNone;
 			}
@@ -220,8 +221,7 @@ STEAM_API ESteamError STEAM_CALL SteamStartValidatingUserIDTicket(void *pEncrypt
 
 		if (uSizeOfEncryptedUserIDTicketFromClient == sizeof(TSteam2WrapperTicket))
 		{
-			hRevHandle->SteamID = pTicket->SteamID;
-			hRevHandle->ClientIP = ObservedClientIPAddr;
+			hRevHandle->Steam2ID = pTicket->SteamID;
 			hRevHandle->ClientLocalIP = pTicket->LocalIP;
 			hRevHandle->ReturnCode = eSteamErrorNone;
 		}
@@ -237,7 +237,7 @@ STEAM_API ESteamError STEAM_CALL SteamStartValidatingUserIDTicket(void *pEncrypt
 		if (bLogging && bLogUserId) Logger->Write("\t Client not using REVOLUTiON emulator.\n");
 
 		hRevHandle->ClientType = eClientUnknown;
-		hRevHandle->ClientIP = ObservedClientIPAddr;
+		hRevHandle->Steam3ID.Set(ObservedClientIPAddr, k_EUniversePublic, k_EAccountTypeIndividual);
 		hRevHandle->ClientLocalIP = 0;
 		hRevHandle->ReturnCode = bAllowNonRev ? eSteamErrorNone : eSteamErrorInvalidUserIDTicket;
 	}
@@ -310,26 +310,21 @@ STEAM_API ESteamError STEAM_CALL SteamProcessOngoingUserIDTicketValidation(Steam
 
 	if (hRevHandle->ClientType == eClientRev)
 	{
-		pReceiveValidSteamGlobalUserID->m_SteamInstanceID = 0;
-		pReceiveValidSteamGlobalUserID->m_SteamLocalUserID.Split.High32bits = 0;
-		pReceiveValidSteamGlobalUserID->m_SteamLocalUserID.Split.Low32bits = hRevHandle->UserID / 2;
+		hRevHandle->Steam3ID.ConvertToSteam2(pReceiveValidSteamGlobalUserID);
 
-		if (bLogging && bLogUserId) Logger->Write("\t Received ID: %u -> %s\n",
-			hRevHandle->UserID,
+		if (bLogging && bLogUserId) Logger->Write("\t Received Steam ID: %s\n",
 			GetUserIDString(*pReceiveValidSteamGlobalUserID));
 	}
 	else if (hRevHandle->ClientType == eClientLegitWrapper)
 	{
-		*pReceiveValidSteamGlobalUserID = hRevHandle->SteamID;
+		*pReceiveValidSteamGlobalUserID = hRevHandle->Steam2ID;
 
 		if (bLogging && bLogUserId) Logger->Write("\t Received Steam ID: %s\n",
 			GetUserIDString(*pReceiveValidSteamGlobalUserID));
 	}
 	else
 	{
-		pReceiveValidSteamGlobalUserID->m_SteamInstanceID = 0;
-		pReceiveValidSteamGlobalUserID->m_SteamLocalUserID.Split.High32bits = hRevHandle->ClientIP % 2;
-		pReceiveValidSteamGlobalUserID->m_SteamLocalUserID.Split.Low32bits = hRevHandle->ClientIP / 2;
+		hRevHandle->Steam3ID.ConvertToSteam2(pReceiveValidSteamGlobalUserID);
 
 		if (bLogging && bLogUserId) Logger->Write("\t Received IP: %u -> %s\n",
 			hRevHandle->ClientIP,

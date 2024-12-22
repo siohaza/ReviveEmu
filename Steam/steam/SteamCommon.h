@@ -664,7 +664,7 @@ struct __declspec(align(8)) TSteamGlobalUserID
 
 };
 
-/*enum EUniverse
+enum EUniverse
 {
 	k_EUniverseInvalid = 0,
 	k_EUniversePublic = 1,
@@ -918,7 +918,7 @@ private:
 };
 
 const int k_unSteamAccountIDMask = 0xFFFFFFFF;
-const int k_unSteamAccountInstanceMask = 0x000FFFFF;*/
+const int k_unSteamAccountInstanceMask = 0x000FFFFF;
 
 #ifdef __cplusplus
 }
