@@ -69,7 +69,7 @@ STEAM_API int STEAM_CALL SteamEnumerateSubscription(unsigned int uSubId, TSteamS
 	if(pSubscription && pError)
 	{
 // #ifdef DEBUG
-		if (bLogging && bLogAcc)  Logger->Write("SteamEnumerateSubscription: %u\n", uSubId);
+		if (bLogging && bLogAcc)  Logger->Write("SteamEnumerateSubscription (%u)\n", uSubId);
 // #endif
 		return 1;
 	}
@@ -136,7 +136,7 @@ STEAM_API int STEAM_CALL SteamGetSubscriptionExtendedInfo()
 STEAM_API int STEAM_CALL SteamGetSubscriptionIds(unsigned int *puSubIds, unsigned int uMaxIds, TSteamError *pError)
 {
 // #ifdef DEBUG
-		if (bLogging && bLogAcc)  Logger->Write("SteamGetSubscriptionIds: %u\n", uMaxIds);
+	if (bLogging && bLogAcc)  Logger->Write("SteamGetSubscriptionIds (%u)\n", uMaxIds);
 // #endif
 	return 0;
 }
@@ -319,7 +319,7 @@ STEAM_API int STEAM_CALL SteamRequestForgottenPasswordEmail()
 STEAM_API SteamCallHandle_t STEAM_CALL SteamSetUser(const char *cszUser, int *pbUserSet, TSteamError *pError)
 {
 // #ifdef DEBUG
-	if (bLogging && bLogAcc)  Logger->Write("SteamSetUser: %s\n", cszUser);
+	if (bLogging && bLogAcc)  Logger->Write("SteamSetUser (%s)\n", cszUser);
 // #endif
 	strcpy(szSteamUser, cszUser);
 	*pbUserSet = 1;

@@ -199,7 +199,7 @@ SteamHandle_t SteamOpenFile2(const char* cszFileName, const char* cszMode, int n
 {
 	ENTER_CRITICAL_SECTION;
 
-	if (bLogging && bLogFS) Logger->Write("SteamOpenFileEx(%s, %s, %u, %u, %u)\n", cszFileName, cszMode, nFlags, puFileSize, pbLocal);
+	if (bLogging && bLogFS) Logger->Write("SteamOpenFileEx (%s, %s, %u, 0x%p, 0x%p)\n", cszFileName, cszMode, nFlags, puFileSize, pbLocal);
 
 	std::string FullPath(cszFileName);
 	int dot = FullPath.find_last_of('\\');
@@ -459,7 +459,7 @@ STEAM_API unsigned int SteamReadFile(void* pBuf, unsigned int uSize, unsigned in
 {
 	ENTER_CRITICAL_SECTION;
 
-	//if (bLogging && bLogFS) Logger->Write("SteamReadFile(0x%08X, %u, %u, 0x%08X)\n", pBuf, uSize, uCount, (long)hFile);
+	//if (bLogging && bLogFS) Logger->Write("SteamReadFile (0x%p, %u, %u, 0x%08X)\n", pBuf, uSize, uCount, (long)hFile);
 
 	SteamClearError(pError);
 
@@ -499,7 +499,7 @@ STEAM_API int SteamCloseFile(SteamHandle_t hFile, TSteamError* pError)
 {
 	ENTER_CRITICAL_SECTION;
 
-	if (bLogging && bLogFS) Logger->Write("SteamCloseFile(0x%08X)\n", (long)hFile);
+	if (bLogging && bLogFS) Logger->Write("SteamCloseFile (0x%08X)\n", (long)hFile);
 
 	SteamClearError(pError);
 
@@ -534,7 +534,7 @@ STEAM_API SteamHandle_t SteamFindFirst(const char *cszPattern, ESteamFindFilter 
 {
 	ENTER_CRITICAL_SECTION;
 
-	if (bLogging && bLogFS) Logger->Write("SteamFindFirst(%s)\n", cszPattern);
+	if (bLogging && bLogFS) Logger->Write("SteamFindFirst (%s, %u)\n", cszPattern, eFilter);
 
 	SteamClearError(pError);
 
@@ -703,7 +703,7 @@ STEAM_API int SteamStat(const char* cszFileName, TSteamElemInfo* pInfo, TSteamEr
 {
 	ENTER_CRITICAL_SECTION;
 
-	if (bLogging && bLogFS) Logger->Write("SteamStat(%s, 0x%p, 0x%p)\n", cszFileName, pInfo, pError);
+	if (bLogging && bLogFS) Logger->Write("SteamStat (%s, 0x%p)\n", cszFileName, pInfo);
 
 	SteamClearError(pError);
 
@@ -746,7 +746,7 @@ STEAM_API int SteamFlushFile(SteamHandle_t hFile, TSteamError* pError)
 {
 	ENTER_CRITICAL_SECTION;
 
-	if (bLogging && bLogFS) Logger->Write("SteamFlushFile(0x%08X)\n", (long)hFile);
+	if (bLogging && bLogFS) Logger->Write("SteamFlushFile (0x%08X)\n", (long)hFile);
 
 	SteamClearError(pError);
 
@@ -771,7 +771,7 @@ STEAM_API int SteamGetc(SteamHandle_t hFile, TSteamError* pError)
 {
 	ENTER_CRITICAL_SECTION;
 
-	if (bLogging && bLogFS) Logger->Write("SteamGetc(0x%08X)\n", (long)hFile);
+	if (bLogging && bLogFS) Logger->Write("SteamGetc (0x%08X)\n", (long)hFile);
 
 	SteamClearError(pError);
 
@@ -824,7 +824,7 @@ STEAM_API int SteamPutc(int cChar, SteamHandle_t hFile, TSteamError* pError)
 {
 	ENTER_CRITICAL_SECTION;
 
-	if (bLogging && bLogFS) Logger->Write("SteamPutc(%u, 0x%08X)\n", cChar, (long)hFile);
+	if (bLogging && bLogFS) Logger->Write("SteamPutc (%u, 0x%08X)\n", cChar, (long)hFile);
 
 	SteamClearError(pError);
 
@@ -849,7 +849,7 @@ STEAM_API int SteamSeekFile(SteamHandle_t hFile, long lOffset, ESteamSeekMethod 
 {
 	ENTER_CRITICAL_SECTION;
 
-	if (bLogging && bLogFS) Logger->Write("SteamSeekFile(0x%08X, %u, %u)\n", (long)hFile, lOffset, esMethod);
+	if (bLogging && bLogFS) Logger->Write("SteamSeekFile (0x%08X, %u, %u)\n", (long)hFile, lOffset, esMethod);
 
 	SteamClearError(pError);
 
@@ -880,7 +880,7 @@ STEAM_API unsigned int SteamWriteFile(const void* pBuf, unsigned int uSize, unsi
 {
 	ENTER_CRITICAL_SECTION;
 
-	if (bLogging && bLogFS) Logger->Write("SteamWriteFile(0x%08X, %u, %u, 0x%08X)\n", pBuf, uSize, uCount, (long)hFile);
+	if (bLogging && bLogFS) Logger->Write("SteamWriteFile (0x%p, %u, %u, 0x%08X)\n", pBuf, uSize, uCount, (long)hFile);
 
 	SteamClearError(pError);
 
@@ -909,7 +909,7 @@ STEAM_API long SteamTellFile(SteamHandle_t hFile, TSteamError* pError)
 {
 	ENTER_CRITICAL_SECTION;
 
-	if (bLogging && bLogFS) Logger->Write("SteamTellFile(0x%08X)\n", (long)hFile);
+	if (bLogging && bLogFS) Logger->Write("SteamTellFile (0x%08X)\n", (long)hFile);
 
 	SteamClearError(pError);
 
@@ -940,7 +940,7 @@ STEAM_API long SteamSizeFile(SteamHandle_t hFile, TSteamError* pError)
 {
 	ENTER_CRITICAL_SECTION;
 
-	if (bLogging && bLogFS) Logger->Write("SteamSizeFile(0x%08X)\n", (long)hFile);
+	if (bLogging && bLogFS) Logger->Write("SteamSizeFile (0x%08X)\n", (long)hFile);
 
 	SteamClearError(pError);
 
@@ -970,7 +970,7 @@ STEAM_API int SteamGetLocalFileCopy(const char* cszFileName, TSteamError* pError
 {
 	ENTER_CRITICAL_SECTION;
 
-	if (bLogging && bLogFS) Logger->Write("SteamGetLocalFileCopy(%s)\n", cszFileName);
+	if (bLogging && bLogFS) Logger->Write("SteamGetLocalFileCopy (%s)\n", cszFileName);
 
 	SteamClearError(pError);
 
@@ -1024,7 +1024,7 @@ STEAM_API int SteamIsFileImmediatelyAvailable(const char* cszName, TSteamError* 
 {
 	ENTER_CRITICAL_SECTION;
 
-	if (bLogging && bLogFS) Logger->Write("SteamIsFileImmediatelyAvailable(%s)\n", cszName);
+	if (bLogging && bLogFS) Logger->Write("SteamIsFileImmediatelyAvailable (%s)\n", cszName);
 
 	SteamClearError(pError);
 
@@ -1044,7 +1044,7 @@ STEAM_API int SteamPrintFile(SteamHandle_t hFile, TSteamError* pError, const cha
 {
 	ENTER_CRITICAL_SECTION;
 
-	if (bLogging && bLogFS) Logger->Write("SteamPrintFile(0x%08X)\n", (long)hFile);
+	if (bLogging && bLogFS) Logger->Write("SteamPrintFile (0x%08X)\n", (long)hFile);
 
 	SteamClearError(pError);
 
@@ -1072,7 +1072,7 @@ STEAM_API int STEAM_CALL SteamSetvBuf(SteamHandle_t hFile, void* pBuf, ESteamBuf
 {
 	ENTER_CRITICAL_SECTION;
 
-	if (bLogging && bLogFS) Logger->Write("SteamSetvBuf (0x%08X, 0x%08X, %u, %u)\n", (long)hFile, pBuf, eMethod, uBytes);
+	if (bLogging && bLogFS) Logger->Write("SteamSetvBuf (0x%08X, 0x%p, %u, %u)\n", (long)hFile, pBuf, eMethod, uBytes);
 
 	SteamClearError(pError);
 
@@ -1104,7 +1104,7 @@ STEAM_API int STEAM_CALL SteamSetvBuf(SteamHandle_t hFile, void* pBuf, ESteamBuf
 
 STEAM_API int STEAM_CALL SteamHintResourceNeed(const char* cszHintList, int bForgetEverything, TSteamError* pError)
 {
-	if (bLogging && bLogFS) Logger->Write("SteamHintResourceNeed: %s, %d\n", cszHintList, bForgetEverything);
+	if (bLogging && bLogFS) Logger->Write("SteamHintResourceNeed (%s, %d)\n", cszHintList, bForgetEverything);
 	SteamClearError(pError);
 	return 1;
 }

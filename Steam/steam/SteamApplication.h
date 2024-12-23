@@ -433,7 +433,7 @@ STEAM_API int SteamCheckAppOwnership(unsigned int uAppId, int* pbOwned, TSteamGl
 
 STEAM_API int SteamIsSubscribed(unsigned int uSubscriptionId, int* pbIsSubscribed, int* pbIsSubscriptionPending, TSteamError* pError)
 {
-	if (bLogging && bLogAcc) Logger->Write("SteamIsSubscribed (%u)\n", uSubscriptionId);
+	if (bLogging && bLogAcc) Logger->Write("SteamIsSubscribed (%u, 0x%p, 0x%p)\n", uSubscriptionId, pbIsSubscribed, pbIsSubscriptionPending);
 
 	// IMPORTANT: Some builds of Garry's Mod have anti-piracy check that sees if SteamIsSubscribed starts with
 	// "push ebp" instruction which depends on if and how local vars are used. Be careful when changing this function.
@@ -491,7 +491,7 @@ STEAM_API int SteamIsSubscribed(unsigned int uSubscriptionId, int* pbIsSubscribe
 
 STEAM_API int STEAM_CALL SteamIsAppSubscribed(unsigned int uAppId, int* pbIsAppSubscribed, int* pbIsSubscriptionPending, TSteamError* pError)
 {
-	if (bLogging && bLogAcc) Logger->Write("SteamIsAppSubscribed: %u %u %u\n", uAppId, *pbIsAppSubscribed, *pbIsSubscriptionPending);
+	if (bLogging && bLogAcc) Logger->Write("SteamIsAppSubscribed (%u, 0x%p, 0x%p)\n", uAppId, pbIsAppSubscribed, pbIsSubscriptionPending);
 
 	SteamClearError(pError);
 
@@ -526,7 +526,7 @@ STEAM_API int STEAM_CALL SteamIsAppSubscribed(unsigned int uAppId, int* pbIsAppS
 }
 
 STEAM_API int SteamGetAppPurchaseCountry(unsigned int uAppId, char* szCountryBuf, unsigned int uBufSize, unsigned int* pPurchaseTime, TSteamError* pError) {
-	if (bLogging) Logger->Write("SteamGetAppPurchaseCountry\n");
+	if (bLogging) Logger->Write("SteamGetAppPurchaseCountry (%u, 0x%p, %u, 0x%p)\n", uAppId, szCountryBuf, uBufSize, pPurchaseTime);
 	strcpy(szCountryBuf, "EN");
 	if (pPurchaseTime)
 		*pPurchaseTime = 0x44444444;
@@ -664,7 +664,7 @@ STEAM_API int SteamGetAppStats(TSteamAppStats *pAppStats, TSteamError *pError) {
 }
 
 STEAM_API int SteamGetAppUpdateStats(unsigned int uAppId, ESteamAppUpdateStatsQueryType uStatType, TSteamUpdateStats *pUpdateStats, TSteamError *pError) {
-	if (bLogging) Logger->Write("SteamGetAppUpdateStats %u, %u 0x%08x\n", uAppId, uStatType, pUpdateStats);
+	if (bLogging) Logger->Write("SteamGetAppUpdateStats (%u, %u, 0x%p)\n", uAppId, uStatType, pUpdateStats);
 	SteamClearError(pError);
 
 	
@@ -814,8 +814,7 @@ STEAM_API int SteamGetAppUserDefinedRecord(unsigned int uAppId, AddEntryToKeyVal
 //Resources
 
 STEAM_API SteamCallHandle_t SteamWaitForResources(const char* cszMasterList, TSteamError* pError) {
-	if (bLogging) Logger->Write("SteamWaitForResources: %s\n", cszMasterList);
-
+	if (bLogging) Logger->Write("SteamWaitForResources (%s)\n", cszMasterList);
 	SteamClearError(pError);
 	//return 1;
 	return 0;
@@ -829,7 +828,7 @@ STEAM_API int SteamHintResourceNeed(const char *cszMountPath, const char *cszMas
 */
 
 STEAM_API int SteamForgetAllHints(const char *cszMountPath, TSteamError *pError ) {
-	if (bLogging) Logger->Write("SteamForgetAllHints %s\n", cszMountPath);
+	if (bLogging) Logger->Write("SteamForgetAllHints (%s)\n", cszMountPath);
 	SteamClearError(pError);
 	
 	return 0;
@@ -951,7 +950,7 @@ STEAM_API int SteamGetCacheDecryptionKey() {
 
 
 STEAM_API SteamCallHandle_t SteamGetAppCacheSize(unsigned int uAppId, unsigned int *pCacheSizeInMb, TSteamError *pError ) {
-	if (bLogging && bLogFS) Logger->Write("SteamGetAppCacheSize(%u, %u)\n",uAppId,pCacheSizeInMb);
+	if (bLogging && bLogFS) Logger->Write("SteamGetAppCacheSize (%u, 0x%p)\n", uAppId, pCacheSizeInMb);
 	*pCacheSizeInMb = 256;
 	SteamClearError(pError);
 	return 1;
