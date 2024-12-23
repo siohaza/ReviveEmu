@@ -816,8 +816,8 @@ STEAM_API int SteamGetAppUserDefinedRecord(unsigned int uAppId, AddEntryToKeyVal
 STEAM_API SteamCallHandle_t SteamWaitForResources(const char* cszMasterList, TSteamError* pError) {
 	if (bLogging) Logger->Write("SteamWaitForResources (%s)\n", cszMasterList);
 	SteamClearError(pError);
-	//return 1;
-	return 0;
+
+	return 1;
 }
 
 /*
@@ -831,7 +831,7 @@ STEAM_API int SteamForgetAllHints(const char *cszMountPath, TSteamError *pError 
 	if (bLogging) Logger->Write("SteamForgetAllHints (%s)\n", cszMountPath);
 	SteamClearError(pError);
 	
-	return 0;
+	return 1;
 }
 
 
@@ -851,21 +851,21 @@ STEAM_API int SteamIsCacheLoadingEnabled(unsigned int uAppId, int *pbIsLoading, 
 	*pbIsLoading = 0;
 	SteamClearError(pError);
 	
-	return 0;
+	return 1;
 }
 
 STEAM_API SteamCallHandle_t SteamFlushCache(unsigned int uAppId, TSteamError *pError ) {
 	if (bLogging) Logger->Write("SteamFlushCache\n");
 	SteamClearError(pError);
 	
-	return 0;
+	return 1;
 }
 
 STEAM_API SteamCallHandle_t SteamLoadCacheFromDir(unsigned int uAppId, const char *szPath, TSteamError *pError ) {
 	if (bLogging) Logger->Write("SteamLoadCacheFromDir\n");
 	SteamClearError(pError);
 	
-	return 0;
+	return 1;
 }
 
 STEAM_API int SteamPauseCachePreloading(const char *cszMountPath, TSteamError *pError ) {
