@@ -73,28 +73,28 @@ const unsigned char m_encrypted[648] =
 
 struct __declspec(align(8)) TRevTicket
 {
-	uint32_t Signature;
-	uint32_t Version;
-	uint64_t SteamID;
-	uint32_t LocalIP;
+	uint32_t uSignature;
+	uint32_t uVersion;
+	uint64_t ulSteamID;
+	uint32_t uLocalIP;
 };
 
 struct __declspec(align(8)) TRevTicketV1
 {
-	uint32_t Signature;
-	uint32_t Version;
-	uint32_t AccountID;
-	uint32_t LocalIP;
+	uint32_t uSignature;
+	uint32_t uVersion;
+	uint32_t uAccountID;
+	uint32_t uLocalIP;
 };
 
 #define STEAMTICKET_SIGNATURE 0x63845768
 
 struct __declspec(align(8)) TSteam2WrapperTicket
 {
-    uint32_t Signature;
+    uint32_t uSignature;
 	TSteamGlobalUserID SteamID;
-    uint32_t LocalIP;
-    uint32_t Handle;
+    uint32_t uLocalIP;
+    uint32_t uHandle;
 };
 
 #endif

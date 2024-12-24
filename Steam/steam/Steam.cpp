@@ -156,18 +156,18 @@ void InitGlobalVaribles()
 
 	appid = 0;
 
-	char envBuffer[128];
-	int envBufferLen = GetEnvironmentVariableA("SteamAppId", envBuffer, sizeof(envBuffer));
-	if (envBufferLen && envBufferLen < sizeof(envBuffer))
+	char szEnvBuffer[128];
+	int envBufferLen = GetEnvironmentVariableA("SteamAppId", szEnvBuffer, sizeof(szEnvBuffer));
+	if (envBufferLen && envBufferLen < sizeof(szEnvBuffer))
 	{
-		appid = strtol(envBuffer, NULL, 10);
+		appid = strtol(szEnvBuffer, NULL, 10);
 	}
 	else if (FILE* fp = fopen("steam_appid.txt", "rb"))
 	{
-		char fileBuffer[256];
-		if (fgets(fileBuffer, sizeof(fileBuffer), fp))
+		char szFileBuffer[256];
+		if (fgets(szFileBuffer, sizeof(szFileBuffer), fp))
 		{
-			appid = strtol(fileBuffer, NULL, 10);
+			appid = strtol(szFileBuffer, NULL, 10);
 		}
 
 		fclose(fp);
@@ -257,10 +257,10 @@ void InitGlobalVaribles()
 			if(GetModuleFileNameA(g_hModule, szSteamDLLPath, MAX_PATH))
 			{
 				char szRelDLLPath[MAX_PATH];
-				bool gotRelPath = V_MakeRelativePath(szSteamDLLPath, szRunFromPath, szRelDLLPath, MAX_PATH);
+				bool bGotRelPath = V_MakeRelativePath(szSteamDLLPath, szRunFromPath, szRelDLLPath, MAX_PATH);
 
 				// HACK: If Steam.dll is in "bin" subdirectory, use the working dir for our config files.
-				if (gotRelPath && _stricmp(szRelDLLPath, "bin\\steam.dll") == 0)
+		        if (bGotRelPath && _stricmp(szRelDLLPath, "bin\\steam.dll") == 0)
 				{
 					strcpy(szSteamDLLPath, szRunFromPath);
 				}

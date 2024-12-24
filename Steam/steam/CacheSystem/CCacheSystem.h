@@ -661,7 +661,7 @@ private:
 
 	bool GetFilenameInCache(char * cszFileName)
 	{
-		char buf[MAX_PATH];
+		char szBuf[MAX_PATH];
 		char szCWD[MAX_PATH];
 
 		if (!_getcwd(szCWD, MAX_PATH))
@@ -675,15 +675,15 @@ private:
 			if (!V_RemoveDotSlashes(cszFileName))
 				return false;
 
-			if (!V_MakeRelativePath(cszFileName, szCWD, buf, MAX_PATH))
+			if (!V_MakeRelativePath(cszFileName, szCWD, szBuf, MAX_PATH))
 				return false;
 
 			// Normalize slashes.
-			V_FixSlashes(buf, '\\');
+			V_FixSlashes(szBuf, '\\');
 
 			// Parsed cache paths start with a slash.
 			cszFileName[0] = '\\';
-			strcpy(cszFileName + 1, buf);
+			strcpy(cszFileName + 1, szBuf);
 		}
 		else
 		{

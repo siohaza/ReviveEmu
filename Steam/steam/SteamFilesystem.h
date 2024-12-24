@@ -464,33 +464,33 @@ STEAM_API unsigned int SteamReadFile(void* pBuf, unsigned int uSize, unsigned in
 	SteamClearError(pError);
 
 	TFileInCacheHandle* hCacheFile = (TFileInCacheHandle*)hFile;
-	unsigned int readamount = 0;
+	unsigned int retval = 0;
 
 	if (hCacheFile->IsFileLocal)
 	{
-		readamount = fread(pBuf, uSize, uCount, hCacheFile->LocalFile);
+		retval = fread(pBuf, uSize, uCount, hCacheFile->LocalFile);
 
-		if (readamount != uCount && feof(hCacheFile->LocalFile))
+		if (retval != uCount && feof(hCacheFile->LocalFile))
 		{
 			pError->eSteamError = eSteamErrorEOF;
 		}
 	}
 	else
 	{
-		readamount = CacheManager->CacheReadFile(pBuf, uSize, uCount, hCacheFile);
-
-		if (readamount != uSize * uCount)
-		{
-			pError->eSteamError = eSteamErrorEOF;
-		}
+		retval = CacheManager->CacheReadFile(pBuf, uSize, uCount, hCacheFile);
 
 		if (uSize > 1)
 		{
-			readamount /= uSize;
+			retval /= uSize;
+		}
+
+		if (retval != uCount)
+		{
+			pError->eSteamError = eSteamErrorEOF;
 		}
 	}
 
-	return readamount;
+	return retval;
 }
 
 extern BOOL bSteamStartup;
@@ -1049,13 +1049,13 @@ STEAM_API int SteamPrintFile(SteamHandle_t hFile, TSteamError* pError, const cha
 	SteamClearError(pError);
 
 	TFileInCacheHandle* hCacheFile = (TFileInCacheHandle*)hFile;
-	int writeamount = 0;
+	int retval = 0;
 
 	if (hCacheFile->IsFileLocal)
 	{
 		va_list ap;
 		va_start(ap, cszFormat);
-		writeamount = vfprintf(hCacheFile->LocalFile, cszFormat, ap);
+		retval = vfprintf(hCacheFile->LocalFile, cszFormat, ap);
 		va_end(ap);
 	}
 	else
@@ -1065,7 +1065,7 @@ STEAM_API int SteamPrintFile(SteamHandle_t hFile, TSteamError* pError, const cha
 		pError->eSteamError = eSteamErrorAccessDenied;
 	}
 
-	return writeamount;
+	return retval;
 }
 
 STEAM_API int STEAM_CALL SteamSetvBuf(SteamHandle_t hFile, void* pBuf, ESteamBufferMethod eMethod, unsigned int uBytes, TSteamError* pError)
@@ -1082,16 +1082,16 @@ STEAM_API int STEAM_CALL SteamSetvBuf(SteamHandle_t hFile, void* pBuf, ESteamBuf
 	if (hCacheFile->IsFileLocal)
 	{
 		FILE* pFile = hCacheFile->LocalFile;
-		int mode = 0;
+		int iMode = 0;
 
 		if (eMethod == eSteamBufferMethodFBF)
-			mode = _IOFBF;
+			iMode = _IOFBF;
 		else if (eMethod == eSteamBufferMethodNBF)
-			mode = _IONBF;
+			iMode = _IONBF;
 		else
 			return -1;
 
-		retval = setvbuf(pFile, (char*)pBuf, mode, uBytes);
+		retval = setvbuf(pFile, (char*)pBuf, iMode, uBytes);
 	}
 	else
 	{
