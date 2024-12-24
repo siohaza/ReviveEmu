@@ -897,17 +897,17 @@ STEAM_API SteamCallHandle_t SteamStopLoadingCache(unsigned int uAppId, TSteamErr
 	return 1;
 }
 
-STEAM_API int SteamGetCacheDefaultDirectory(char *szPath, TSteamError *pError ) {
+STEAM_API int SteamGetCacheDefaultDirectory(char *szPath, TSteamError *pError) {
 	if (bLogging) Logger->Write("SteamGetCacheDefaultDirectory\n");
-	if (CacheLocations.size() > 0)
+	SteamClearError(pError);
+
+	if (!bSteamFileSystem)
 	{
-		strcpy(szPath, CacheLocations[0]);
-	}
-	else
-	{
-		strcpy(szPath, szGCFPath);
+		pError->eSteamError = eSteamErrorUnknown;
+		return 0;
 	}
 
+	strcpy(szPath, CacheLocations[0]);
 	return 1;
 }
 
