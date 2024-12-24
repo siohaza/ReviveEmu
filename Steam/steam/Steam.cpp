@@ -40,7 +40,7 @@ bool bSteamBlobSystem = false;
 std::vector<unsigned int> vecGCF;
 unsigned int appid = 0;
 char szGCFPath[MAX_PATH * 5];
-static std::vector<char*> CacheLocations;
+static std::vector<const char*> CacheLocations;
 
 char szLanguage[MAX_PATH];
 char szSteamUser[MAX_PATH];
@@ -471,14 +471,12 @@ void InitGlobalVaribles()
 
 						if (bSteamFileSystem == true)
 						{
-							char * pch;
-							pch = strtok (szGCFPath,";");
-							while (pch != NULL)
-							{
-								CacheLocations.push_back(pch); 
-								pch = strtok (NULL, ";");
-
-							}
+					        char *pch = strtok(szGCFPath, " ");
+					        while (pch != NULL)
+					        {
+						        CacheLocations.push_back(pch);
+						        pch = strtok(NULL, " ");
+					        }
 
 							if (CacheLocations.size() > 0)
 							{
