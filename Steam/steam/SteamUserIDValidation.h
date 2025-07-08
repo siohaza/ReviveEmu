@@ -29,7 +29,7 @@ struct TRevUserValidationHandle
 
 std::vector<TRevUserValidationHandle *> g_RevUserValidations;
 
-typedef ESteamError (STEAM_CALL *SteamInitializeUserIDTicketValidatorCall)(const char*, const char*, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int); 
+typedef ESteamError (STEAM_CALL *SteamInitializeUserIDTicketValidatorCall)(const char*, const char*, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int);
 typedef ESteamError (STEAM_CALL *SteamStartValidatingUserIDTicketCall)(void*, unsigned int, unsigned int, SteamUserIDTicketValidationHandle_t*);
 typedef ESteamError (STEAM_CALL *SteamProcessOngoingUserIDTicketValidationCall)(SteamUserIDTicketValidationHandle_t Handle,
 													  TSteamGlobalUserID*,
@@ -51,7 +51,7 @@ const char* GetUserIDString(const TSteamGlobalUserID& steamid)
 
 STEAM_API ESteamError STEAM_CALL SteamGetEncryptedUserIDTicket(const void *pEncryptionKeyReceivedFromAppServer, unsigned int uEncryptionKeyLength, void *pOutputBuffer, unsigned int uSizeOfOutputBuffer, unsigned int *pReceiveSizeOfEncryptedTicket, TSteamError *pError)
 {
-	if (bLogging && bLogUserId) 
+	if (bLogging && bLogUserId)
 	{
 		Logger->Write("SteamGetEncryptedUserIDTicket:\n");
 		Logger->Write("\tKey Address: 0x%p\n", pEncryptionKeyReceivedFromAppServer);
@@ -63,7 +63,7 @@ STEAM_API ESteamError STEAM_CALL SteamGetEncryptedUserIDTicket(const void *pEncr
 	}
 	if (bLogging && bLogUserId) Logger->Write("\t---\n");
 	if (bLogging && bLogUserId) Logger->Write("\tSteamID: %llu\n", g_SteamID.ConvertToUint64());
-	
+
 	struct TRevTicket sGetRevTicket;
 	sGetRevTicket.uSignature = REVTICKET_SIGNATURE;
 	sGetRevTicket.uVersion = REVTICKET_VERSION;
@@ -263,7 +263,7 @@ STEAM_API ESteamError STEAM_CALL SteamStartValidatingNewValveCDKey(void *pEncryp
 		*(void **)(&fptr) = GetProcAddress(GetModuleHandleA(szOrigSteamDll), "SteamStartValidatingNewValveCDKey");
 		retval = (*fptr)(pEncryptedNewValveCDKeyFromClient, uSizeOfEncryptedNewValveCDKeyFromClient, ObservedClientIPAddr, pPrimaryValidateNewCDKeyServerSockAddr, pSecondaryValidateNewCDKeyServerSockAddr, pReceiveHandle);
 		if (bLogging && bLogUserId) Logger->Write("\t 0x%08X\n", (int)retval);
-		
+
 		if (retval == eSteamErrorNone || retval == eSteamErrorNotFinishedProcessing)
 		{
 			if (bLogging && bLogUserId) Logger->Write("\t Client using legitimate STEAM account.\n");
