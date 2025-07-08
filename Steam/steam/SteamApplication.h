@@ -473,7 +473,7 @@ STEAM_API int SteamIsSubscribed(unsigned int uSubscriptionId, int* pbIsSubscribe
 
 	for (unsigned int x = 0; x < CDR->SubscriptionsRecord.size(); x++)
 	{
-		if (CDR->SubscriptionsRecord[x]->SubscriptionId = uSubscriptionId)
+		if (CDR->SubscriptionsRecord[x]->SubscriptionId == uSubscriptionId)
 		{
 			*pbIsSubscribed = 1;
 			*pbIsSubscriptionPending = 0;
