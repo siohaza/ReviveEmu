@@ -304,7 +304,7 @@ void InitGlobalVaribles()
 
 						strcpy(chLogFile, szSteamDLLPath);
 						strcat(chLogFile, chProcName);
-						strcat(chLogFile, "_REVOLUTiON.log");
+						strcat(chLogFile, "_REVive.log");
 						Logger = new CLogFile(chLogFile);
 						Logger->Clear();
 						Logger->Write("Logging initialized.\n");
@@ -350,7 +350,7 @@ void InitGlobalVaribles()
 						char tmpFile[MAX_PATH];
 
 						strcpy(tmpFile, szSteamDLLPath);
-						strcat(tmpFile,"\\REVOLUTiON_File_Failure.Log");
+						strcat(tmpFile,"\\REVive_File_Failure.Log");
 						LoggerFileFailure = new CLogFile(tmpFile);
 						LoggerFileFailure->Clear();
 
@@ -383,13 +383,13 @@ void InitGlobalVaribles()
 					}
 					else
 					{
-						strcpy(szSteamUser,"revCrew");
+						strcpy(szSteamUser,"RevUser");
 					}
 					delete[] SteamUSR;
 				}
 				else
 				{
-					strcpy(szSteamUser,"revCrew");
+					strcpy(szSteamUser,"RevUser");
 				}
 
 				SetEnvironmentVariableA("SteamUser", szSteamUser);
@@ -509,7 +509,7 @@ void InitGlobalVaribles()
 					if (_stricmp(Misc, "True") == 0) 
 					{
 						bAllowNonRev = false;
-						if (bLogging) Logger->Write("Non-REVOLUTiON clients will not be allowed to join the server.\n");
+						if (bLogging) Logger->Write("Non-REVive clients will not be allowed to join the server.\n");
 					} 
 					delete[] Misc;
 				}

@@ -185,7 +185,7 @@ STEAM_API ESteamError STEAM_CALL SteamStartValidatingUserIDTicket(void *pEncrypt
 	if (uCheckTicket == REVTICKET_SIGNATURE)
 	{
 		// This is our auth ticket format.
-		if (bLogging && bLogUserId) Logger->Write("\t Client using REVOLUTiON emulator.\n");
+		if (bLogging && bLogUserId) Logger->Write("\t Client using REVive emulator.\n");
 
 		hRevHandle->eClientType = eClientRev;
 		const TRevTicket* pRevTicket = (TRevTicket*)pEncryptedUserIDTicketFromClient;
@@ -200,13 +200,13 @@ STEAM_API ESteamError STEAM_CALL SteamStartValidatingUserIDTicket(void *pEncrypt
 			}
 			else
 			{
-				if (bLogging && bLogUserId) Logger->Write("\t Malformed REVOLUTiON auth ticket.\n");
+				if (bLogging && bLogUserId) Logger->Write("\t Malformed REVive auth ticket.\n");
 				hRevHandle->eReturnCode = eSteamErrorCorruptEncryptedUserIDTicket;
 			}
 		}
 		else
 		{
-			if (bLogging && bLogUserId) Logger->Write("\t REVOLUTiON auth ticket version %u not supported.\n", pRevTicket->uVersion);
+			if (bLogging && bLogUserId) Logger->Write("\t REVive auth ticket version %u not supported.\n", pRevTicket->uVersion);
 			hRevHandle->eReturnCode = eSteamErrorInvalidUserIDTicket;
 		}
 	}
@@ -234,7 +234,7 @@ STEAM_API ESteamError STEAM_CALL SteamStartValidatingUserIDTicket(void *pEncrypt
 	else
 	{
 		// Unknown client, generate SteamID from IP address.
-		if (bLogging && bLogUserId) Logger->Write("\t Client not using REVOLUTiON emulator.\n");
+		if (bLogging && bLogUserId) Logger->Write("\t Client not using REVive emulator.\n");
 
 		hRevHandle->eClientType = eClientUnknown;
 		hRevHandle->Steam3ID.Set(ObservedClientIPAddr, k_EUniversePublic, k_EAccountTypeIndividual);
