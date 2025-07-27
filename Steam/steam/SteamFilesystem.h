@@ -56,7 +56,7 @@ void MountFileSystemByID(unsigned int uId, const char* szExtraMount)
 {
 	char szPath[MAX_PATH];
 	char szGCF[MAX_PATH];
-	unsigned int cHandle;
+	intptr_t cHandle;
 
 	strcpy(szGCF, CDR->ApplicationRecords[uId]->InstallDirName);
 	_strlwr(szGCF);
@@ -77,9 +77,9 @@ void MountFileSystemByID(unsigned int uId, const char* szExtraMount)
 	}
 }
 
-void MountFileSystemByName(const char * szPath )
+void MountFileSystemByName(const char * szPath)
 {
-	unsigned int cHandle;
+	intptr_t cHandle;
 	unsigned int index = vecGCF.size();
 	cHandle = CacheManager->MountCache(szPath, index, "");
 	if(cHandle != NULL)

@@ -1,5 +1,4 @@
-typedef unsigned int CacheHandle;
-typedef unsigned int hFileinCache;
+typedef intptr_t CacheHandle;
 
 typedef enum
 {

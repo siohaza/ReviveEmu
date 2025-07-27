@@ -37,7 +37,7 @@ bool bAllowNonRev = true;
 int nArgs;
 bool bSteamFileSystem = false;
 bool bSteamBlobSystem = false;
-std::vector<unsigned int> vecGCF;
+std::vector<intptr_t> vecGCF;
 unsigned int appid = 0;
 char szGCFPath[MAX_PATH * 5];
 static std::vector<const char*> CacheLocations;
