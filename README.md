@@ -32,3 +32,7 @@ Open Steam.sln in Visual Studio 2022 and build it.
 * Later engines use both Steam.dll and steam_api.dll - in this case, you will need to combine REVive with a steam_api.dll emulator.
 
 * The loaders that come with Goldberg and SmartSteamEmu both automatically set SteamAppId env var so you don't need to bother with step 4 when using GCF mounting.
+
+## Credits
+
+shmelle, revCrew, vityan666, bir3yk - original 2008 version of RevEmu.
