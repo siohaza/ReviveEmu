@@ -24,7 +24,7 @@ Open Steam.sln in Visual Studio 2022 and build it.
 
 3. Either put ClientRegistry.blob with period appropriate CDR next to game exe OR extract revApps.ini next to game exe and configure it to mount the right GCF files for your game's app ID.
 
-4. Run the game with -appid <appid> OR set SteamAppId environment variable to your game's app ID.
+4. Run the game with -appid \<appid\> OR set SteamAppId environment variable to your game's app ID.
 
 5. Play.
 
