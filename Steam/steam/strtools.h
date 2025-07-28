@@ -543,8 +543,8 @@ template <size_t maxLenInChars> int Q_NormalizeUTF8ToASCII( OUT_Z_ARRAY char (&p
 
 struct va_list 
 {
-    char *a0;       /* pointer to first homed integer argument */
-    int offset;     /* byte offset of next parameter */
+	char *a0;       /* pointer to first homed integer argument */
+	int offset;     /* byte offset of next parameter */
 };
 
 #else  // !_M_ALPHA

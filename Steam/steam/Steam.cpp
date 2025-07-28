@@ -111,8 +111,8 @@ bool inArgs(LPWSTR arg) {
 void InitGlobalVaribles();
 
 BOOL APIENTRY DllMain( HMODULE hModule,
-                       DWORD  ul_reason_for_call,
-                       LPVOID lpReserved
+					   DWORD  ul_reason_for_call,
+					   LPVOID lpReserved
 					 )
 {
 	switch (ul_reason_for_call)
@@ -185,63 +185,63 @@ void InitGlobalVaribles()
 
 		if (!appid)
 		{
-		    char szExePath[MAX_PATH];
-		    GetModuleFileNameA(NULL, szExePath, MAX_PATH);
+			char szExePath[MAX_PATH];
+			GetModuleFileNameA(NULL, szExePath, MAX_PATH);
 			const char *chProcName = V_GetFileName(szExePath);
 
 			if(inArgs(L"-game")) 
 			{
-			    char szGameDir[MAX_PATH];
+				char szGameDir[MAX_PATH];
 
 				for (int j = 0; j < nArgs; j++)
-			    {
-				    if (_wcsicmp(szArglist[j], L"-game") == 0)
-				    {
-					    wcstombs(szGameDir, szArglist[j + 1], MAX_PATH);
-				    }
-			    }
+				{
+					if (_wcsicmp(szArglist[j], L"-game") == 0)
+					{
+						wcstombs(szGameDir, szArglist[j + 1], MAX_PATH);
+					}
+				}
 
 				if (!_stricmp(szGameDir, "cstrike"))
 				{
-				    if (!_stricmp(chProcName, "hl.exe")) appid = 10;
-				    if (!_stricmp(chProcName, "hl2.exe")) appid = 240;
+					if (!_stricmp(chProcName, "hl.exe")) appid = 10;
+					if (!_stricmp(chProcName, "hl2.exe")) appid = 240;
 				}
 				else if (!_stricmp(szGameDir, "dod"))
 				{
-				    if (!_stricmp(chProcName, "hl.exe")) appid = 30;
-				    if (!_stricmp(chProcName, "hl2.exe")) appid = 300;
+					if (!_stricmp(chProcName, "hl.exe")) appid = 30;
+					if (!_stricmp(chProcName, "hl2.exe")) appid = 300;
 				}
 				else if (!_stricmp(szGameDir, "garrysmod"))
 				{
-				    if (!_stricmp(chProcName, "hl2.exe")) appid = 4000;
+					if (!_stricmp(chProcName, "hl2.exe")) appid = 4000;
 				}
 				else if (!_stricmp(szGameDir, "hl2mp"))
 				{
-				    if (!_stricmp(chProcName, "hl2.exe")) appid = 320;
+					if (!_stricmp(chProcName, "hl2.exe")) appid = 320;
 				}
 				else if (!_stricmp(szGameDir, "tf"))
 				{
-				    if (!_stricmp(chProcName, "hl2.exe")) appid = 440;
+					if (!_stricmp(chProcName, "hl2.exe")) appid = 440;
 				}
 				else if (!_stricmp(szGameDir, "episodic"))
 				{
-				    if (!_stricmp(chProcName, "hl2.exe")) appid = 380;
+					if (!_stricmp(chProcName, "hl2.exe")) appid = 380;
 				}
 				else if (!_stricmp(szGameDir, "ep2"))
 				{
-				    if (!_stricmp(chProcName, "hl2.exe")) appid = 420;
+					if (!_stricmp(chProcName, "hl2.exe")) appid = 420;
 				}
 				else if (!_stricmp(szGameDir, "portal"))
 				{
-				    if (!_stricmp(chProcName, "hl2.exe")) appid = 400;
+					if (!_stricmp(chProcName, "hl2.exe")) appid = 400;
 				}
 				else if (!_stricmp(szGameDir, "lostcoast"))
 				{
-				    if (!_stricmp(chProcName, "hl2.exe")) appid = 340;
+					if (!_stricmp(chProcName, "hl2.exe")) appid = 340;
 				}
 				else if (!_stricmp(szGameDir, "launcher"))
 				{
-				    if (!_stricmp(chProcName, "SourceSDK.exe")) appid = 211;
+					if (!_stricmp(chProcName, "SourceSDK.exe")) appid = 211;
 				}
 				else
 					appid = 0;
@@ -260,12 +260,12 @@ void InitGlobalVaribles()
 				bool bGotRelPath = V_MakeRelativePath(szSteamDLLPath, szRunFromPath, szRelDLLPath, MAX_PATH);
 
 				// HACK: If Steam.dll is in "bin" subdirectory, use the working dir for our config files.
-		        if (bGotRelPath && _stricmp(szRelDLLPath, "bin\\steam.dll") == 0)
+				if (bGotRelPath && _stricmp(szRelDLLPath, "bin\\steam.dll") == 0)
 				{
 					strcpy(szSteamDLLPath, szRunFromPath);
 				}
-		        else
-		        {
+				else
+				{
 					V_StripFilename(szSteamDLLPath);
 				}
 
@@ -298,9 +298,9 @@ void InitGlobalVaribles()
 					{
 						bLogging = true;
 
-				        char szExePath[MAX_PATH];
-				        GetModuleFileNameA(NULL, szExePath, MAX_PATH);
-				        const char* chProcName = V_GetFileName(szExePath);
+						char szExePath[MAX_PATH];
+						GetModuleFileNameA(NULL, szExePath, MAX_PATH);
+						const char* chProcName = V_GetFileName(szExePath);
 
 						strcpy(chLogFile, szSteamDLLPath);
 						strcat(chLogFile, chProcName);
@@ -471,12 +471,12 @@ void InitGlobalVaribles()
 
 						if (bSteamFileSystem == true)
 						{
-					        char *pch = strtok(szGCFPath, " ");
-					        while (pch != NULL)
-					        {
-						        CacheLocations.push_back(pch);
-						        pch = strtok(NULL, " ");
-					        }
+							char *pch = strtok(szGCFPath, " ");
+							while (pch != NULL)
+							{
+								CacheLocations.push_back(pch);
+								pch = strtok(NULL, " ");
+							}
 
 							if (CacheLocations.size() > 0)
 							{
@@ -539,8 +539,8 @@ void InitGlobalVaribles()
 						strcpy(chClientPath, szSteamDLLPath);
 
 						char szExePath[MAX_PATH];
-				        GetModuleFileNameA(NULL, szExePath, MAX_PATH);
-				        const char* chProcName = V_GetFileName(szExePath);
+						GetModuleFileNameA(NULL, szExePath, MAX_PATH);
+						const char* chProcName = V_GetFileName(szExePath);
 				
 						if (!_stricmp(chProcName, "hlds.exe") || !_stricmp(chProcName, "hl.exe")) strcat(chClientPath, "steamclient.dll");
 						else if (!_stricmp(chProcName, "srcds.exe") || !_stricmp(chProcName, "hl2.exe") || !_stricmp(chProcName, "sdklauncher.exe")) strcat(chClientPath, "bin\\steamclient.dll");

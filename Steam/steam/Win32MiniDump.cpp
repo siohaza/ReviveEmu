@@ -76,7 +76,7 @@ void CWin32MiniDump::WriteUsingExceptionInfo( DWORD dwExceptionCode, _EXCEPTION_
 		//AddComments as User Stream!
 
 		this->m_fnMiniDumpWriteDump( GetCurrentProcess(), GetCurrentProcessId(), hMiniDumpFile, (_MINIDUMP_TYPE)(MiniDumpNormal | MiniDumpWithHandleData | MiniDumpWithProcessThreadData), &mdmpExceptionInfo, NULL, NULL );
-    }
+	}
 	__except( EXCEPTION_EXECUTE_HANDLER )
 	{
 	}

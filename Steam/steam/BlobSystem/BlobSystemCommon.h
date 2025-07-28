@@ -16,32 +16,32 @@ typedef enum
 
 typedef struct
 {
-    unsigned short magic;
-    unsigned int datalength;
-    unsigned int nullpadding;
+	unsigned short magic;
+	unsigned int datalength;
+	unsigned int nullpadding;
 }TNodeHeader;
 
 typedef struct
 {
-    unsigned short magic;
-    unsigned int datalength;
-    unsigned int nullpadding;
-    unsigned int compresseddatalength;
-    unsigned int nullpadding2;
-    unsigned short Unknown;
+	unsigned short magic;
+	unsigned int datalength;
+	unsigned int nullpadding;
+	unsigned int compresseddatalength;
+	unsigned int nullpadding2;
+	unsigned short Unknown;
 }TNodeHeaderCompressed;
 
 typedef struct
 {
-    unsigned short descriptorlength;
-    unsigned int datalength;
+	unsigned short descriptorlength;
+	unsigned int datalength;
 	ESteamBlobNodeType type;
 }TDescriptorNode;
 
 typedef struct
 {
-    unsigned short descriptorlength;
-    unsigned int  datalength;
+	unsigned short descriptorlength;
+	unsigned int  datalength;
 }TNode;
 
 typedef struct

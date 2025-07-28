@@ -154,11 +154,11 @@ int	_V_wcslen(const char* file, int line, const wchar_t *pwch)
 char *_V_strrchr(const char* file, int line, const char *s, char c)
 {
 	AssertValidStringPtr( s );
-    int len = V_strlen(s);
-    s += len;
-    while (len--)
+	int len = V_strlen(s);
+	s += len;
+	while (len--)
 	if (*--s == c) return (char *)s;
-    return 0;
+	return 0;
 }
 
 int _V_strcmp (const char* file, int line, const char *s1, const char *s2)

@@ -36,7 +36,7 @@ int getRegistry(char * key, char * name, DWORD * value)
 	DWORD dwLength=sizeof(DWORD);
 	DWORD type=0;
 	int result=RegQueryValueExA(root, name, NULL,&type, (PBYTE)value, &dwLength);
- 	if (result == ERROR_SUCCESS && type!=REG_DWORD) result=1;
+	if (result == ERROR_SUCCESS && type!=REG_DWORD) result=1;
 		
 	RegCloseKey(root);
 	return result;
@@ -55,7 +55,7 @@ int getRegistry(char * key, char * name, char * value, DWORD maxLength)
 	DWORD dwLength=maxLength;
 	DWORD type=0;
 	int result=RegQueryValueExA(root, name, NULL,&type, (PBYTE)value, &dwLength);
- 	if (result == ERROR_SUCCESS && type!=REG_SZ) result=1;
+	if (result == ERROR_SUCCESS && type!=REG_SZ) result=1;
 
 	_strupr(value);	
 
@@ -76,7 +76,7 @@ int getRegistryU(char * key, char * name, char * value, DWORD maxLength)
 	DWORD dwLength=maxLength;
 	DWORD type=0;
 	int result=RegQueryValueExA(root, name, NULL,&type, (PBYTE)value, &dwLength);
- 	if (result == ERROR_SUCCESS && type!=REG_SZ) result=1;
+	if (result == ERROR_SUCCESS && type!=REG_SZ) result=1;
 
 	_strupr(value);	
 
@@ -99,7 +99,7 @@ int getRegistry(char * key, char * name, char ** values,int * nbValues)
 	char * vals=(char *)malloc(65535);
 	
 	int result=RegQueryValueExA(root, name, NULL,&type, (PBYTE)vals, &dwLength);
- 	if (result == ERROR_SUCCESS && type!=REG_MULTI_SZ) result=1;
+	if (result == ERROR_SUCCESS && type!=REG_MULTI_SZ) result=1;
 	
 	if (result == ERROR_SUCCESS)
 	{

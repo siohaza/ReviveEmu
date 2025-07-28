@@ -224,7 +224,7 @@ STEAM_API int STEAM_CALL SteamIsAccountNameInUse()
 
 STEAM_API int STEAM_CALL SteamIsLoggedIn(int *pbIsLoggedIn, TSteamError *pError)
 {
-    if(bLogging) Logger->Write("SteamIsLoggedIn\n");
+	if(bLogging) Logger->Write("SteamIsLoggedIn\n");
 	
 	*pbIsLoggedIn = 1;
 	SteamClearError(pError);

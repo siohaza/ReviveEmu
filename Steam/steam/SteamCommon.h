@@ -326,9 +326,9 @@ struct TSteamSubscriptionStats
 
 typedef struct 
 {
-    unsigned int AppId;
-    unsigned int IsRequired;
-    char szMountName[STEAM_MAX_PATH];
+	unsigned int AppId;
+	unsigned int IsRequired;
+	char szMountName[STEAM_MAX_PATH];
 } TSteamAppDependencyInfo;
 
 struct TSteamAppStats
@@ -375,7 +375,7 @@ struct TSteamApp
 	char *szCurrentVersionLabel;
 	unsigned int uMaxCurrentVersionLabelChars;
 	char *szCacheFile;
-    unsigned int uMaxCacheFileChars;
+	unsigned int uMaxCacheFileChars;
 	unsigned int uId;
 	unsigned int uLatestVersionId;
 	unsigned int uCurrentVersionId;
