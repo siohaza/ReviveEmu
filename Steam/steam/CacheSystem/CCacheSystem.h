@@ -306,7 +306,9 @@ public:
 		if(uSize > 0)
 		{
 			//long lReadPosition = hCacheFile->Sectors->Header->FirstSectorOffset + (hFileInCache->Sectors[iSectorIndex] * hCacheFile->Sectors->Header->PhysicalSectorSize) + uOffset;
-			__int64 lReadPosition = hCacheFile->Sectors->Header->FirstSectorOffset + (hFileInCache->Sectors[iSectorIndex] * hCacheFile->Sectors->Header->PhysicalSectorSize) + uOffset;
+			__int64 lReadPosition = (__int64)hCacheFile->Sectors->Header->FirstSectorOffset +
+			                        (__int64)(hFileInCache->Sectors[iSectorIndex]) * (__int64)(hCacheFile->Sectors->Header->PhysicalSectorSize) +
+			                        (__int64)uOffset;
 			//if(fseek(fCacheFile, lReadPosition, SEEK_SET))
 			if(_fseeki64(fCacheFile, lReadPosition, SEEK_SET))
 				return retval;
@@ -395,7 +397,8 @@ public:
 		int retval = 0;
  
 		//long lReadPosition = hCacheFile->Sectors->Header->FirstSectorOffset + (hFileInCache->Sectors[iSectorIndex] * hCacheFile->Sectors->Header->PhysicalSectorSize);
-		__int64 lReadPosition = hCacheFile->Sectors->Header->FirstSectorOffset + (hFileInCache->Sectors[iSectorIndex] * hCacheFile->Sectors->Header->PhysicalSectorSize);
+		__int64 lReadPosition = (__int64)hCacheFile->Sectors->Header->FirstSectorOffset +
+		                        (__int64)(hFileInCache->Sectors[iSectorIndex]) * (__int64)(hCacheFile->Sectors->Header->PhysicalSectorSize);
 		//if(fseek(fCacheFile, lReadPosition, SEEK_SET))
 		if(_fseeki64(fCacheFile, lReadPosition, SEEK_SET))
 			return retval;
