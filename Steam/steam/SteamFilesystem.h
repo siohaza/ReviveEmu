@@ -25,7 +25,7 @@ unsigned int GetAppIDFromCacheName(const char * szGCF)
 			return CDR->ApplicationRecords[i]->AppId;
 		}
 	}
-	return NULL;
+	return UINT_MAX;
 }
 
 unsigned int GetAppIDFromName(char * szName)
@@ -37,7 +37,7 @@ unsigned int GetAppIDFromName(char * szName)
 			return CDR->ApplicationRecords[i]->AppId;
 		}
 	}
-	return NULL;
+	return UINT_MAX;
 }
 
 unsigned int GetAppRecordID(unsigned int uAppID)
@@ -49,7 +49,7 @@ unsigned int GetAppRecordID(unsigned int uAppID)
 			return i;
 		}
 	}
-	return NULL;
+	return UINT_MAX;
 }
 
 void MountFileSystemByID(unsigned int uId, const char* szExtraMount)
@@ -58,13 +58,16 @@ void MountFileSystemByID(unsigned int uId, const char* szExtraMount)
 	char szGCF[MAX_PATH];
 	intptr_t cHandle;
 
+	if (uId == UINT_MAX)
+		return;
+
 	strcpy(szGCF, CDR->ApplicationRecords[uId]->InstallDirName);
 	_strlwr(szGCF);
 
 	for (unsigned int uIndex = 0; uIndex < CacheLocations.size(); uIndex++)
 	{
 		strcpy(szPath, CacheLocations[uIndex]);
-		strcat(szPath, "\\");
+		strcat(szPath, CORRECT_PATH_SEPARATOR_S);
 		strcat(szPath, szGCF);
 		strcat(szPath, ".gcf" );
 
@@ -97,37 +100,22 @@ void MountExtraCaches(unsigned int uAppID)
 
 	for (unsigned int uIndex = 0; uIndex < CacheLocations.size(); uIndex++)
 	{
+		// half-life high definition.gcf
 		if ((uAppID == 20) || (uAppID == 50) || (uAppID == 70) || (uAppID == 130))
 		{
-			strcat(szPath, CacheLocations[uIndex]);
-			strcat(szPath, "\\");
-			strcat(szPath,"half-life high definition.gcf");
-		}
-
-		if (strlen(szPath) > 0)
-		{
-			if (bLogging && bLogFS)	Logger->Write("Loading Optional Cache Requirements for AppID(%u)\n", uAppID);
-
-			MountFileSystemByName(szPath);
+			if (bLogging && bLogFS) Logger->Write("Loading Optional Cache Requirements for AppID(%u)\n", uAppID);
+			MountFileSystemByID(GetAppRecordID(96), "");
 		}
 
 #if _M_X64
 		// compile for 64-bit version only
-
 		strcpy(szPath, "");
 
+		// source engine 64-bit.gcf
 		if ((uAppID == 220) || (uAppID == 340))
 		{
-			strcat(szPath, CacheLocations[uIndex]);
-			strcat(szPath, "\\");
-			strcat(szPath,"source engine 64-bit.gcf");
-		}
-
-		if (strlen(szPath) > 0)
-		{
-			if (bLogging && bLogFS)	Logger->Write("Loading Optional 64-bit Requirements for AppID(%u)\n", uAppID);
-
-			MountFileSystemByName(szPath);
+			if (bLogging && bLogFS) Logger->Write("Loading Optional 64-bit Requirements for AppID(%u)\n", uAppID);
+			MountFileSystemByID(GetAppRecordID(201), "");
 		}
 #endif
 	}
@@ -151,14 +139,11 @@ void MountExtraLanguageCaches(const char * szName, const char * szLanguage, bool
 	{
 		for (unsigned int uIndex = 0; uIndex < CacheLocations.size(); uIndex++)
 		{
-			if (strcmp(szthisLanguage,"russian") == 0 && strcmp(szName,"half-life 2") == 0)
+			// Special case for "half-life 2_russian.gcf" - mount "half-life 2 buka russian.gcf" first
+			if (uAppId == 232)
 			{
-				if (bLogging && bLogFS)	Logger->Write("Loading Localized Cache Requirements for AppID(%u) Language(%s)\n", uAppId, "buka russian");
-
-				strcpy(szPath, CacheLocations[uIndex]);
-				strcat(szPath, "\\");
-				strcat(szPath, "half-life 2 buka russian.gcf");
-				MountFileSystemByName(szPath);
+				if (bLogging && bLogFS) Logger->Write("Loading Localized Cache Requirements for AppID(%u) Language(%s)\n", uAppId, "buka russian");
+				MountFileSystemByID(GetAppRecordID(235), "");
 			}
 
 			if (bLogging && bLogFS)	Logger->Write("Loading Localized Cache Requirements for AppID(%u) Language(%s)\n", uAppId, szthisLanguage);
@@ -202,7 +187,7 @@ SteamHandle_t SteamOpenFile2(const char* cszFileName, const char* cszMode, int n
 	if (bLogging && bLogFS) Logger->Write("SteamOpenFileEx (%s, %s, %u, 0x%p, 0x%p)\n", cszFileName, cszMode, nFlags, puFileSize, pbLocal);
 
 	std::string FullPath(cszFileName);
-	int dot = FullPath.find_last_of('\\');
+	int dot = FullPath.find_last_of(CORRECT_PATH_SEPARATOR);
 	std::string FileName = FullPath.substr(dot + 1);
 	std::string PathName = FullPath.substr(0, dot+ 1);
 
@@ -397,7 +382,7 @@ STEAM_API int SteamMountAppFilesystem(TSteamError *pError)
 					if(szGCF != NULL)
 					{
 						strcpy(szPath, CacheLocations[uIndex]);
-						strcat(szPath, "\\");
+						strcat(szPath, CORRECT_PATH_SEPARATOR_S);
 						strcat(szPath, szGCF);
 
 						MountFileSystemByName(szPath);
