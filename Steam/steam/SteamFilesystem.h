@@ -186,26 +186,6 @@ SteamHandle_t SteamOpenFile2(const char* cszFileName, const char* cszMode, int n
 
 	if (bLogging && bLogFS) Logger->Write("SteamOpenFileEx (%s, %s, %u, 0x%p, 0x%p)\n", cszFileName, cszMode, nFlags, puFileSize, pbLocal);
 
-	std::string FullPath(cszFileName);
-	int dot = FullPath.find_last_of(CORRECT_PATH_SEPARATOR);
-	std::string FileName = FullPath.substr(dot + 1);
-	std::string PathName = FullPath.substr(0, dot+ 1);
-
-	if (strcmp(FileName.c_str(),szLoggerFile.c_str()) != 0)
-	{
-		if (LoggerFileOpened == false)
-		{
-			if (bLogging && bLogFileFailure) LoggerFileFailure->Write("[FAIL](%s) %s >> %s)\n", szLoggerMode.c_str(), szLoggerFile.c_str(), szLoggerFilePath.c_str());
-		}
-		else
-		{
-			LoggerFileOpened = false;
-		}
-		szLoggerFile = FileName;
-		szLoggerFilePath = PathName;
-		szLoggerMode = cszMode;
-	}
-
 	SteamClearError(pError);
 
 	if (strpbrk(cszFileName, "?*"))
@@ -239,8 +219,10 @@ SteamHandle_t SteamOpenFile2(const char* cszFileName, const char* cszMode, int n
 		if (pbLocal)
 			*pbLocal = 1;
 
-		if (bLogging && bLogFS) Logger->Write("\tOpened 0x%08X from Local(%s) %s >> %s\n", (long)hCacheFile, cszMode, FileName.c_str(), PathName.c_str());
-		LoggerFileOpened = true;
+		char szDirPath[MAX_PATH] = "";
+		V_ExtractFilePath(szFullPath, szDirPath, MAX_PATH);
+		const char* pszFileName = V_GetFileName(szFullPath);
+		if (bLogging && bLogFS) Logger->Write("\tOpened 0x%08X from Local(%s) %s >> %s\n", (long)hCacheFile, cszMode, pszFileName, szDirPath);
 	}
 	else
 	{

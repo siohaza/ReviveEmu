@@ -49,13 +49,6 @@ char szBlobFile[MAX_PATH];
 char szAppIni[MAX_PATH];
 LPWSTR *szArglist;
 
-CLogFile* LoggerFileFailure;
-std::string szLoggerFile;
-std::string szLoggerFilePath;
-std::string szLoggerMode;
-bool bLogFileFailure = false;
-bool LoggerFileOpened;
-
 HMODULE g_hModule;
 
 CRITICAL_SECTION g_CriticalSection;
@@ -342,20 +335,6 @@ void InitGlobalVaribles()
 							if (bLogging) Logger->Write("UserID logging initialized.\n");
 						} 
 						delete[] Logging;
-					}
-
-
-					if (bLogFileFailure)
-					{
-						char tmpFile[MAX_PATH];
-
-						strcpy(tmpFile, szSteamDLLPath);
-						strcat(tmpFile,"\\REVive_File_Failure.Log");
-						LoggerFileFailure = new CLogFile(tmpFile);
-						LoggerFileFailure->Clear();
-
-						if (bLogging) Logger->Write("Cache File Load Failure logging initialized.\n");
-
 					}
 				}
 
