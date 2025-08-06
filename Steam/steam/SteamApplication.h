@@ -112,9 +112,9 @@ STEAM_API int SteamEnumerateApp(unsigned int uAppID, TSteamApp *pApp, TSteamErro
 
 	if (bSteamBlobSystem)
 	{
-		int uAppRecord = GetAppRecordID(uAppID);
+		unsigned int uAppRecord = GetAppRecordID(uAppID);
 
-		if (uAppRecord)
+		if (uAppRecord != UINT_MAX)
 		{
 			strcpy(pApp->szName, CDR->ApplicationRecords[uAppRecord]->Name);
 			pApp->uMaxNameChars = 255;
@@ -165,9 +165,9 @@ STEAM_API int SteamEnumerateAppDependency(unsigned int uAppId, unsigned int uDep
 
 	if (bSteamBlobSystem)
 	{
-		int uAppRecord = GetAppRecordID(uAppId);
+		unsigned int uAppRecord = GetAppRecordID(uAppId);
 
-		if (uAppRecord)
+		if (uAppRecord != UINT_MAX)
 		{
 			if (uDependency <= CDR->ApplicationRecords[uAppRecord]->FilesystemsRecord.size())
 			{
@@ -190,9 +190,9 @@ STEAM_API int SteamEnumerateAppLaunchOption(unsigned int uAppId, unsigned int uL
 
 	if (bSteamBlobSystem)
 	{
-		int uAppRecord = GetAppRecordID(uAppId);
+		unsigned int uAppRecord = GetAppRecordID(uAppId);
 
-		if (uAppRecord)
+		if (uAppRecord != UINT_MAX)
 		{
 			CAppLaunchOptionRecord* LaunchOption = CDR->ApplicationRecords[uAppRecord]->LaunchOptionsRecord[uLaunchOptionIndex];
 
@@ -229,9 +229,9 @@ STEAM_API SteamCallHandle_t SteamRefreshMinimumFootprintFiles(unsigned int uAppI
 
 	if (bSteamBlobSystem)
 	{
-		int uAppRecord = GetAppRecordID(uAppId);
+		unsigned int uAppRecord = GetAppRecordID(uAppId);
 
-		if (uAppRecord)
+		if (uAppRecord != UINT_MAX)
 		{
 			int x = CDR->ApplicationRecords[uAppRecord]->FilesystemsRecord.size() - 1;
 
@@ -512,9 +512,9 @@ STEAM_API int SteamGetAppUserDefinedInfo(unsigned int uAppId, const char *cszPro
 	if (bLogging) Logger->Write("SteamGetAppUserDefinedInfo\n");
 	SteamClearError(pError);
 
-	int uAppRecord = GetAppRecordID(uAppId);
+	unsigned int uAppRecord = GetAppRecordID(uAppId);
 
-	if (uAppRecord)
+	if (uAppRecord != UINT_MAX)
 	{
 		CAppRecord* AppRecord = CDR->ApplicationRecords[uAppRecord];
 
@@ -559,9 +559,9 @@ STEAM_API int SteamGetAppStats(TSteamAppStats *pAppStats, TSteamError *pError) {
 
 		for (unsigned int i = 0; i < pAppStats->uNumApps; i++)
 		{
-			int uAppRecord = GetAppRecordID(i);
+			unsigned int uAppRecord = GetAppRecordID(i);
 
-			if (uAppRecord)
+			if (uAppRecord != UINT_MAX)
 			{
 				CAppRecord* AppRecord = CDR->ApplicationRecords[uAppRecord];
 

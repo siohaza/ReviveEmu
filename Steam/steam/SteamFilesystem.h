@@ -135,7 +135,7 @@ void MountExtraLanguageCaches(const char * szName, const char * szLanguage, bool
 
 	unsigned int uAppId = GetAppIDFromName(szPath);
 
-	if (uAppId)
+	if (uAppId != UINT_MAX)
 	{
 		for (unsigned int uIndex = 0; uIndex < CacheLocations.size(); uIndex++)
 		{
@@ -156,7 +156,7 @@ void MountExtraLanguageCaches(const char * szName, const char * szLanguage, bool
 
 	uAppId = GetAppIDFromName(szPath);
 
-	if (uAppId)
+	if (uAppId != UINT_MAX)
 	{
 		// Check app dependancy and load as appropriate
 		if (CheckingDependancy)
@@ -171,7 +171,7 @@ void MountExtraLanguageCaches(const char * szName, const char * szLanguage, bool
 			{
 				unsigned int uAppRecordDependant = GetAppRecordID(atoi(szPropertyValue));
 
-				if (uAppRecordDependant)
+				if (uAppRecordDependant != UINT_MAX)
 				{
 					MountExtraLanguageCaches(CDR->ApplicationRecords[uAppRecordDependant]->Name, szLanguage, true);
 				}
@@ -274,7 +274,7 @@ STEAM_API int SteamMountFilesystem(unsigned int uAppId, const char *szMountPath,
 	{
 		unsigned int uAppRecord = GetAppRecordID(uAppId);
 
-		if (uAppRecord)
+		if (uAppRecord != UINT_MAX)
 		{
 			MountExtraLanguageCaches(CDR->ApplicationRecords[uAppRecord]->Name, szLanguage, true);
 			MountExtraCaches(uAppId);
@@ -308,9 +308,9 @@ STEAM_API int SteamMountFilesystem(unsigned int uAppId, const char *szMountPath,
 				// Language Caches must be processed by calculating the rootAppID as some mods mount individual depots directly
 				// rootAppID was recorded on the last enumerate app call as this would populate the enumerations for the root app
 
-				int urootAppRecord = GetAppRecordID(rootAppID);
+				unsigned int urootAppRecord = GetAppRecordID(rootAppID);
 
-				if (urootAppRecord)
+				if (urootAppRecord != UINT_MAX)
 				{
 					MountExtraLanguageCaches(CDR->ApplicationRecords[urootAppRecord]->Name, szLanguage, true);
 					MountExtraCaches(rootAppID);
