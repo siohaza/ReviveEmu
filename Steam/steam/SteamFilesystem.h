@@ -95,30 +95,21 @@ void MountFileSystemByName(const char * szPath)
 
 void MountExtraCaches(unsigned int uAppID)
 {
-	char szPath[MAX_PATH];
-	strcpy(szPath, "");
-
-	for (unsigned int uIndex = 0; uIndex < CacheLocations.size(); uIndex++)
+	// half-life high definition.gcf
+	if ((uAppID == 20) || (uAppID == 50) || (uAppID == 70) || (uAppID == 130))
 	{
-		// half-life high definition.gcf
-		if ((uAppID == 20) || (uAppID == 50) || (uAppID == 70) || (uAppID == 130))
-		{
-			if (bLogging && bLogFS) Logger->Write("Loading Optional Cache Requirements for AppID(%u)\n", uAppID);
-			MountFileSystemByID(GetAppRecordID(96), "");
-		}
+		if (bLogging && bLogFS) Logger->Write("Loading Optional Cache Requirements for AppID(%u)\n", uAppID);
+		MountFileSystemByID(GetAppRecordID(96), "");
+	}
 
 #if _M_X64
-		// compile for 64-bit version only
-		strcpy(szPath, "");
-
-		// source engine 64-bit.gcf
-		if ((uAppID == 220) || (uAppID == 340))
-		{
-			if (bLogging && bLogFS) Logger->Write("Loading Optional 64-bit Requirements for AppID(%u)\n", uAppID);
-			MountFileSystemByID(GetAppRecordID(201), "");
-		}
-#endif
+	// source engine 64-bit.gcf
+	if ((uAppID == 220) || (uAppID == 340))
+	{
+		if (bLogging && bLogFS) Logger->Write("Loading Optional 64-bit Requirements for AppID(%u)\n", uAppID);
+		MountFileSystemByID(GetAppRecordID(201), "");
 	}
+#endif
 }
 
 
@@ -137,19 +128,16 @@ void MountExtraLanguageCaches(const char * szName, const char * szLanguage, bool
 
 	if (uAppId != UINT_MAX)
 	{
-		for (unsigned int uIndex = 0; uIndex < CacheLocations.size(); uIndex++)
+		// Special case for "half-life 2_russian.gcf" - mount "half-life 2 buka russian.gcf" first
+		if (uAppId == 232)
 		{
-			// Special case for "half-life 2_russian.gcf" - mount "half-life 2 buka russian.gcf" first
-			if (uAppId == 232)
-			{
-				if (bLogging && bLogFS) Logger->Write("Loading Localized Cache Requirements for AppID(%u) Language(%s)\n", uAppId, "buka russian");
-				MountFileSystemByID(GetAppRecordID(235), "");
-			}
-
-			if (bLogging && bLogFS)	Logger->Write("Loading Localized Cache Requirements for AppID(%u) Language(%s)\n", uAppId, szthisLanguage);
-
-			MountFileSystemByID(GetAppRecordID(uAppId), "");
+			if (bLogging && bLogFS) Logger->Write("Loading Localized Cache Requirements for AppID(%u) Language(%s)\n", uAppId, "buka russian");
+			MountFileSystemByID(GetAppRecordID(235), "");
 		}
+
+		if (bLogging && bLogFS) Logger->Write("Loading Localized Cache Requirements for AppID(%u) Language(%s)\n", uAppId, szthisLanguage);
+
+		MountFileSystemByID(GetAppRecordID(uAppId), "");
 	}
 
 	strcpy(szPath, szName);
