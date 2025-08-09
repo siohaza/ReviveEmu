@@ -113,57 +113,41 @@ void MountExtraCaches(unsigned int uAppID)
 }
 
 
-void MountExtraLanguageCaches(const char * szName, const char * szLanguage, bool CheckingDependancy)
+void MountExtraLanguageCaches(unsigned int uAppId, const char* szMountLanguage, bool bCheckDependency)
 {
-	char szPath[MAX_PATH];
-	char szthisLanguage[MAX_PATH];
-	strcpy(szthisLanguage,szLanguage);
+	unsigned int uAppRecord = GetAppRecordID(uAppId);
+	if (uAppRecord == UINT_MAX)
+		return;
 
-	strcpy(szPath, szName);
+	// Mount localization depot for the app if it exists.
+	char szLangDepot[MAX_PATH];
+	_snprintf(szLangDepot, MAX_PATH, "%s %s", CDR->ApplicationRecords[uAppRecord]->Name, szMountLanguage);
+	unsigned int uDepotId = GetAppIDFromName(szLangDepot);
 
-	strcat(szPath," ");
-	strcat(szPath,szthisLanguage);
-
-	unsigned int uAppId = GetAppIDFromName(szPath);
-
-	if (uAppId != UINT_MAX)
+	if (uDepotId != UINT_MAX)
 	{
-		// Special case for "half-life 2_russian.gcf" - mount "half-life 2 buka russian.gcf" first
-		if (uAppId == 232)
+		// Special case for "half-life 2_russian.gcf" - mount "half-life 2 buka russian.gcf" first.
+		if (uDepotId == 232)
 		{
-			if (bLogging && bLogFS) Logger->Write("Loading Localized Cache Requirements for AppID(%u) Language(%s)\n", uAppId, "buka russian");
+			if (bLogging && bLogFS) Logger->Write("Loading Localized Cache Requirements for AppID(%u) Language(%s)\n", 235, "buka russian");
 			MountFileSystemByID(GetAppRecordID(235), "");
 		}
 
-		if (bLogging && bLogFS) Logger->Write("Loading Localized Cache Requirements for AppID(%u) Language(%s)\n", uAppId, szthisLanguage);
+		if (bLogging && bLogFS) Logger->Write("Loading Localized Cache Requirements for AppID(%u) Language(%s)\n", uDepotId, szMountLanguage);
 
-		MountFileSystemByID(GetAppRecordID(uAppId), "");
+		MountFileSystemByID(GetAppRecordID(uDepotId), "");
 	}
 
-	strcpy(szPath, szName);
-
-	uAppId = GetAppIDFromName(szPath);
-
-	if (uAppId != UINT_MAX)
+	// Also recursively mount localization depots from app dependencies.
+	if (bCheckDependency)
 	{
-		// Check app dependancy and load as appropriate
-		if (CheckingDependancy)
+		TSteamError steamError;
+		unsigned int uPropertyValueLength;
+		char szPropertyValue[MAX_PATH];
+
+		if (SteamGetAppUserDefinedInfo(uAppId, "dependantOnApp", szPropertyValue, MAX_PATH, &uPropertyValueLength, &steamError))
 		{
-			TSteamError steamError;
-			unsigned int uPropertyValueLength;
-			char szPropertyValue[MAX_PATH];
-
-			SteamGetAppUserDefinedInfo(uAppId , "dependantOnApp", szPropertyValue, MAX_PATH, &uPropertyValueLength, &steamError);
-
-			if (uPropertyValueLength > 0)
-			{
-				unsigned int uAppRecordDependant = GetAppRecordID(atoi(szPropertyValue));
-
-				if (uAppRecordDependant != UINT_MAX)
-				{
-					MountExtraLanguageCaches(CDR->ApplicationRecords[uAppRecordDependant]->Name, szLanguage, true);
-				}
-			}
+			MountExtraLanguageCaches(atoi(szPropertyValue), szMountLanguage, true);
 		}
 	}
 }
@@ -246,7 +230,7 @@ STEAM_API int SteamMountFilesystem(unsigned int uAppId, const char *szMountPath,
 
 		if (uAppRecord != UINT_MAX)
 		{
-			MountExtraLanguageCaches(CDR->ApplicationRecords[uAppRecord]->Name, szLanguage, true);
+			MountExtraLanguageCaches(uAppId, szLanguage, true);
 			MountExtraCaches(uAppId);
 
 			if (CDR->ApplicationRecords[uAppRecord]->FilesystemsRecord.size() > 0)
@@ -282,7 +266,7 @@ STEAM_API int SteamMountFilesystem(unsigned int uAppId, const char *szMountPath,
 
 				if (urootAppRecord != UINT_MAX)
 				{
-					MountExtraLanguageCaches(CDR->ApplicationRecords[urootAppRecord]->Name, szLanguage, true);
+					MountExtraLanguageCaches(rootAppID, szLanguage, true);
 					MountExtraCaches(rootAppID);
 				}
 
@@ -323,7 +307,7 @@ STEAM_API int SteamMountAppFilesystem(TSteamError *pError)
 	{
 		if (!appid)
 		{
-			MessageBoxA(NULL, "You are trying to launch an unknown App ID, please specify -appid on the command line or write App ID into steam_appid.txt.", "Revive - AppID?", 0);
+			MessageBoxA(NULL, "You are trying to launch an unknown App ID, please specify -appid on the command line or write App ID into steam_appid.txt.", "REVive - AppID?", 0);
 			ExitProcess(0xffffffff);
 		}
 
