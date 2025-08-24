@@ -31,15 +31,15 @@ public:
 	
 	~CCache()
 	{
-
 		if (DirectoryTable)
 		{
 			for (unsigned int x = 1; x < Manifest->Header->ItemCount ; x++)
 			{
-
 				delete [] DirectoryTable[x].FullName; 
-				delete [] DirectoryTable[x].Name; 
-				delete [] DirectoryTable[x].Sectors;
+				delete [] DirectoryTable[x].Name;
+
+				if (DirectoryTable[x].numofsectors != 0)
+					delete [] DirectoryTable[x].Sectors;
 			}
 			delete [] DirectoryTable;
 		}
@@ -58,7 +58,6 @@ public:
 		if (Header)
 			delete Header;
 		HashTable.clear();
-
 	}
 	
 	bool Read(const char* ExtraMountPath)
@@ -203,27 +202,33 @@ private:
 			numofsectors++;
 		}
 		DirectoryTable[ManifestEntryIndex].numofsectors = numofsectors;
-		DirectoryTable[ManifestEntryIndex].Sectors = new unsigned int[numofsectors];
-		unsigned int sectorindexptr = 0;
-		while(blockindex != sectorcount)
+
+		if (numofsectors != 0)
 		{
-			if(DirectoryTable[ManifestEntryIndex].IsFragmented == false && Block->Entries[blockindex].NextBlockEntryIndex != sectorcount)
+			DirectoryTable[ManifestEntryIndex].Sectors = new unsigned int[numofsectors];
+			unsigned int sectorindexptr = 0;
+			while (blockindex != sectorcount)
 			{
-				DirectoryTable[ManifestEntryIndex].IsFragmented = true;
-			}
-			unsigned int sectorindex = Block->Entries[blockindex].FirstDataBlockIndex;
-			while(sectorindex != minusone)
-			{
-				if(DirectoryTable[ManifestEntryIndex].IsFragmented == false && AllocationTable->Entries[sectorindex].NextDataBlockIndex != minusone && (AllocationTable->Entries[sectorindex].NextDataBlockIndex - sectorindex) != 1)
+				if (DirectoryTable[ManifestEntryIndex].IsFragmented == false && Block->Entries[blockindex].NextBlockEntryIndex != sectorcount)
 				{
 					DirectoryTable[ManifestEntryIndex].IsFragmented = true;
 				}
-				DirectoryTable[ManifestEntryIndex].Sectors[sectorindexptr] = sectorindex;
-				sectorindexptr++;
-				sectorindex = AllocationTable->Entries[sectorindex].NextDataBlockIndex;
+				unsigned int sectorindex = Block->Entries[blockindex].FirstDataBlockIndex;
+				while (sectorindex != minusone)
+				{
+					if (DirectoryTable[ManifestEntryIndex].IsFragmented == false && AllocationTable->Entries[sectorindex].NextDataBlockIndex != minusone &&
+					    (AllocationTable->Entries[sectorindex].NextDataBlockIndex - sectorindex) != 1)
+					{
+						DirectoryTable[ManifestEntryIndex].IsFragmented = true;
+					}
+					DirectoryTable[ManifestEntryIndex].Sectors[sectorindexptr] = sectorindex;
+					sectorindexptr++;
+					sectorindex = AllocationTable->Entries[sectorindex].NextDataBlockIndex;
+				}
+				blockindex = Block->Entries[blockindex].NextBlockEntryIndex;
 			}
-			blockindex = Block->Entries[blockindex].NextBlockEntryIndex;
 		}
+
 		DirectoryTable[ManifestEntryIndex].IsLocalCopyMade = IsLocalCopyMade(ManifestEntryIndex);
 		DirectoryTable[ManifestEntryIndex].IsLocalCopyHasPriorityOverChache = IsLocalCopyHasPriorityOverChache(ManifestEntryIndex);
 	}
