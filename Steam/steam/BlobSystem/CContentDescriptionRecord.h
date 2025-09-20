@@ -51,6 +51,11 @@ public:
 				CDRData = (char*)zBuffer;
 				NodeEnd = CDRData + NodeHeaderCompressed->datalength;
 			}
+			else
+			{
+				MessageBoxA(NULL, "Encountered invalid CDR blob!", "REVive - Bad CDR", 0);
+				ExitProcess(0xffffffff);
+			}
 		}
 		else
 		{
@@ -171,5 +176,27 @@ public:
 
 		for (auto &record : AllAppsPublicKeysRecord)
 			delete[] record.second;
+	}
+
+	static CContentDescriptionRecord* LoadFromFile(const char* FileName)
+	{
+		FILE* File = fopen(FileName, "rb");
+		fseek(File, 0, SEEK_END);
+		size_t FileLen = ftell(File);
+		fseek(File, 0, SEEK_SET);
+
+		// Last known CDR is 3 812 255 bytes.
+		if (FileLen > 8 * 1024 * 1024)
+		{
+			fclose(File);
+			return NULL;
+		}
+
+		char* FileData = new char[FileLen];
+		fread(FileData, 1, FileLen, File);
+		fclose(File);
+		CContentDescriptionRecord* newCDR = new CContentDescriptionRecord(FileData);
+		delete[] FileData;
+		return newCDR;
 	}
 };

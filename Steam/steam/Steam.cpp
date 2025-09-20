@@ -37,6 +37,7 @@ bool bAllowNonRev = true;
 int nArgs;
 bool bSteamFileSystem = false;
 bool bSteamBlobSystem = false;
+bool bRawCDR = false;
 std::vector<intptr_t> vecGCF;
 unsigned int appid = 0;
 char szGCFPath[MAX_PATH * 5];
@@ -45,6 +46,7 @@ static std::vector<const char*> CacheLocations;
 char szLanguage[MAX_PATH];
 char szSteamUser[MAX_PATH];
 char szOLDLanguage[MAX_PATH];
+char szCDRFile[MAX_PATH];
 char szBlobFile[MAX_PATH];
 char szAppIni[MAX_PATH];
 LPWSTR *szArglist;
@@ -417,16 +419,29 @@ void InitGlobalVaribles()
 							szGCFPath[0] = '\0';
 						}
 
-						// Alternate path to avoid HL2 anti-piracy.
-						strcpy(szBlobFile, "platform\\ClientRegistry.blob");
-						struct _stat filestat;
-						if (_stat(szBlobFile, &filestat) == -1)
-						{
-							strcpy(szBlobFile, szSteamDLLPath);
-							strcat(szBlobFile, "ClientRegistry.Blob");
-						}
+						if (char* Path = Ini->IniReadValue("Emulator", "CDRPath"))
+				        {
+					        strcpy(szCDRFile, Path);
+					        delete[] Path;
+				        }
+				        else
+				        {
+					        strcpy(szCDRFile, szSteamDLLPath);
+					        strcat(szCDRFile, "cdr.bin");
+				        }
 
-						if (_stat(szBlobFile, &filestat) == 0)
+				        strcpy(szBlobFile, szSteamDLLPath);
+				        strcat(szBlobFile, "ClientRegistry.Blob");
+
+						struct _stat filestat;
+				        if (_stat(szCDRFile, &filestat) == 0)
+				        {
+					        if (bLogging) Logger->Write("Cache support initialized via %s\n", szCDRFile);
+					        bSteamFileSystem = true;
+					        bSteamBlobSystem = true;
+							bRawCDR = true;
+						}
+						else if (_stat(szBlobFile, &filestat) == 0)
 						{		
 							if (bLogging) Logger->Write("Cache support initialized via %s\n",szBlobFile);
 							bSteamFileSystem = true;
