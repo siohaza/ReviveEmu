@@ -22,15 +22,21 @@ jobs:
       - name: Add MSBuild to PATH
         uses: microsoft/setup-msbuild@v2
 
+      - name: Install v141_xp toolset
+        shell: cmd
+        run: |
+          for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -property installationPath`) do set VSPATH=%%i
+          "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vs_installer.exe" modify --installPath "%VSPATH%" --add Microsoft.VisualStudio.Component.WinXP --add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.WinXP --quiet --norestart --nocache
+
       - name: Build
         shell: cmd
         working-directory: Steam
-        run: MSBuild -m Steam.sln -t:Steam:Rebuild "-p:Configuration=Release" -p:Platform=Win32
+        run: MSBuild -m Steam.sln -t:Steam:Rebuild "-p:Configuration=Release" -p:Platform=Win32 -p:PlatformToolset=v141_xp
 
       - name: Build 2003 DLL
         shell: cmd
         working-directory: Steam
-        run: MSBuild -m Steam.sln -t:Steam:Rebuild "-p:Configuration=Steam 2003" -p:Platform=Win32
+        run: MSBuild -m Steam.sln -t:Steam:Rebuild "-p:Configuration=Steam 2003" -p:Platform=Win32 -p:PlatformToolset=v141_xp
 
       - name: Prepare files for packaging
         shell: cmd
